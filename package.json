@@ -1,0 +1,13 @@
+{
+  "name": "dialogai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n frontend,backend -c cyan,magenta \"pnpm dev:frontend\" \"pnpm dev:backend\"",
+    "dev:frontend": "cd frontend && pnpm dev",
+    "dev:backend": "cd backend && uv run langgraph dev"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
