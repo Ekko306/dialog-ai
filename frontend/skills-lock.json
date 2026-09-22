@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "assistant-ui": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "skillPath": "assistant-ui/skills/assistant-ui/SKILL.md",
+      "computedHash": "c855224348b69a93a734b26f3f0aa399e66d530c3f3ef51f1fde2351ad7def97"
+    },
+    "react-mcp": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "skillPath": "assistant-ui/skills/react-mcp/SKILL.md",
+      "computedHash": "1b87b38f7a52ee1e6c3c3c8e1c28024902b06306db0807bcb944ae66abd44601"
+    },
+    "runtime": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "skillPath": "assistant-ui/skills/runtime/SKILL.md",
+      "computedHash": "898b6936604fe5f9c674d7d753918100191304217a98ee7251a192ef087c1d29"
+    },
+    "tools": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "skillPath": "assistant-ui/skills/tools/SKILL.md",
+      "computedHash": "02c252ee1c32440c3dd9c93d08166b3f86e193dce9db8fdb1053dd2cfb65fa09"
+    },
+    "update": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "skillPath": "assistant-ui/skills/update/SKILL.md",
+      "computedHash": "f2e5f48a6ed92d3885db362567790a77be6a2450dc06cd36395fc37ec788df7f"
+    }
+  }
+}
