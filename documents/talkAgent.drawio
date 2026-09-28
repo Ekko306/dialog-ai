@@ -1,0 +1,90 @@
+<mxfile host="65bd71144e">
+    <diagram id="talkAgent-grammar-coach" name="talkAgent">
+        <mxGraphModel dx="800" dy="400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="talkAgent · 语法陪练智能体（LangGraph Graph API）" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="20" width="480" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="start" value="START" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="70" width="120" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="transcribe" value="&lt;b&gt;transcribe&lt;/b&gt; · ASR 工具节点&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;语音 → 文本，追加 HumanMessage 到 messages&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="470" y="150" width="220" height="56" as="geometry"/>
+                </mxCell>
+                <mxCell id="grammar_check" value="&lt;b&gt;grammar_check&lt;/b&gt; · LLM 评估节点&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;结构化输出 has_issue / issues&lt;br&gt;提示词：只判语法，不重写句子&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="470" y="256" width="220" height="64" as="geometry"/>
+                </mxCell>
+                <mxCell id="route" value="&lt;b&gt;route_by_grammar&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;add_conditional_edges&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="505" y="370" width="150" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="grammar_tutor" value="&lt;b&gt;grammar_tutor&lt;/b&gt; · LLM 节点&lt;br&gt;指出语法问题 + 正确说法&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;提示词：只纠错不改原意，逐条列出并解释&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="500" width="220" height="72" as="geometry"/>
+                </mxCell>
+                <mxCell id="polisher" value="&lt;b&gt;polisher&lt;/b&gt; · LLM 节点&lt;br&gt;拓展润色：更地道的表达&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;提示词：给出 2 个升级版并附点评&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="720" y="500" width="220" height="72" as="geometry"/>
+                </mxCell>
+                <mxCell id="coach_reply" value="&lt;b&gt;coach_reply&lt;/b&gt; · LLM 节点&lt;br&gt;回复用户 + 点评上句 + 2 个引导提示词&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;提示词：基于历史继续对话，输出 coach_output&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="470" y="632" width="220" height="72" as="geometry"/>
+                </mxCell>
+                <mxCell id="review_gate" value="&lt;b&gt;review_gate&lt;/b&gt; · 中断节点&lt;br&gt;interrupt() 暂停，把结果交前端展示&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;Command(resume=continue / regenerate) 恢复&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+                    <mxGeometry x="470" y="754" width="220" height="72" as="geometry"/>
+                </mxCell>
+                <mxCell id="end" value="END" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="884" width="120" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#595959;fontSize=11;" edge="1" parent="1" source="start" target="transcribe">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#595959;fontSize=11;" edge="1" parent="1" source="transcribe" target="grammar_check">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#595959;fontSize=11;" edge="1" parent="1" source="grammar_check" target="route">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" value="has_issue = True" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#d79b00;fontSize=11;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="route" target="grammar_tutor">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" value="has_issue = False" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#d79b00;fontSize=11;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="route" target="polisher">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#595959;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="grammar_tutor" target="coach_reply">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#595959;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="polisher" target="coach_reply">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#595959;fontSize=11;" edge="1" parent="1" source="coach_reply" target="review_gate">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" value="resume = continue" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9673a6;fontSize=11;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="review_gate" target="end">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" value="resume = regenerate（Agent Loop 重生成）" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9673a6;fontSize=11;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="review_gate" target="coach_reply">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="400" y="790"/>
+                            <mxPoint x="400" y="668"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="state_schema" value="&lt;b&gt;TalkState 状态定义&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;messages: Annotated[list, add_messages]&lt;br&gt;user_text: str&lt;br&gt;has_issue: bool&lt;br&gt;grammar_feedback: str&lt;br&gt;coach_output: str&lt;br&gt;review_decision: str（interrupt 恢复值）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="150" width="200" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="short_memory" value="&lt;b&gt;短期记忆 / 可恢复执行&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;checkpointer = InMemorySaver&lt;br&gt;config 传 thread_id 区分对话线程&lt;br&gt;messages 自动累积上下文&lt;br&gt;interrupt 后从检查点恢复&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="330" width="200" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="fault_tolerance" value="&lt;b&gt;节点容错&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;LLM 节点挂 RetryPolicy&lt;br&gt;（3 次重试，指数退避）&lt;br&gt;timeout = 30s 超时控制&lt;br&gt;失败兜底：返回固定提示文案&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+                    <mxGeometry x="950" y="256" width="200" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="patterns" value="&lt;b&gt;图设计模式&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;Routing：语法条件分支&lt;br&gt;Evaluator：grammar_check 评估&lt;br&gt;Fan-in：双路汇聚 coach_reply&lt;br&gt;Agent Loop：不满意重生成&lt;br&gt;Human-in-the-loop：review_gate&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" vertex="1" parent="1">
+                    <mxGeometry x="950" y="500" width="200" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend" value="图例：实线 = add_edge 静态边  |  虚线 = add_conditional_edges / interrupt 恢复（动态流）&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;蓝 = LLM 节点  绿 = 工具节点  紫 = 中断节点  橙菱形 = 条件路由  灰虚线框 = 状态/配置注释&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;align=center;" vertex="1" parent="1">
+                    <mxGeometry x="220" y="960" width="720" height="54" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
