@@ -32,6 +32,7 @@ class State:
     """
 
     changeme: str = "example"
+    test: str = "ttt"
 
 
 async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
@@ -40,8 +41,7 @@ async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
     Can use runtime context to alter behavior.
     """
     return {
-        "changeme": "output from call_model. "
-        f"Configured with {(runtime.context or {}).get('my_configurable_param')}"
+        "changeme": "output from call_model1222. "f"Configured with {(runtime.context or {}).get('my_configurable_param')}"
     }
 
 

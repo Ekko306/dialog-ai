@@ -39,12 +39,13 @@ async def classify(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
         category = "general"
     return {"category": category}
 
-
 def route(state: State) -> Literal["answer_summary", "answer_tools", "answer_general"]:
     """条件路由：根据类别决定走向。"""
-    return {"summary": "answer_summary", "tools": "answer_tools"}.get(
-        state.category, "answer_general"
-    )
+    route_map: dict[str, Literal["answer_summary", "answer_tools", "answer_general"]] = {
+        "summary": "answer_summary",
+        "tools": "answer_tools",
+    }
+    return route_map.get(state.category, "answer_general")
 
 
 async def answer_summary(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
