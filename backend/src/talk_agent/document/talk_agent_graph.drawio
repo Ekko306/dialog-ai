@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="talkAgent-grammar-coach" name="talkAgent">
-        <mxGraphModel dx="580" dy="739" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="923" dy="739" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -13,19 +13,19 @@
                 <mxCell id="transcribe" value="ita_tool_node语音转文字&lt;br&gt;输入：语音&lt;br&gt;输出：texts, active_id" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="470" y="150" width="220" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="grammar_check" value="grammar_check_graph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
+                <mxCell id="grammar_check" value="grammar_check_graph&lt;br&gt;语法检查" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="470" y="286" width="220" height="44" as="geometry"/>
                 </mxCell>
-                <mxCell id="grammar_tutor" value="grammar_tutor_graph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
+                <mxCell id="grammar_tutor" value="grammar_tutor_graph&lt;br&gt;语法纠错" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="220" y="390" width="220" height="44" as="geometry"/>
                 </mxCell>
-                <mxCell id="polisher" value="polisher_graph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
+                <mxCell id="polisher" value="polisher_graph&lt;br&gt;语法润色" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="720" y="390" width="220" height="44" as="geometry"/>
                 </mxCell>
                 <mxCell id="3" style="edgeStyle=none;html=1;" edge="1" parent="1" source="coach_reply" target="2">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="coach_reply" value="coach_reply_graph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
+                <mxCell id="coach_reply" value="coach_reply_graph&lt;br&gt;回复教练" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="470" y="510" width="220" height="44" as="geometry"/>
                 </mxCell>
                 <mxCell id="end" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">

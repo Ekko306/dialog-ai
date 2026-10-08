@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="grammar-check-subgraph" name="grammar_check">
-        <mxGraphModel dx="194" dy="517" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="434" dy="517" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -20,7 +20,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="llm_call" value="check_grammer_llm_node 判断优化还是纠错&lt;br&gt;输入：texts, ise_results&lt;br&gt;输出：messages, check_messages, has_issue" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="480" y="340" width="200" height="84" as="geometry"/>
+                    <mxGeometry x="450" y="340" width="260" height="84" as="geometry"/>
                 </mxCell>
                 <mxCell id="end" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="520" y="500" width="120" height="40" as="geometry"/>

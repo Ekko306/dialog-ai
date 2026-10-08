@@ -1,25 +1,25 @@
 <mxfile host="65bd71144e">
     <diagram id="grammar-tutor-subgraph" name="grammar_tutor">
-        <mxGraphModel dx="472" dy="517" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="646" dy="517" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="title" value="grammar_tutor 子图 · LangGraph 规范画法&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;参照 Routing 模式渲染规范：实线 = add_edge 静态边，虚线 = add_conditional_edges 动态分支&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#333333;" parent="1" vertex="1">
                     <mxGeometry x="300" y="20" width="560" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="2" style="edgeStyle=none;html=1;" edge="1" parent="1" source="start" target="llm_call">
+                <mxCell id="2" style="edgeStyle=none;html=1;" parent="1" source="start" target="llm_call" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="start" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="520" y="140" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="llm_call" target="end">
+                <mxCell id="3" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="llm_call" target="end" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="650" y="531.9047241210938" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="llm_call" value="grammer_tutor_llm_node语法纠错&lt;br&gt;输入：texts, check_messages&lt;br&gt;输出：tutor_messages,messages" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="480" y="354" width="200" height="44" as="geometry"/>
+                    <mxGeometry x="460" y="302" width="240" height="98" as="geometry"/>
                 </mxCell>
                 <mxCell id="end" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="520" y="550" width="120" height="40" as="geometry"/>
