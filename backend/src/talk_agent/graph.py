@@ -1,77 +1,62 @@
-"""第三张图：问答助手（示例）。
+import sys
+from pathlib import Path
 
-演示第三个独立 graph，并引入一个条件边（router）：
-- 用一个节点判断问题类别，路由到不同处理节点
-- 比前两张图多一个分支，展示多节点图结构
-"""
+# 兼容直接运行本文件（python graph.py）：把 backend 目录加入 sys.path，
+# 使 src.* 绝对导入可用；langgraph dev / uv run 下 backend 本就在 sys.path，无副作用
+_BACKEND_DIR = Path(__file__).resolve().parents[2]  # backend/src/talk_agent/graph.py -> backend
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
 
-from __future__ import annotations
+from langgraph.graph import StateGraph,START,END  # noqa: E402
 
-from dataclasses import dataclass
-from typing import Any, Dict, Literal
+from src.talk_agent.state import OverAllState  # noqa: E402
+from src.talk_agent.subgraphs.grammar_check_subgraph import grammar_check_subgraph  # noqa: E402
 
-from langgraph.graph import END, StateGraph
-from langgraph.runtime import Runtime
-from typing_extensions import TypedDict
+from src.talk_agent.subgraphs.grammer_tutor_subgraph import grammer_tutor_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.polisher_subgraph import polisher_subgraph  # noqa: E402
 
-
-class Context(TypedDict):
-    """运行时可配置项。"""
-
-    top_k: int  # 返回多少条答案
-
-
-@dataclass
-class State:
-    question: str = ""
-    category: str = ""
-    answer: str = ""
+from src.talk_agent.subgraphs.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
+from typing import Literal  # noqa: E402
+from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import xfyun_iat_tool
 
 
-async def classify(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
-    """占位：按关键词粗判类别，可替换为 LLM 分类。"""
-    q = state.question
-    if any(k in q for k in ("总结", "摘要", "summar")):
-        category = "summary"
-    elif any(k in q for k in ("工具", "tool", "mcp")):
-        category = "tools"
-    else:
-        category = "general"
-    return {"category": category}
-
-def route(state: State) -> Literal["answer_summary", "answer_tools", "answer_general"]:
-    """条件路由：根据类别决定走向。"""
-    route_map: dict[str, Literal["answer_summary", "answer_tools", "answer_general"]] = {
-        "summary": "answer_summary",
-        "tools": "answer_tools",
+def xfyun_ita_tool_node(state:OverAllState) -> OverAllState:
+    res = xfyun_iat_tool()
+    return {
+        "raw_text": res
     }
-    return route_map.get(state.category, "answer_general")
 
 
-async def answer_summary(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
-    return {"answer": "文档摘要类回答示例。"}
+# 定义节点
+parent_builder = StateGraph(state_schema=OverAllState)
+parent_builder.add_node("xfyun_ita_tool_node", xfyun_ita_tool_node)
+parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
+parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
+parent_builder.add_node("polisher_subgraph",polisher_subgraph)
+parent_builder.add_node("coach_reply_subgraph",coach_reply_subgraph)
 
+# 定义自定义路由
+def my_route(state: OverAllState) -> Literal["has_issue", "has_no_issue"]:
+    if state.get("has_issue", False):
+        return "has_issue"
+    else:
+        return "has_no_issue"
 
-async def answer_tools(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
-    k = (runtime.context or {}).get("top_k", 3)
-    return {"answer": f"工具类回答示例，top_k={k}。"}
+# 定义边
+parent_builder.add_edge(START,"xfyun_ita_tool_node")
+parent_builder.add_edge("xfyun_ita_tool_node","grammar_check_subgraph")
+parent_builder.add_conditional_edges("grammar_check_subgraph", my_route, path_map={
+    "has_issue": "grammer_tutor_subgraph",
+    "has_no_issue": "polisher_subgraph",
+})
+parent_builder.add_edge("grammer_tutor_subgraph", "coach_reply_subgraph")
+parent_builder.add_edge("polisher_subgraph", "coach_reply_subgraph")
+parent_builder.add_edge("coach_reply_subgraph",END)
 
+# 构建图
+graph = parent_builder.compile()
 
-async def answer_general(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
-    return {"answer": "通用回答示例。"}
-
-
-# 导出变量名固定为 graph，供 langgraph.json 引用
-graph = (
-    StateGraph(State, context_schema=Context)
-    .add_node(classify)
-    .add_node(answer_summary)
-    .add_node(answer_tools)
-    .add_node(answer_general)
-    .add_edge("__start__", "classify")
-    .add_conditional_edges("classify", route)
-    .add_edge("answer_summary", END)
-    .add_edge("answer_tools", END)
-    .add_edge("answer_general", END)
-    .compile(name="QA")
-)
+if __name__ == "__main__":
+    # res = graph.invoke({"raw_text": "error"})
+    res = graph.invoke({})
+    print(res)

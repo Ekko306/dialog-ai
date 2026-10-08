@@ -65,9 +65,9 @@ def microphone_stream():
     try:
         # 初始化客户端
         client = IatClient(
-            app_id=os.getenv('APP_ID', ''),  # 替换为你的应用ID
-            api_key=os.getenv('API_KEY', ' '),  # 替换为你的API密钥
-            api_secret=os.getenv('API_SECRET', ''),  # 替换为你的API密钥
+            app_id=os.getenv('XF_APP_ID', ''),  # 替换为你的应用ID
+            api_key=os.getenv('XF_API_KEY', ''),  # 替换为你的API密钥
+            api_secret=os.getenv('XF_API_SECRET', ''),  # 替换为你的API密钥
             dwa="wpgs"
         )
 
@@ -81,9 +81,16 @@ def microphone_stream():
                             input=True,
                             frames_per_buffer=1280)
 
+        # 收集最终定稿文本（rst == 'rlt' 的分块，'pgs' 为过程草稿忽略）
+        final_words = []
+
         def run():
             for chunk in client.stream(mic_stream):
                 logger.info(f"返回结果: {chunk}")
+                if chunk.get('result', {}).get('rst') == 'rlt':
+                    final_words.extend(extract_words(chunk))
+            # 所有流式结果输出完毕后，输出完整结果
+            print(f"\n完整听写结果: {''.join(final_words)}")
 
         thread = threading.Thread(target=run)
         thread.start()
@@ -91,6 +98,7 @@ def microphone_stream():
         time.sleep(2)
         input("正在聆听，按回车结束转写...\r\n")
         p.terminate()
+        thread.join(timeout=5)  # 等待流结束，确保完整结果已输出
     except Exception as e:
         logger.error(f"生成音频失败: {str(e)}")
         raise
@@ -98,5 +106,6 @@ def microphone_stream():
 
 if __name__ == "__main__":
     # 可以选择运行非流式或流式生成
-    stream()  # 流式生成
-    # microphone_stream()  # 麦克风采集
+    # stream()  # 流式生成
+    microphone_stream()
+      # 麦克风采集

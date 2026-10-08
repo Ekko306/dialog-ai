@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="coach-reply-subgraph" name="coach_reply">
-        <mxGraphModel dx="680" dy="544" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="749" dy="650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1169" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -14,7 +14,7 @@
                     <mxGeometry x="520" y="80" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="write_state" value="coach_llm_node回复教练&lt;br&gt;输入：messages&lt;br&gt;输出：messages&lt;br&gt;recommends_msgs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="480" y="240" width="200" height="100" as="geometry"/>
+                    <mxGeometry x="480" y="300" width="200" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="end" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="520" y="580" width="120" height="40" as="geometry"/>
