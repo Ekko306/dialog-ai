@@ -17,13 +17,13 @@ from src.talk_agent.subgraphs.polisher_subgraph import polisher_subgraph  # noqa
 
 from src.talk_agent.subgraphs.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
 from typing import Literal  # noqa: E402
-from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import xfyun_iat_tool
+from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import xfyun_iat_tool_by_mic
 
 
 def xfyun_ita_tool_node(state:OverAllState) -> OverAllState:
-    res = xfyun_iat_tool()
+    text, _audio = xfyun_iat_tool_by_mic()  # audio 为录音 PCM 字节，暂不放入 state
     return {
-        "raw_text": res
+        "raw_text": text
     }
 
 

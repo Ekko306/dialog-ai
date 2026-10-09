@@ -1,6 +1,15 @@
-from langgraph.graph import StateGraph,START,END
+import sys
+from pathlib import Path
 
-from src.talk_agent.state import SubgraphState
+# 兼容直接运行本文件：把 backend 目录加入 sys.path，使 src.* 绝对导入可用；
+# langgraph dev / uv run 下 backend 本就在 sys.path，无副作用
+_BACKEND_DIR = Path(__file__).resolve().parents[3]  # subgraphs 比 graph.py 深一层
+if str(_BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(_BACKEND_DIR))
+
+from langgraph.graph import StateGraph,START,END  # noqa: E402
+
+from src.talk_agent.state import SubgraphState  # noqa: E402
 
 
 #1.2 声明子图的节点
@@ -17,3 +26,8 @@ builder.add_edge(START,"grammar_tutor_node")
 builder.add_edge("grammar_tutor_node",END)
 
 grammer_tutor_subgraph = builder.compile()
+
+if __name__ == "__main__":
+    # res = graph.invoke({"raw_text": "error"})
+    res = grammer_tutor_subgraph.invoke({})
+    print(res)

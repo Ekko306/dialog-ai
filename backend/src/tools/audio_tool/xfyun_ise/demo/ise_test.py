@@ -3,6 +3,7 @@ Ise Client Usage Example
 语音评测
 """
 import os
+import io
 import base64
 from xfyunsdkspeech.ise_client import IseClient
 import logging
@@ -19,8 +20,14 @@ except ImportError:
 load_dotenv()
 
 
-def stream():
-    """非流式生成音频示例"""
+def stream(audio_data=None, answer_text="今天天气怎么样"):
+    """语音评测：对一段音频按答案文本评分。
+
+    audio_data  —— 评测音频：raw PCM 字节（16kHz/16bit/单声道），如 xfyun_iat_tool
+                   返回的第二个值；传 None 时回退读本目录 resources 下的演示音频
+    answer_text —— 评测答案文本（题目）
+    返回完整评测 XML 结果字符串
+    """
     try:
         # 初始化客户端
         client = IseClient(
@@ -32,17 +39,23 @@ def stream():
             ent="cn_vip",
             category="read_sentence",
         )
-        file_path = os.path.join(os.path.dirname(__file__), 'resources', 'read_sentence_cn.pcm')
-        f = open(file_path, 'rb')
+        if audio_data is None:
+            file_path = os.path.join(os.path.dirname(__file__), 'resources', 'read_sentence_cn.pcm')
+            f = open(file_path, 'rb')
+        else:
+            f = io.BytesIO(audio_data)  # 内存音频包装成文件对象，与 IAT 录音格式一致，无需转码
 
-        for chunk in client.stream('\uFEFF' + "今天天气怎么样", f):
+        xml_result = ""
+        for chunk in client.stream('\uFEFF' + answer_text, f):
             if chunk["data"]:
                 result = str(base64.b64decode(chunk["data"]), 'utf-8')
                 logger.info(f"返回结果: {result}")
+                xml_result += result
             else:
                 logger.info(f"返回结果: {chunk}")
+        return xml_result
     except Exception as e:
-        logger.error(f"生成音频失败: {str(e)}")
+        logger.error(f"评测失败: {str(e)}")
         raise
 
 
