@@ -11,8 +11,15 @@ from langgraph.graph import StateGraph,START,END  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
 
+# 输入音频
+# 1. 测试通过文件
+# 2. 开发环境通过主节点传递音频变量
+def get_audio_node():
+    pass
 
-#1.2 声明子图的节点
+
+# 1. 先调用ise
+# 2. 再调用llm+prompt评判
 def grammar_check_node(state:SubgraphState) -> SubgraphState:
     raw_text = state.get("raw_text", "")
     new_state: SubgraphState = {

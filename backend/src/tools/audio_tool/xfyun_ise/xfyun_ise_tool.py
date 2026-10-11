@@ -35,13 +35,16 @@ except ImportError:
 load_dotenv()
 
 
-def _create_client():
-    """创建讯飞评测客户端（read_sentence 句子朗读评测）"""
+def _create_client(aue="raw"):
+    """创建讯飞评测客户端（read_sentence 句子朗读评测）
+
+    aue —— 音频格式声明：raw=裸PCM，lame=MP3；需与实际音频格式一致
+    """
     return IseClient(
         app_id=os.getenv('XF_APP_ID', ''),
         api_key=os.getenv('XF_API_KEY', ''),
         api_secret=os.getenv('XF_API_SECRET', ''),
-        aue="raw",
+        aue=aue,
         group="pupil",
         ent="cn_vip",
         category="read_sentence",
@@ -113,8 +116,12 @@ def xfyun_ise_tool_by_audio_data(audio_data, answer_text="今天天气怎么样"
 # 输入：本地音频文件的电脑路径
 # 输出：评测结果XML
 def xfyun_ise_tool_by_audio_file(audio_file_path, answer_text="今天天气怎么样") -> str:
-    """入口 3：本地音频文件评测（文件不存在时由 open 抛 FileNotFoundError）"""
-    client = _create_client()
+    """入口 3：本地音频文件评测（文件不存在时由 open 抛 FileNotFoundError）
+
+    按扩展名声明音频格式（aue）：.mp3 -> lame，其余(.pcm/.raw) -> raw
+    """
+    aue = "lame" if Path(audio_file_path).suffix.lower() == ".mp3" else "raw"
+    client = _create_client(aue=aue)
     with open(audio_file_path, 'rb') as f:
         return _evaluate(client, answer_text, f)
 
@@ -122,11 +129,11 @@ def xfyun_ise_tool_by_audio_file(audio_file_path, answer_text="今天天气怎�
 if __name__ == "__main__":
     # 演示：用 demo 自带的朗读音频评测
     # Windows 路径若手写必须用 r'' 原始字符串，否则 \x 会报 SyntaxError
-    # demo_pcm = os.path.join(os.path.dirname(__file__), 'demo', 'resources', 'read_sentence_cn.pcm')
-    # xml = xfyun_ise_tool_by_audio_file(demo_pcm, answer_text="今天天气怎么样")
-    # print(xml)
+    demo_pcm = os.path.join(os.path.dirname(__file__), 'demo', 'resources', 'read_sentence_cn.pcm')
+    xml = xfyun_ise_tool_by_audio_file(demo_pcm, answer_text="今天天气怎么样")
+    print(xml)
 
 
-    xml, audio = xfyun_ise_tool_by_mic(answer_text="今天天气怎么样")  # 注意解包二元组
-    print(f"\n===== 评测结果 XML =====\n{xml}")
-    print(f"===== 录音大小: {len(audio)} 字节 =====")
+    # xml, audio = xfyun_ise_tool_by_mic(answer_text="今天天气怎么样")  # 注意解包二元组
+    # print(f"\n===== 评测结果 XML =====\n{xml}")
+    # print(f"===== 录音大小: {len(audio)} 字节 =====")
