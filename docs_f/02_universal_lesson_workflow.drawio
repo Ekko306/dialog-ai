@@ -1,0 +1,296 @@
+<mxfile host="app.diagrams.net">
+    <diagram id="universal-lesson-workflow" name="Universal Lesson Workflow">
+        <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1640" pageHeight="2650" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="Universal Lesson Workflow" style="text;html=1;align=center;fontSize=24;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="15" width="600" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="LangGraph Graph API · 通用课程执行流程 · 配置驱动模块复用" style="text;html=1;align=center;fontSize=13;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="55" width="800" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="start" value="START&#10;课时开始" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="90" width="160" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="load" value="load_lesson_context&#10;输入 lesson_id → 读取课程配置&#10;输出 lesson_config / lesson_type / enabled_modules" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="670" y="185" width="280" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="init" value="init_lesson_state&#10;初始化运行状态 · 模块执行位置&#10;练习进度 / 重试计数 / 完成标志" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="305" width="240" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="r_scene" value="启用场景导入？&#10;enabled_modules.scene" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="420" width="180" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="scene_intro" value="scene_intro（可选模块）&#10;显示课程场景 · 解释学习情境" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="550" width="240" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="r_knowledge" value="启用知识讲解？&#10;enabled_modules.knowledge" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="660" width="180" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="teach_knowledge" value="teach_knowledge（可选模块）&#10;展示预维护知识点 · 更新 current_stage" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="790" width="240" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="r_exercise" value="启用练习？&#10;enabled_modules.exercise" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="900" width="180" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="exC" value="Exercise Subgraph 练习子图（可复用 · 独立 compile 后挂载）" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontStyle=1;fontSize=13;fillColor=#E1D5E7;strokeColor=#9673A6;arcSize=4;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="1030" width="440" height="430" as="geometry"/>
+                </mxCell>
+                <mxCell id="pq" value="呈现题目 present_question" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="1070" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="wa2" value="等待用户文本答案&#10;interrupt() 暂停执行" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="1160" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="eva" value="[Agent] Exercise Evaluation Agent&#10;练习答案评价（结构化输出）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;" parent="1" vertex="1">
+                    <mxGeometry x="750" y="1265" width="220" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="rex" value="条件路由&#10;通过 / 重试 / 兜底" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;" parent="1" vertex="1">
+                    <mxGeometry x="770" y="1360" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="r_roleplay" value="启用角色扮演？&#10;enabled_modules.roleplay" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="1510" width="180" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="rpC" value="Roleplay Subgraph 角色扮演子图（可复用 · 多轮 Agent Loop）" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontStyle=1;fontSize=13;fillColor=#E1D5E7;strokeColor=#9673A6;arcSize=4;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="1640" width="440" height="430" as="geometry"/>
+                </mxCell>
+                <mxCell id="enter" value="进入角色 / 建立场景" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="1680" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ra2" value="[Agent] Roleplay Agent&#10;情景对话推进（只演不评）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;" parent="1" vertex="1">
+                    <mxGeometry x="750" y="1775" width="220" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="wu2" value="等待用户文本回复&#10;interrupt() 暂停执行" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="760" y="1870" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="rrp" value="判断学习目标&#10;task_completed?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;" parent="1" vertex="1">
+                    <mxGeometry x="770" y="1970" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="summary" value="lesson_summary&#10;汇总完成状态 / 练习结果 / 角色扮演结果（若启用）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="2120" width="240" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="save" value="save_progress&#10;保存完成状态 · 练习结果 · 学习记录" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="2235" width="240" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="endN" value="END&#10;课时完成" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="2355" width="160" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="gstate" value="Graph State 图状态 · LessonState（所有 Node / Subgraph 读写）&#10;&#10;· lesson_config 课程配置&#10;· current_stage 当前阶段&#10;· current_question 当前练习&#10;· user_answer 用户回答&#10;· evaluation 评价结果&#10;· retry_count 重试计数&#10;· roleplay_history 对话历史&#10;· lesson_completed 完成状态&#10;&#10;身份 / 鉴权 / 模型配置 → Runtime Context" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;spacingTop=6;fontSize=12;fillColor=#D5E8D4;strokeColor=#82B366;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1030" width="420" height="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="ckpt" value="Checkpoint / Persistence 持久化检查点&#10;执行状态快照 · Checkpointer · thread_id&#10;暂停恢复 / 断点续学" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#D5E8D4;strokeColor=#82B366;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1360" width="420" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="rctx" value="Runtime Context 运行上下文（不可变）&#10;user_id / 鉴权 / llm 模型 / rubric 评分标准&#10;经 context_schema 注入 · 不进 Graph State" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;fontSize=12;fillColor=#D5E8D4;strokeColor=#82B366;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1555" width="420" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="relC" value="可靠性策略 Reliability（公共机制）" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontStyle=1;fontSize=13;fillColor=#F5F5F5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="1730" width="420" height="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="rb1" value="正常学习循环（非故障）&#10;用户答错 → 评价反馈 → 用户重答&#10;达到最大次数 → 参考答案 + 讲解 → 继续" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=12;fillColor=#FFFFFF;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="1780" width="380" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="rb2" value="系统异常处理&#10;LLM / Tool 失败 → Retry → 仍失败 → Fallback&#10;（规则模板兜底 / 降级继续流程）" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=12;fillColor=#FFFFFF;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="1895" width="380" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="rb3" value="原则：用户答错 ≠ 系统故障&#10;用户重答环 与 API 重试 分开，不画同一路径" style="text;html=1;align=left;fontSize=12;fontStyle=1;fontColor=#B85450;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="2005" width="380" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="future" value="未来扩展（不在当前主流程）&#10;speech_to_text 语音识别 · pronunciation_assessment 发音评价&#10;语音版恢复时替换打字比对环节" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;fontColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="2100" width="420" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="interC" value="用户交互机制 · 执行服务层（非业务 Agent）" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontStyle=1;fontSize=13;fillColor=#F5F5F5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1150" y="1030" width="440" height="430" as="geometry"/>
+                </mxCell>
+                <mxCell id="gw" value="Graph Gateway · 服务层桥梁（非业务 Agent）&#10;接收前端提交的文本输入&#10;转换为 Command(resume=用户输入) 驱动图继续" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=12;fillColor=#FFFFFF;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="1070" width="400" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="i1" value="interrupt()：子图内暂停执行，等待用户提交文本" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=12;fillColor=#FFFFFF;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="1180" width="400" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="i2" value="Checkpointer：暂停时自动保存状态快照" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=12;fillColor=#FFFFFF;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="1260" width="400" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="i3" value="thread_id = {user_id}:{lesson_id}&#10;同一学习会话标识 · 暂停恢复 / 断点续学" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=8;fontSize=12;fillColor=#FFFFFF;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1170" y="1340" width="400" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="toolC" value="Tool / Data 层（虚线 = 调用 / 读写）" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontStyle=1;fontSize=13;fillColor=#F5F5F5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="1150" y="1690" width="440" height="560" as="geometry"/>
+                </mxCell>
+                <mxCell id="t1" value="load_lesson_config&#10;读取课程配置（MVP: lesson.json / DB）" style="shape=hexagon;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;size=0.18;" parent="1" vertex="1">
+                    <mxGeometry x="1180" y="1740" width="380" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="t2" value="save_learning_record&#10;保存学习记录" style="shape=hexagon;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;size=0.18;" parent="1" vertex="1">
+                    <mxGeometry x="1180" y="1845" width="380" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="t3" value="get_user_profile&#10;读取用户画像（未来扩展）" style="shape=hexagon;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;fontColor=#666666;size=0.18;" parent="1" vertex="1">
+                    <mxGeometry x="1180" y="1950" width="380" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="pdb" value="progress_database&#10;学习记录库" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#D5E8D4;strokeColor=#82B366;" parent="1" vertex="1">
+                    <mxGeometry x="1260" y="2060" width="220" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend" value="图例 Legend" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontStyle=1;fontSize=13;fillColor=#FFFFFF;strokeColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="2460" width="1560" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg1" value="形状：矩形 = 普通 Node　·　蓝色圆角矩形 = Agent（LLM · 结构化输出）　·　紫色大容器 = Subgraph　·　橙色菱形 = Conditional Router　·　黄色六边形 = Tool　·　绿色圆柱 = 持久化存储　·　绿色圆角矩形 = Graph State / Memory　·　灰色虚线框 = 未来扩展" style="text;html=1;align=left;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="2495" width="1520" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg2" value="连线：实线 = 主要控制流　·　虚线 = Tool 调用 / 数据读写 / 持久化　·　带标签箭头（yes · enabled / no · skip） = Conditional Routing　·　回环 = 多轮 / 重试循环" style="text;html=1;align=left;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="2530" width="1520" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="lg3" value="说明：每个菱形对应代码中一个 add_conditional_edges(...)；skip 路径直接连接下一个模块路由，不存在断链；本图为通用课时模板，具体题目 / 对话内容留到课程数据与子图详细设计。" style="text;html=1;align=left;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="2565" width="1520" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="m1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="start" target="load" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="load" target="init" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="init" target="r_scene" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m4" value="yes · enabled" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="r_scene" target="scene_intro" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="scene_intro" target="r_knowledge" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m6" value="yes · enabled" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="r_knowledge" target="teach_knowledge" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="teach_knowledge" target="r_exercise" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m8" value="yes · enabled" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.39;entryY=0;entryDx=0;entryDy=0;" parent="1" source="r_exercise" target="exC" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m9" value="yes · enabled" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.39;entryY=0;entryDx=0;entryDy=0;" parent="1" source="r_roleplay" target="rpC" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="summary" target="save" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="m11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="save" target="endN" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="s1" value="no · skip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;fontStyle=2;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="r_scene" target="r_knowledge" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1060" y="460"/>
+                            <mxPoint x="1060" y="700"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="s2" value="no · skip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;fontStyle=2;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="r_knowledge" target="r_exercise" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1085" y="700"/>
+                            <mxPoint x="1085" y="940"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="s3" value="no · skip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;fontStyle=2;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="r_exercise" target="r_roleplay" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1105" y="940"/>
+                            <mxPoint x="1105" y="1550"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="s4" value="no · skip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;fontStyle=2;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="r_roleplay" target="summary" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1095" y="1550"/>
+                            <mxPoint x="1095" y="2152"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="pq" target="wa2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="wa2" target="eva" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="eva" target="rex" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="loop1" value="答错 → 反馈 → 重答（retry_count &lt; max，课程配置控制）" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="rex" target="wa2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="700" y="1395"/>
+                            <mxPoint x="700" y="1190"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="adv" value="通过 / 兜底（参考答案 + 讲解）→ advance" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="rex" target="r_roleplay" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="860" y="1485"/>
+                            <mxPoint x="810" y="1485"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="enter" target="ra2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="ra2" target="wu2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="a6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="wu2" target="rrp" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="loop2" value="未完成 → 优化表达 → 继续对话（rounds &lt; max）" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="rrp" target="ra2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="700" y="2005"/>
+                            <mxPoint x="700" y="1802"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="fin" value="完成角色扮演 / 达到上限 → finish" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="rrp" target="summary" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="860" y="2095"/>
+                            <mxPoint x="810" y="2095"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="d1" value="所有 Node / Subgraph 读 / 写 State" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#7F7F7F;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.35;entryDx=0;entryDy=0;" parent="1" source="gstate" target="exC" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="d2" value="快照保存 / 恢复读取" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#7F7F7F;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gstate" target="ckpt" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="d3" value="interrupt 暂停保存 · Command(resume) 恢复" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#7F7F7F;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.12;entryDx=0;entryDy=0;" parent="1" source="ckpt" target="rpC" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="580" y="1435"/>
+                            <mxPoint x="580" y="1692"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="d4" value="写入" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#7F7F7F;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="t2" target="pdb" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="d5" value="读取课程配置" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#7F7F7F;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="load" target="t1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1620" y="220"/>
+                            <mxPoint x="1620" y="1770"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="d6" value="写入学习记录" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#7F7F7F;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="save" target="t2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1620" y="2265"/>
+                            <mxPoint x="1620" y="1875"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

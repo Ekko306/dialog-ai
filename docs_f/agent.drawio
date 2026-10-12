@@ -1,0 +1,372 @@
+<mxfile host="65bd71144e">
+    <diagram id="ynB_Al3Fe7WrVzf1dKQr" name="第 1 页">
+        <mxGraphModel dx="641" dy="325" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1400" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="t" value="lesson_graph 主图 · LangGraph 规范" style="text;html=1;fontSize=20;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="20" width="420" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="n1" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="70" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n2" value="load_lesson_context" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="170" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n3" value="present_scene" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="260" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n4" value="present_target_sentence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="350" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n5" value="user_type_sentence&#10;(interrupt)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="440" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n6" value="check_typed_sentence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="530" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n7" value="teach_knowledge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="640" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n8" value="exercise_subgraph&#10;(见第2页)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="730" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n9" value="roleplay_subgraph&#10;(见第3页)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="820" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n10" value="lesson_summary" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="910" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n11" value="update_progress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="1000" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n12" value="finalize_lesson" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="1090" width="200" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n13" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="1180" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="n14" value="error_handler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="170" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n1" target="n2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n2" target="n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n3" target="n4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n4" target="n5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n5" target="n6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e6" value="不匹配且&lt;2次" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="n6" target="n5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e7" value="通过/超限放行" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n6" target="n7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n7" target="n8" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n8" target="n9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n9" target="n10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n10" target="n11" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n11" target="n12" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="n12" target="n13" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e14" value="课程库失败(不重试)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="n2" target="n14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0.5;exitY=1;entryX=1;entryY=0.5;" parent="1" source="n14" target="n13" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="b1" value="&lt;b&gt;输入 / 输出 Schema&lt;/b&gt;&lt;br&gt;________________&lt;br&gt;in: user_id, course_id,&lt;br&gt;chapter_id, lesson_id&lt;br&gt;out: lesson_completed,&lt;br&gt;summary, progress&lt;br&gt;State: LessonState(TypedDict)&lt;br&gt;checkpoint: thread_id =&lt;br&gt;{user_id}:{lesson_id}" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;align=left;verticalAlign=top;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="170" width="280" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="b2" value="&lt;b&gt;节点职责（与代码对应）&lt;/b&gt;&lt;br&gt;________________&lt;br&gt;load_input: 查课程库(lesson.json)&lt;br&gt;present_*: 固定内容展示&lt;br&gt;user_type_sentence: interrupt 等输入&lt;br&gt;check: 归一化比对≥0.9放行&lt;br&gt;update_progress: 写库, 失败降级暂存" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;align=left;verticalAlign=top;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="450" width="280" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="b3" value="&lt;b&gt;Loop / 兜底约束&lt;/b&gt;&lt;br&gt;________________&lt;br&gt;跟读重试环: MAX 2 次&lt;br&gt;error_handler: 统一异常出口&lt;br&gt;保证图永远可终止" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;align=left;verticalAlign=top;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="730" width="280" height="160" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="mLsRZf8afsJrFaUFBcDp" name="第 2 页">
+        <mxGraphModel dx="628" dy="621" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="ex_t" value="exercise_subgraph · Evaluator-Optimizer 模式" style="text;html=1;fontSize=18;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="20" width="440" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_s" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="70" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_n1" value="init_exercise&#10;(读课时题目列表)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="160" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_n2" value="generate_question" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="250" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_n3" value="wait_user_answer&#10;(interrupt)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="340" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_n4" value="evaluate_answer&#10;(AnswerEvaluator·见第4页)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="430" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_n5" value="generate_feedback&#10;(错误反馈)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="430" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_n6" value="advance_or_finish&#10;(条件路由)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="540" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="650" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ex_s" target="ex_n1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ex_n1" target="ex_n2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ex_n2" target="ex_n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ex_n3" target="ex_n4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e5" value="答对" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;" parent="1" source="ex_n4" target="ex_n6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e6" value="答错" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="ex_n4" target="ex_n5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e7" value="重答(每题≤2次)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" parent="1" source="ex_n5" target="ex_n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e8" value="还有题目(循环)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="ex_n6" target="ex_n2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_e9" value="全部完成" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ex_n6" target="ex_e" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_b1" value="&lt;b&gt;State 要点&lt;/b&gt;&lt;br&gt;________________&lt;br&gt;question_idx: 当前题号&lt;br&gt;question_retry: 每题重试≤2&lt;br&gt;expected_answer / user_answer&lt;br&gt;verdict: correct|incorrect&lt;br&gt;feedback: 反馈文本(写回主State)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;align=left;verticalAlign=top;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="250" width="300" height="180" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="V2pI8Z0T0k-Bz6waWfle" name="第 3 页">
+        <mxGraphModel dx="628" dy="621" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="rp_t" value="roleplay_subgraph · 情景对话循环" style="text;html=1;fontSize=18;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="20" width="400" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_s" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="70" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_n1" value="enter_roleplay\n(载入场景/角色设定)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="160" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_n2" value="ai_speak\n(AI扮演角色发言)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="250" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_n3" value="wait_user_response&#10;(interrupt)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="340" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_n4" value="evaluate_roleplay&#10;(RoleplayEvaluator·见第5页)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="430" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_n5" value="generate_natural_expression\n(优化后的自然表达)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="560" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="670" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="rp_s" target="rp_n1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="rp_n1" target="rp_n2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="rp_n2" target="rp_n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="rp_n3" target="rp_n4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e5" value="任务未完成·continue\n(回合≤6)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="rp_n4" target="rp_n2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e6" value="任务完成·finish" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;" parent="1" source="rp_n4" target="rp_n5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="rp_n5" target="rp_e" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="rp_b1" value="&lt;b&gt;State 要点&lt;/b&gt;&lt;br&gt;________________&lt;br&gt;roleplay_scene / task_goal&lt;br&gt;dialog_history: List[Message]&lt;br&gt;turn_count: 回合数(上限6)&lt;br&gt;task_done: bool(路由依据)&lt;br&gt;optimized_expression: 优化表达&lt;br&gt;LLM兜底: 超回合强制finish" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;align=left;verticalAlign=top;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="250" width="300" height="200" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="yg-MW6iNIQKrBRVg8rFQ" name="第 4 页">
+        <mxGraphModel dx="628" dy="621" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="ae_t" value="AnswerEvaluator · 实现级（含 Retry / Fallback）" style="text;html=1;fontSize=18;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="20" width="480" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_s" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="70" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_n1" value="load_input&#10;(expected_answer, user_answer)&#10;+ few-shot 示例" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="160" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_n2" value="build_prompt&#10;(评判标准+输出JSON Schema)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="260" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_n3" value="llm_call&#10;(结构化输出)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="360" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_n4" value="validate_output&#10;(解析+Schema校验)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="450" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_n5" value="retry_llm&#10;(retry+1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="450" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_n6" value="fallback_rule&#10;(规则比对兜底)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="580" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_n7" value="write_state&#10;(verdict, feedback,&#10;natural_answer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="580" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="690" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ae_s" target="ae_n1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ae_n1" target="ae_n2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ae_n2" target="ae_n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ae_n3" target="ae_n4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e5" value="解析成功" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;" parent="1" source="ae_n4" target="ae_n7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e6" value="解析失败且retry&lt;2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="ae_n4" target="ae_n5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" source="ae_n5" target="ae_n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e8" value="解析失败且retry≥2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0.5;entryY=0;" parent="1" source="ae_n4" target="ae_n6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" parent="1" source="ae_n6" target="ae_n7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="ae_n7" target="ae_e" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="ae_b1" value="&lt;b&gt;输出结构&lt;/b&gt;&lt;br&gt;________________&lt;br&gt;{ verdict: correct|incorrect,&lt;br&gt;feedback: str,&lt;br&gt;natural_answer: str }&lt;br&gt;llm_call 超时/异常也走 retry；&lt;br&gt;两法均败则 verdict=incorrect&lt;br&gt;+ 提示用户再试一次" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;align=left;verticalAlign=top;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="360" width="300" height="200" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="zCGOrX2o7KpOFA-YNFRe" name="第 5 页">
+        <mxGraphModel dx="628" dy="621" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="re_t" value="RoleplayEvaluator · 实现级（含 Retry / Fallback）" style="text;html=1;fontSize=18;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="20" width="480" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_s" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="70" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_n1" value="load_input&#10;(dialog_history, task_goal,&#10;turn_count)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="160" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_n2" value="build_prompt&#10;(角色上下文+任务目标&#10;+输出JSON Schema)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="260" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_n3" value="llm_call&#10;(结构化输出)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="360" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_n4" value="validate_output&#10;(解析+Schema校验)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="450" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_n5" value="retry_llm&#10;(retry+1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="450" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_n6" value="fallback_rule&#10;(默认continue+简单反馈,&#10;超回合强制finish)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="580" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_n7" value="write_state&#10;(task_done, reply,&#10;optimized_expression, feedback)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="600" y="580" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9673A6;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="690" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="re_s" target="re_n1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="re_n1" target="re_n2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="re_n2" target="re_n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="re_n3" target="re_n4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e5" value="解析成功" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;" parent="1" source="re_n4" target="re_n7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e6" value="解析失败且retry&lt;2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="re_n4" target="re_n5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" source="re_n5" target="re_n3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e8" value="解析失败且retry≥2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=1;exitY=0.5;entryX=0.5;entryY=0;" parent="1" source="re_n4" target="re_n6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" parent="1" source="re_n6" target="re_n7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" parent="1" source="re_n7" target="re_e" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="re_b1" value="&lt;b&gt;输出结构&lt;/b&gt;&lt;br&gt;________________&lt;br&gt;{ task_done: bool,&lt;br&gt;reply: str(AI下轮发言),&lt;br&gt;optimized_expression: str,&lt;br&gt;feedback: str }&lt;br&gt;兜底策略: LLM不可用时&lt;br&gt;默认continue；turn_count≥6&lt;br&gt;强制task_done=true" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;align=left;verticalAlign=top;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="160" y="360" width="300" height="220" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
