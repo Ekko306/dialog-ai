@@ -1,12 +1,16 @@
 from typing import Annotated, TypedDict
 
 from operator import add
+from langgraph.graph import MessagesState, StateGraph,START,END
 
 
-class OverAllState(TypedDict, total=False):
+
+class OverAllState(MessagesState, total=False):
     raw_text: str  # 未清洗的文本
 
-    # 逻辑类
+    
+    # 走分支类状态 （#todo ，改成Command?）
+    user_input: str
     has_issue: bool
 
     # 日志类
@@ -17,7 +21,7 @@ class OverAllState(TypedDict, total=False):
     logger: list[str]
 
 
-class SubgraphState(TypedDict, total=False):
+class SubgraphState(MessagesState, total=False):
     """子图 schema：logger 挂 add reducer，在子图内部累积。
 
     机制：子图作为节点挂载时，父图把共享 key 的当前值喂给子图，
