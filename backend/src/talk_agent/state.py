@@ -13,6 +13,14 @@ class OverAllState(MessagesState, total=False):
     user_input: str
     has_issue: bool
 
+    # 语法辅导（grammar_check → grammer_tutor 的契约字段）
+    issues: list[str]  # 上游 grammar_check 输出的错误列表
+    tutor_reply: str  # grammer_tutor 输出的纠错讲解
+    check_results: dict  # 上游 LLM 解析 XML 后的结构化清单（语法错误 + 发音问题）
+    corrections: list  # grammer_tutor 输出：修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
+    tutor_audio: bytes  # grammer_tutor 输出：正确句的美式发音 MP3（供前端播放示范跟读）
+    raw_audio: bytes  # grammer_tutor 输出：用户原句的美式发音 MP3（供前端对照播放原句）
+
     # 日志类
     talk_ids: Annotated[list[str], add]  # 对话id，某次图执行
     cur_talk_id: str  # 当前对话id
@@ -37,6 +45,14 @@ class SubgraphState(MessagesState, total=False):
 
     # 逻辑类
     has_issue: bool
+
+    # 语法辅导（grammar_check → grammer_tutor → coach_reply 的契约字段）
+    issues: list[str]  # 上游 grammar_check 输出的错误列表
+    tutor_reply: str  # grammer_tutor 输出的纠错讲解
+    check_results: dict  # 上游 LLM 解析 XML 后的结构化清单（语法错误 + 发音问题）
+    corrections: list  # grammer_tutor 输出：修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
+    tutor_audio: bytes  # grammer_tutor 输出：正确句的美式发音 MP3（供前端播放示范跟读）
+    raw_audio: bytes  # grammer_tutor 输出：用户原句的美式发音 MP3（供前端对照播放原句）
 
     # 日志类（add：累积之前的日志 + 本次新增，输出完整列表）
     logger: Annotated[list[str], add]
