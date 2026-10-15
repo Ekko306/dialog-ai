@@ -1,11 +1,14 @@
 from typing import Annotated, TypedDict
 
 from operator import add
+from langgraph.graph import MessagesState, StateGraph,START,END
 
 
-class OverAllState(TypedDict, total=False):
+
+class OverAllState(MessagesState, total=False):
     raw_text: str  # 未清洗的文本
 
+<<<<<<< HEAD
     # 语音链路（IAT/ISE）
     iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
     audio_data: bytes  # 麦克风录音 PCM（ita 节点存入，ISE 节点消费，一次录音两份产出）
@@ -18,6 +21,11 @@ class OverAllState(TypedDict, total=False):
     ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[{word,score,comment}], "advice": str}
 
     # 逻辑类
+=======
+    
+    # 走分支类状态 （#todo ，改成Command?）
+    user_input: str
+>>>>>>> origin/main
     has_issue: bool
 
     # grammar_check 子图输出契约（子图 key 必须在父图 schema 声明，否则状态合并失败）
@@ -35,7 +43,7 @@ class OverAllState(TypedDict, total=False):
     grammar_check_logs: list[str]
 
 
-class SubgraphState(TypedDict, total=False):
+class SubgraphState(MessagesState, total=False):
     """子图 schema：logger 挂 add reducer，在子图内部累积。
 
     机制：子图作为节点挂载时，父图把共享 key 的当前值喂给子图，

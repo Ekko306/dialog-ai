@@ -19,14 +19,18 @@ from src.talk_agent.subgraphs.coach_context import (  # noqa: E402
     resolve_context,
     save_context,
 )
+from src.llm_models.anthropic_model import model
+from langchain_core.messages import HumanMessage
 
 
 #1.1 主节点：每次对话必经 —— 解析本次生效的 context 并写回 Store（下次对话沿用）
 def coach_reply_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> SubgraphState:
     role, scenario, source = resolve_context(runtime.context, runtime.store)
     save_context(runtime.store, role, scenario)
+    # res = model.invoke([HumanMessage("你好,我是老王")])
     return {
-        "logger": [f"coach_reply_node执行完毕（role={role}, scenario={scenario}, 来源:{source}）"]
+        "logger": [f"coach_reply_node执行完毕（role={role}, scenario={scenario}, 来源:{source}）"],
+        # "messages": [res]
     }
 
 

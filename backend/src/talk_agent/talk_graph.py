@@ -19,6 +19,7 @@ from src.talk_agent.subgraphs.polisher_subgraph import polisher_subgraph  # noqa
 
 from src.talk_agent.subgraphs.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
 from typing import Literal  # noqa: E402
+<<<<<<< HEAD:backend/src/talk_agent/graph.py
 from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
     xfyun_iat_tool_by_mic,
     xfyun_iat_tool_by_audio_data,
@@ -163,18 +164,100 @@ def my_route(state: OverAllState) -> Literal["has_issue", "has_no_issue", "check
         return "check_failed"
 
     return "has_issue" if state.get("has_issue") else "has_no_issue"
+=======
+from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import xfyun_iat_tool_by_mic
+from langgraph.types import interrupt  # noqa: E402
+from src.tools.text_tool.scene_tool import new_scene_tool
+
+
+def tts_tool_node(state:OverAllState) -> OverAllState:
+    pass
+
+
+def HITL_node(state: OverAllState) -> OverAllState:
+    user_input = interrupt({"prompt": "请输入指令（输入 'context切换' 进入下一个教练场景）"})
+    return {
+        "user_input": user_input
+    }
+
+
+def HITL_route(state: OverAllState) -> Literal["new_context", "ita_audio"]:
+    user_input = state.get("user_input", "")
+    if "_new_context_" in user_input:
+        return "new_context"
+    else:
+        return "ita_audio"
+
+# new_context分支
+def new_context_node(state:OverAllState) -> OverAllState:
+    user_input = state.get("user_input", "")
+    # 1. 调用工具获取新场景
+    new_scene = new_scene_tool(user_input)
+    # 2. 保存到store
+    pass
+
+
+
+# ita_audio分支
+def xfyun_ita_tool_node(state:OverAllState) -> OverAllState:
+    text, _audio = xfyun_iat_tool_by_mic()  # audio 为录音 PCM 字节，暂不放入 state
+    return {
+        "raw_text": text
+    }
+
+# 定义自定义路由
+def has_issue_route(state: OverAllState) -> Literal["has_issue", "has_no_issue"]:
+    if state.get("has_issue", False):
+        return "has_issue"
+    else:
+        return "has_no_issue"
+>>>>>>> origin/main:backend/src/talk_agent/talk_graph.py
+
+
+# 定义节点
+parent_builder = StateGraph(state_schema=OverAllState)
+parent_builder.add_node("coach_reply_subgraph",coach_reply_subgraph)
+parent_builder.add_node("tts_tool_node", new_context_node)
+parent_builder.add_node("HITL_node", HITL_node)
+parent_builder.add_node("new_context_node", new_context_node)
+parent_builder.add_node("xfyun_ita_tool_node", xfyun_ita_tool_node)
+parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
+parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
+parent_builder.add_node("polisher_subgraph",polisher_subgraph)
+
 
 # 定义边
+<<<<<<< HEAD:backend/src/talk_agent/graph.py
 parent_builder.add_edge(START,"xfyun_ita_tool_node")
 parent_builder.add_edge("xfyun_ita_tool_node","xfyun_ise_tool_node")
 parent_builder.add_edge("xfyun_ise_tool_node","ise_analyze_node")
 parent_builder.add_edge("ise_analyze_node","grammar_check_subgraph")
 parent_builder.add_conditional_edges("grammar_check_subgraph", my_route, path_map={
+=======
+parent_builder.add_edge(START,"coach_reply_subgraph")
+parent_builder.add_edge("coach_reply_subgraph","tts_tool_node")
+parent_builder.add_edge("tts_tool_node","HITL_node")
+parent_builder.add_conditional_edges("HITL_node", HITL_route, path_map={
+    "new_context": "new_context_node",
+    "ita_audio": "xfyun_ita_tool_node",
+})
+
+# new_context分支
+parent_builder.add_edge("new_context_node",END)
+
+
+
+# ita_audio分支
+parent_builder.add_edge("xfyun_ita_tool_node","grammar_check_subgraph")
+parent_builder.add_conditional_edges("grammar_check_subgraph", has_issue_route, path_map={
+>>>>>>> origin/main:backend/src/talk_agent/talk_graph.py
     "has_issue": "grammer_tutor_subgraph",
     "has_no_issue": "polisher_subgraph",
     "check_failed": "grammar_check_fallback_node",
 })
+# has_issue分支
 parent_builder.add_edge("grammer_tutor_subgraph", "coach_reply_subgraph")
+# has_no_issue分支
 parent_builder.add_edge("polisher_subgraph", "coach_reply_subgraph")
 # 兜底分支同样汇入 coach_reply 统一产出本轮回复
 # （coach 端实现时可依据 grammar_check_status 生成失败提示话术）
