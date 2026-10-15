@@ -12,69 +12,73 @@ from langgraph.runtime import Runtime  # noqa: E402
 from langgraph.types import interrupt  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
-from src.talk_agent.subgraphs.coach_context import (  # noqa: E402
+from src.talk_agent.coach_context import (  # noqa: E402
+    CoachContext,
+)
+from src.llm_models.coach_model import (get_coach_model, NEW_DIALOG_START)
+from langchain_core.messages import HumanMessage
+from typing import Literal  # noqa: E402
+
+from src.talk_agent.coach_context import (  # noqa: E402
+    DEFAULT_ROLE,
     DEFAULT_SCENARIO,
     CoachContext,
-    mock_next_context,
-    resolve_context,
     save_context,
+    resolve_context,
 )
-from src.llm_models.anthropic_model import model
-from langchain_core.messages import HumanMessage
 
 
-#1.1 主节点：每次对话必经 —— 解析本次生效的 context 并写回 Store（下次对话沿用）
-def coach_reply_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> SubgraphState:
-    role, scenario, source = resolve_context(runtime.context, runtime.store)
-    save_context(runtime.store, role, scenario)
-    # res = model.invoke([HumanMessage("你好,我是老王")])
+# 1. 前端调用逻辑， 不用明显接触数据， 不直接在后端sdk调用方式修改， 
+# 直接通过interrput，给新的用户选择， 后端自己处理store的存储，然后新的下一次自己取读取新的store
+# （sdk也有方式直接修改store，但是不推荐）
+
+def is_new_dialog_route(state: SubgraphState) -> Literal["new_dialog", "continue_dialog"]:
+    if state.get("new_dialog", True): # 第一次是None，默认初始化
+        return "new_dialog"
+    else:
+        return "continue_dialog"
+
+# 将入参数据/store数据，存储到state，其他节点都使用state
+def continue_dialog_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> SubgraphState:
+    user_input = state.get("user_input") # 上一次的输入
+    # messages = state.get("messages")  # todo 检查是默认带 接着上下文，checkpointer
+    role = state.get("role", DEFAULT_ROLE)
+    scenario = state.get("scenario", DEFAULT_SCENARIO)
+
+    model = get_coach_model(role, scenario)
+    # 链入参是 dict：MessagesPlaceholder 变量名 -> 消息列表；不能传裸列表
+    res = model.invoke({"messages": [HumanMessage(user_input)]})
     return {
-        "logger": [f"coach_reply_node执行完毕（role={role}, scenario={scenario}, 来源:{source}）"],
-        # "messages": [res]
+        "logger": [f"continue_dialog_node执行完毕user_input={user_input}"],
+        "messages": [res]
     }
 
 
-#1.2 Human-in-the-loop 节点：interrupt 暂停等待用户输入。
-#    恢复时若文本含"context切换"，按轮换数组切换到下一个 context（写 Store）
-def context_gate_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> SubgraphState:
-    # interrupt 第一次执行到此处图挂起；用户 resume 提供文本后，节点从头重跑并拿到该文本
-    user_input = interrupt({"prompt": "请输入指令（输入 'context切换' 进入下一个教练场景）"})
+def new_dialog_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> SubgraphState:
+    role = state.get("role", DEFAULT_ROLE)
+    scenario = state.get("scenario", DEFAULT_SCENARIO)
 
-    if "context切换" not in str(user_input or ""):
-        return {"logger": ["context_gate_node: 未检测到切换指令，保持当前 context"]}
-
-    role, scenario, _ = resolve_context(runtime.context, runtime.store)
-    nxt = mock_next_context(role, scenario)
-    save_context(runtime.store, nxt.role, nxt.scenario)
+    model = get_coach_model(role, scenario)
+    res = model.invoke({"messages": [HumanMessage(NEW_DIALOG_START)]})
     return {
-        "logger": [f"context_gate_node: {role}/{scenario} → {nxt.role}/{nxt.scenario}（下次对话生效）"]
+        "logger": [f"new_dialog_node执行完毕（role={role}, scenario={scenario}"],
+        "messages": [res],
+        "new_dialog": False,
     }
-
-
-#1.3 例子节点：节点内主动修改 context —— 写 Store 后，下次对话就是新值
-def update_scenario_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> SubgraphState:
-    """模拟：对话中检测到话题切换 → 按轮换数组更新 context。
-    真实实现可把判定逻辑换成 LLM 结构化输出（如 Route 模式）。
-    为不干扰 context_gate_node 的切换结果，仅当 scenario 仍是默认值时演示自动切换。
-    """
-    role, scenario, _ = resolve_context(runtime.context, runtime.store)
-    nxt = mock_next_context(role, scenario)
-
-    if nxt.scenario != scenario and scenario == DEFAULT_SCENARIO:
-        save_context(runtime.store, nxt.role, nxt.scenario)
-        return {"logger": [f"update_scenario_node: {role}/{scenario} → {nxt.role}/{nxt.scenario}（下次对话生效）"]}
-    return {"logger": [f"update_scenario_node: scenario 无变化（仍为 {scenario}）"]}
 
 
 #1.4 构建子图
 builder = StateGraph(state_schema=SubgraphState, context_schema=CoachContext)
-builder.add_node("coach_reply_node", coach_reply_node)
-builder.add_node("context_gate_node", context_gate_node)
-builder.add_node("update_scenario_node", update_scenario_node)
+builder.add_node("continue_dialog_node", continue_dialog_node)
+builder.add_node("new_dialog_node", new_dialog_node)
 
 
-builder.add_edge(START, "coach_reply_node")
-builder.add_edge("coach_reply_node", "context_gate_node")
-builder.add_edge("context_gate_node", "update_scenario_node")
-builder.add_edge("update_scenario_node", END)
+# 必须用导入的 START 常量（值为 "__start__"），写字符串 "START" 会报 unknown node
+builder.add_conditional_edges(START, is_new_dialog_route, path_map={
+    "new_dialog": "new_dialog_node",
+    "continue_dialog": "continue_dialog_node",
+})
+
+builder.add_edge("continue_dialog_node", END)
+builder.add_edge("new_dialog_node", END)
 coach_reply_subgraph = builder.compile()
