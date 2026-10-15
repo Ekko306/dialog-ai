@@ -8,7 +8,6 @@ from langgraph.graph import MessagesState, StateGraph,START,END
 class OverAllState(MessagesState, total=False):
     raw_text: str  # 未清洗的文本
 
-<<<<<<< HEAD
     # 语音链路（IAT/ISE）
     iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
     audio_data: bytes  # 麦克风录音 PCM（ita 节点存入，ISE 节点消费，一次录音两份产出）
@@ -20,12 +19,10 @@ class OverAllState(MessagesState, total=False):
     ise_grade: float | None  # 评测总分（XML total_score 直取；is_rejected/解析失败时为 None）
     ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[{word,score,comment}], "advice": str}
 
-    # 逻辑类
-=======
-    
     # 走分支类状态 （#todo ，改成Command?）
     user_input: str
->>>>>>> origin/main
+
+    # 逻辑类
     has_issue: bool
 
     # grammar_check 子图输出契约（子图 key 必须在父图 schema 声明，否则状态合并失败）
