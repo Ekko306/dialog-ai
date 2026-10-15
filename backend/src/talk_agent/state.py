@@ -1,3 +1,4 @@
+
 from typing import Annotated, TypedDict
 
 from operator import add
@@ -5,6 +6,7 @@ from operator import add
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 
+from langgraph.graph import MessagesState, StateGraph, START, END
 
 class OverAllState(TypedDict, total=False):
     # messages 显式声明在 total=False 类内：全部 key 可省略，
@@ -32,6 +34,13 @@ class OverAllState(TypedDict, total=False):
     scenario: str
 
     # 走分支类状态 （#todo ，改成Command?）
+    # 英语表达润色状态
+    original_text: str  # 润色前的原文
+    polished_text: str  # 润色后的英文
+    explanation: str  # 中文润色说明
+    polish_comment: str  # 兼容项目原有模块的润色说明字段
+
+    # 走分支类状态（#todo，后续可考虑改成 Command）
     user_input: str
     has_issue: bool
     new_dialog: bool
@@ -49,8 +58,9 @@ class OverAllState(TypedDict, total=False):
     grammar_check_status: str  # ok / empty_input / invalid_input / unavailable
 
     # 日志类
-    talk_ids: Annotated[list[str], add]  # 对话id，某次图执行
-    cur_talk_id: str  # 当前对话id
+    talk_ids: Annotated[list[str], add]  # 对话 ID，某次图执行
+    cur_talk_id: str  # 当前对话 ID
+
     # LastValue：值由子图输出整体接管（子图内部用 add 累积后整表输出）。
     # 注意：父图层面不要直接写 logger，LastValue 语义下会覆盖而非追加。
     logger: list[str]
@@ -65,13 +75,14 @@ class SubgraphState(TypedDict, total=False):
     子图按自己的 reducer 跑完后，把最终 channel 值整体输出，
     父图再用父图的 reducer 合并。
 
-    因此两边必须各持一种语义，避免"子图加一次、父图再加一次"的重复：
-    - 子图 logger 带 add：输入(之前累积的日志) + 本次新增 → 输出完整累积列表
-    - 父图 logger 用 LastValue：直接接管子图输出的累积列表
+    因此两边各持一种语义，避免子图和父图重复追加日志：
+    - 子图 logger 带 add：输入日志 + 本次新增日志 → 输出累积列表
+    - 父图 logger 使用 LastValue：直接接管子图输出的累积列表
     """
 
     messages: Annotated[list[AnyMessage], add_messages]
 
+    # 文本类状态
     raw_text: str  # 未清洗的文本
     audio: bytes
 
@@ -79,6 +90,12 @@ class SubgraphState(TypedDict, total=False):
     # 下游节点直接读 state，无需各自调 resolve_context
     role: str
     scenario: str
+
+    # 英语表达润色状态
+    original_text: str  # 润色前的原文
+    polished_text: str  # 润色后的英文
+    explanation: str  # 中文润色说明
+    polish_comment: str  # 兼容项目原有模块的润色说明字段
 
     # 逻辑类
     has_issue: bool
