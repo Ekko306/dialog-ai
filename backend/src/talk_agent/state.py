@@ -16,6 +16,7 @@ class OverAllState(MessagesState, total=False):
     polished_text: str  # 润色后的英文
     explanation: str  # 中文润色说明
     polish_comment: str  # 兼容项目原有模块的润色说明字段
+    polished_audio: bytes  # polisher 输出：润色后文本的美式发音 MP3
 
     # 语音链路（IAT/ISE）
     iat_status: str  # ok / no_speech / unavailable
@@ -65,6 +66,7 @@ class SubgraphState(MessagesState, total=False):
     polished_text: str  # 润色后的英文
     explanation: str  # 中文润色说明
     polish_comment: str  # 兼容项目原有模块的润色说明字段
+    polished_audio: bytes  # polisher 输出：润色后文本的美式发音 MP3
 
     # 逻辑类
     has_issue: bool

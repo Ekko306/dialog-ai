@@ -1,2 +1,6 @@
 packages:
   - "frontend"
+
+# Windows 下 pnpm 默认 junction 符号链接被杀软间歇性拦截（os error 5），
+# 改用 npm 式扁平布局（直接落盘），不再生成 .pnpm 虚拟store
+nodeLinker: hoisted
