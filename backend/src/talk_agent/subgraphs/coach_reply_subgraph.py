@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 from pathlib import Path
 
 # 兼容直接运行本文件：把 backend 目录加入 sys.path，使 src.* 绝对导入可用；
@@ -66,11 +66,17 @@ def new_dialog_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> Sub
         "new_dialog": False,
     }
 
+def test_add_logger_node(state: SubgraphState) -> SubgraphState:
+    return {
+        "logger": ["测试追加logger"]
+    }
+
 
 #1.4 构建子图
 builder = StateGraph(state_schema=SubgraphState, context_schema=CoachContext)
 builder.add_node("continue_dialog_node", continue_dialog_node)
 builder.add_node("new_dialog_node", new_dialog_node)
+builder.add_node("test_add_logger_node", test_add_logger_node)
 
 
 # 必须用导入的 START 常量（值为 "__start__"），写字符串 "START" 会报 unknown node
@@ -79,6 +85,9 @@ builder.add_conditional_edges(START, is_new_dialog_route, path_map={
     "continue_dialog": "continue_dialog_node",
 })
 
-builder.add_edge("continue_dialog_node", END)
-builder.add_edge("new_dialog_node", END)
+builder.add_edge("continue_dialog_node", "test_add_logger_node")
+builder.add_edge("new_dialog_node", "test_add_logger_node")
+builder.add_edge("test_add_logger_node", END)
+
+
 coach_reply_subgraph = builder.compile()

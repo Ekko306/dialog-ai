@@ -78,7 +78,7 @@ def new_context_node(state: OverAllState, runtime: Runtime[CoachContext]) -> Sub
         next_context.scenario or DEFAULT_SCENARIO
         )
     return {
-        "logger": [f"new_context_node: {old_role}/{old_scenario} → {next_context.role}/{next_context.scenario}（下次对话生效）"],
+        "logger": [*state.get("logger", []), f"new_context_node: {old_role}/{old_scenario} → {next_context.role}/{next_context.scenario}（下次对话生效）"],
         "role": next_context.role or DEFAULT_ROLE,
         "scenario": next_context.scenario or DEFAULT_SCENARIO,
         "new_dialog": True
