@@ -40,16 +40,18 @@ def is_new_dialog_route(state: SubgraphState) -> Literal["new_dialog", "continue
 
 # 将入参数据/store数据，存储到state，其他节点都使用state
 def continue_dialog_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> SubgraphState:
-    user_input = state.get("user_input") # 上一次的输入
+    raw_text = state.get("raw_text")
+
+
     # messages = state.get("messages")  # todo 检查是默认带 接着上下文，checkpointer
     role = state.get("role", DEFAULT_ROLE)
     scenario = state.get("scenario", DEFAULT_SCENARIO)
 
     model = get_coach_model(role, scenario)
     # 链入参是 dict：MessagesPlaceholder 变量名 -> 消息列表；不能传裸列表
-    res = model.invoke({"messages": [HumanMessage(user_input)]})
+    res = model.invoke({"messages": [HumanMessage(raw_text)]})
     return {
-        "logger": [f"continue_dialog_node执行完毕user_input={user_input}"],
+        "logger": [f"continue_dialog_node执行完毕raw_text={raw_text}"],
         "messages": [res]
     }
 
