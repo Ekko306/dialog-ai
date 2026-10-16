@@ -40,6 +40,7 @@ from langchain_core.prompts import ChatPromptTemplate  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
+from src.tools.audio_tool.xfyun_tts.xfyun_tts_tool import xfyun_tts_tool_by_text  # noqa: E402
 
 try:
     from dotenv import load_dotenv
@@ -120,7 +121,26 @@ polisher_chain = (
 )
 
 
-# 5. 定义润色节点
+# 5. 定义润色节点的语音合成辅助：润色结果 → 讯飞 TTS → MP3 字节
+def synthesize_polish_audio(polished_text: str) -> bytes:
+    """把润色结果合成为美式发音 MP3 字节（存入 state.polished_audio）。
+
+    - 输入为空 → 返回 b""（不调 TTS）
+    - TTS 调用失败或返回空字节 → 降级返回 b""，不中断润色主流程
+    - 成功 → 返回 MP3 字节（与 grammer_tutor 的 tutor_audio 同款模式）
+    """
+    if not polished_text or not polished_text.strip():
+        return b""
+
+    try:
+        audio_bytes = xfyun_tts_tool_by_text(polished_text)
+    except Exception:
+        python_logger.exception("polisher_node TTS 调用失败")
+        return b""
+
+    return audio_bytes or b""
+
+
 def polisher_node(state: SubgraphState) -> SubgraphState:
     raw_text = state.get("raw_text", "")
 
@@ -131,6 +151,7 @@ def polisher_node(state: SubgraphState) -> SubgraphState:
             "polished_text": "",
             "explanation": "",
             "polish_comment": "",
+            "polished_audio": b"",
             "logger": ["polisher_node: 输入为空，跳过润色"],
         }
 
@@ -171,13 +192,21 @@ def polisher_node(state: SubgraphState) -> SubgraphState:
             "polisher_node: 调用失败，已降级返回原句"
         )
 
-    # 5.3 写入状态，保留原文、润色结果和修改说明
+    # 5.3 润色结果合成语音（TTS 失败或跳过都不中断主流程，仅记录日志）
+    polished_audio = synthesize_polish_audio(polished_text)
+    if polished_audio:
+        log_msg = f"{log_msg}；TTS 音频已生成（{len(polished_audio)} 字节）"
+    else:
+        log_msg = f"{log_msg}；TTS 音频未生成（空文本跳过或调用失败）"
+
+    # 5.4 写入状态，保留原文、润色结果、修改说明和语音
     return {
         "original_text": raw_text,
         "polished_text": polished_text,
         "explanation": explanation,
         # 兼容项目原有读取 polish_comment 的模块
         "polish_comment": explanation,
+        "polished_audio": polished_audio,
         "logger": [log_msg],
     }
 
@@ -209,3 +238,26 @@ if __name__ == "__main__":
     print("润色结果：", res.get("polished_text", ""))
     print("修改说明：", res.get("explanation", ""))
     print("执行日志：", res.get("logger", []))
+
+    # 语音输出验证：state.polished_audio 字节 → MP3 落盘 → 头校验 → 自动播放
+    import os
+    import tempfile
+    import uuid
+
+    audio_bytes = res.get("polished_audio") or b""
+    if audio_bytes:
+        out = Path(tempfile.gettempdir()) / f"polished_tts_{uuid.uuid4().hex[:8]}.mp3"
+        out.write_bytes(audio_bytes)
+        head_ok = audio_bytes[:3] == b"ID3" or audio_bytes[:2] in (
+            b"\xff\xfb", b"\xff\xf3",
+        )
+        print(
+            f"语音文件：{out}"
+            f"（{len(audio_bytes)} 字节，MP3 头校验：{'通过' if head_ok else '未识别'}）"
+        )
+        os.startfile(str(out))  # Windows 下自动唤起默认播放器
+        # 同 xfyun_tts_tool：SDK websocket 线程收完音频后滞留至服务器超时才断开，
+        # CLI 演示直接强制退出避免假死观感（播放器是独立进程，不受影响）
+        os._exit(0)
+    else:
+        print("语音文件：未生成（TTS 跳过或失败，请看上方日志）")

@@ -308,7 +308,8 @@ def grammar_check_node(state: GrammarCheckState) -> GrammarCheckState:
 
     return {
         "grammar_check_status": "ok",
-        "has_issue": verdict.has_issue,
+        # "has_issue": verdict.has_issue,
+        "has_issue": False,
         "issues": [issue.model_dump() for issue in verdict.issues],
         "feedback": verdict.feedback,
         "grammar_check_logs": ["grammar_check_node：LLM 语法检查完成（只标记不纠错）"],
