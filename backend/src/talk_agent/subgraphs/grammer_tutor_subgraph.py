@@ -23,7 +23,6 @@ if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 
 from dotenv import load_dotenv  # noqa: E402
-from pydantic import BaseModel, Field  # noqa: E402
 
 from langgraph.graph import END, START, StateGraph  # noqa: E402
 
@@ -42,22 +41,6 @@ class TutorState(SubgraphState, total=False):
     """
 
     tutor_prompt: str  # build_prompt → llm_call 的内部提示词
-
-
-# ---------------- 结构化输出契约（with_structured_output 强约束 LLM 输出格式） ----------------
-class Correction(BaseModel):
-    """单条修正：错误 → 正确。"""
-
-    wrong: str = Field(description="原句中的错误片段（原文照抄）")
-    correct: str = Field(description="修正后的完整句子（把原句中所有错误都改掉后的完整版本，供 TTS 整句朗读示范，不要只给修改片段）")
-    type: str = Field(default="grammar", description="错误类型：grammar / chinese-style / punctuation 等")
-
-
-class TutorOutput(BaseModel):
-    """llm_call 的结构化输出：讲解与修正清单一次生成，前端卡片/朗读与讲解必然一致。"""
-
-    reply: str = Field(description="给学生的中文讲解：先肯定，再逐条「错误 → 正确」+原因，总长不超过200字")
-    corrections: list[Correction] = Field(default_factory=list, description="修正清单；句子无语法错误时为空列表，不得编造")
 
 
 # ---------------- LLM（团队约定见 document/prompt_Refactor.md：ChatDeepSeek） ----------------
@@ -187,28 +170,17 @@ def build_prompt_node(state: TutorState) -> TutorState:
 
 
 def llm_call_node(state: TutorState) -> TutorState:
-    """调用 LLM 生成结构化讲解（reply + corrections 一次产出）；任何失败都置空，交给 parse_validate 兜底。"""
+    """调用 LLM 生成讲解；任何失败都置空 tutor_reply，交给 parse_validate 路由兜底。"""
     model = _get_model()
     if model is None:
-        return {"tutor_reply": "", "corrections": [], "logger": ["llm_call: LLM 不可用，交由 fallback"]}
+        return {"tutor_reply": "", "logger": ["llm_call: LLM 不可用，交由 fallback"]}
     try:
-        result = (
-            model.with_structured_output(TutorOutput, include_raw=True)
-            .invoke(state.get("tutor_prompt", ""))
-        )
-        parsed: TutorOutput | None = result.get("parsed")
-        if parsed is None:
-            reply, corrections = "", []
-        else:
-            reply = parsed.reply.strip()
-            corrections = [c.model_dump() for c in parsed.corrections]
+        result = model.invoke(state.get("tutor_prompt", ""))
+        content = result.content
+        reply = content.strip() if isinstance(content, str) else str(content).strip()
     except Exception:
-        reply, corrections = "", []
-    return {
-        "tutor_reply": reply,
-        "corrections": corrections,
-        "logger": [f"llm_call: 生成 {'成功' if reply else '失败'}；corrections {len(corrections)} 条（LLM 结构化输出）"],
-    }
+        reply = ""
+    return {"tutor_reply": reply, "logger": [f"llm_call: 生成 {'成功' if reply else '失败'}"]}
 
 
 def fallback_node(state: SubgraphState) -> SubgraphState:
@@ -228,8 +200,8 @@ def fallback_node(state: SubgraphState) -> SubgraphState:
 
 
 def write_state_node(state: SubgraphState) -> SubgraphState:
-    """结果落状态：corrections 已由 llm_call（结构化输出）或 fallback（上游提取）写入，这里确认落盘供前端与 TTS 消费。"""
-    corrections = state.get("corrections", [])
+    """结果落状态：tutor_reply 已写入；corrections（修正句/示范词）供前端高亮与 TTS 朗读（后续可在此接长期记忆）。"""
+    corrections = _extract_corrections(state.get("check_results"))
     return {
         "corrections": corrections,
         "logger": [f"write_state: tutor_reply 已写回；corrections {len(corrections)} 条"],
@@ -243,7 +215,7 @@ def tts_node(state: SubgraphState) -> SubgraphState:
     两段合成相互独立，任一失败只置空对应字段，讲解文本照常输出（与子图整体兜底风格一致）。
     """
     raw_text = state.get("raw_text", "")
-    corrections = state.get("corrections", [])
+    corrections = _extract_corrections(state.get("check_results"))
     correct_text = corrections[0]["correct"] if corrections and corrections[0].get("correct") else ""
 
     raw_audio = b""
