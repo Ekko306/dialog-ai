@@ -46,6 +46,7 @@ def store_resolve_node(state: OverAllState, runtime: Runtime[CoachContext]) -> O
 
 def HITL_node(state: OverAllState) -> OverAllState:
     user_input = interrupt({"prompt": "请输入指令（输入 '_new_context_' 进入下一个教练场景， '_test_coach_'跳过纠错，直接coach对话）"})
+    print(f"user_input:{user_input}")
     return {
         "user_input": user_input
     }

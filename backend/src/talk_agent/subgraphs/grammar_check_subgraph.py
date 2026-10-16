@@ -118,6 +118,8 @@ class GrammarCheckState(TypedDict, total=False):
     # 日志：add 累积；字段名独立于父图 logger，避免父子 reducer 冲突
     grammar_check_logs: Annotated[list[str], add]
 
+    user_input: str
+
 
 # ========== 模型配置（checker 依赖 GrammarVerdict） ==========
 
@@ -160,7 +162,11 @@ def xfyun_ita_tool_node(state: GrammarCheckState) -> GrammarCheckState:
       （下游 empty_input → fallback 兜底，不会炸图）
     """
     audio_bytes = state.get("audio_data")
-    audio_file = (state.get("audio_file_path") or "").strip()
+
+    # audio_file = (state.get("audio_file_path") or "").strip()
+    audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
+    print(f"test_audio_file:{audio_file}")
+
     try:
         if audio_bytes or audio_file:
             # 已有音频 → 直接转写它（测试素材/上游复用路径）
@@ -214,7 +220,11 @@ def xfyun_ise_tool_node(state: GrammarCheckState) -> GrammarCheckState:
     """
     ref = (state.get("ref_text") or "").strip()
     audio_bytes = state.get("audio_data")
-    audio_file = (state.get("audio_file_path") or "").strip()
+
+    # audio_file = (state.get("audio_file_path") or "").strip()
+    audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
+    print("test_audio_file:{audio_file}")
+
     # 评测语言：产品定位英文学习 → 缺省 en；State 传 "cn" 可切中文引擎
     lang = (state.get("ise_lang") or "en").strip().lower()
     ent = f"{lang}_vip"
