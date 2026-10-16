@@ -24,7 +24,7 @@ from pathlib import Path
 
 # 兼容直接运行本文件：把 backend 目录加入 sys.path；
 # langgraph dev / uv run 下 backend 本就在 sys.path，无副作用
-_BACKEND_DIR = Path(__file__).resolve().parents[2]  # backend/src/talk_agent/ise_analyze_node.py -> backend
+_BACKEND_DIR = Path(__file__).resolve().parents[3]  # backend/src/talk_agent/subgraphs/ise_analyze_node.py -> backend（比 talk_agent 层多一级）
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 

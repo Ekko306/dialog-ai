@@ -16,7 +16,7 @@ class OverAllState(TypedDict, total=False):
     iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
     audio_data: bytes  # 麦克风录音 PCM（ita 节点存入，ISE 节点消费，一次录音两份产出）
     audio_file_path: str  # ISE 音频文件路径（mock/dev 调试用，生产不走）
-    ref_text: str  # ISE 标准参考句（教练预设，非 IAT 识别结果）
+    ref_text: str  # ISE 标准参考句（教练预设优先；未传时自动回退用 IAT 转写文本）
     ise_lang: str  # 评测语言 cn/en（引擎 ent=cn_vip/en_vip）；缺省 en（产品定位英文学习）
     ise_status: str  # ok / no_audio / no_ref / unavailable（独立于语法状态，不参与路由）
     ise_xml_info: str  # ISE 原始评测 XML（带详细发音错误）
