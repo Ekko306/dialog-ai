@@ -30,7 +30,7 @@ if str(_BACKEND_DIR) not in sys.path:
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from langchain.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_deepseek import ChatDeepSeek
 
 from src.talk_agent.state import OverAllState  # noqa: E402

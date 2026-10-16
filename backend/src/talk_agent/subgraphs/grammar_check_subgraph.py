@@ -29,7 +29,7 @@ from typing import Annotated, TypedDict
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from langchain.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_deepseek import ChatDeepSeek
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import RetryPolicy  # langgraph 1.x 中 RetryPolicy 位于 langgraph.types
