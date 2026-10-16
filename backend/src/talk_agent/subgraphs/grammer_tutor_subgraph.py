@@ -134,10 +134,13 @@ def load_tutor_skill() -> str:
 
 
 def _extract_corrections(check_results) -> list:
-    """从上游 check_results 容错提取前端可用的修正结构 [{wrong, correct, type}]。
+    """从上游清单容错提取前端可用的修正结构 [{wrong, correct, type}]。
 
-    check_results 是 check 队友 LLM 解析 XML 的 json，具体字段名以最终对齐为准；
-    这里做常见字段名的容错映射，取不到就返回空列表（前端不渲染修正卡片，不影响主流程）。
+    支持两种进料：
+    - check_results（LLM 解析 XML 后的结构化清单）：grammar 条目自带 wrong/correct；
+    - issues（grammar_check 输出的错误列表）：条目 {fragment, error_type, description}，
+      上游只标记不纠错，correct 缺省为空串（正确句由 LLM 路径产出，兜底阶段不编造）。
+    兼容映射常见字段名，取不到就返回空列表（前端不渲染修正卡片，不影响主流程）。
     """
     if isinstance(check_results, dict):
         items = check_results.get("issues") or check_results.get("errors") or check_results.get("grammar") or []
@@ -149,11 +152,28 @@ def _extract_corrections(check_results) -> list:
     for item in items if isinstance(items, list) else []:
         if not isinstance(item, dict):
             continue
-        wrong = item.get("wrong") or item.get("error") or item.get("original") or ""
+        wrong = item.get("wrong") or item.get("fragment") or item.get("error") or item.get("original") or ""
         correct = item.get("correct") or item.get("right") or item.get("suggestion") or ""
         if wrong or correct:
-            corrections.append({"wrong": wrong, "correct": correct, "type": item.get("type", "grammar")})
+            corrections.append(
+                {
+                    "wrong": wrong,
+                    "correct": correct,
+                    "type": item.get("type") or item.get("error_type") or "grammar",
+                }
+            )
     return corrections
+
+
+def _format_issue(item) -> str:
+    """单条 issue 转可读文本：dict 按 {fragment, error_type, description} 组装，str 原样（兼容旧结构）。"""
+    if isinstance(item, dict):
+        fragment = item.get("fragment") or item.get("wrong") or "?"
+        error_type = item.get("error_type") or ""
+        description = item.get("description") or ""
+        head = f"[{error_type}] {fragment}" if error_type else fragment
+        return f"{head}：{description}" if description else head
+    return str(item)
 
 
 def _extract_pronunciation_issues(check_results) -> list:
@@ -196,8 +216,11 @@ def build_prompt_node(state: TutorState) -> TutorState:
         )
         feed_label = "check_results"
     elif issues:
-        issue_lines = "\n".join(f"{idx}. {item}" for idx, item in enumerate(issues, start=1))
-        user_part = f"学生原句：{raw_text}\n语法检查发现的错误：\n{issue_lines}\n请逐条讲解。"
+        issue_lines = "\n".join(f"{idx}. {_format_issue(item)}" for idx, item in enumerate(issues, start=1))
+        user_part = (
+            f"学生原句：{raw_text}\n语法检查发现的错误（只标记了错误位置和原因，未给正确答案）：\n{issue_lines}\n"
+            f"请逐条讲解，正确说法由你给出（corrections 的 correct 必须是修正后的完整句子）。"
+        )
         feed_label = "issues"
     else:
         # 上游 grammar_check 尚未输出清单（占位阶段），降级为整句讲解，不阻塞流程
@@ -251,7 +274,7 @@ def fallback_node(state: SubgraphState) -> SubgraphState:
     """模板兜底：按 issues 逐条回显；发音条目单独提示；corrections 从 check_results 提取，前端数据不断供。"""
     issues = state.get("issues", [])
     if issues:
-        lines = "\n".join(f"· {item}" for item in issues)
+        lines = "\n".join(f"· {_format_issue(item)}" for item in issues)
         reply = f"【语法小课堂】这几处可以再改一改：\n{lines}\n多练几次就顺手了，继续加油！"
     else:
         reply = "【语法小课堂】这句话的时态和主谓一致可以再检查一下，试着说一遍正确版本吧！"
@@ -262,7 +285,8 @@ def fallback_node(state: SubgraphState) -> SubgraphState:
             for p in pron_issues
         )
         reply += f"\n\n【发音提示】（以下不属于语法错误）\n{pron_lines}"
-    corrections = _extract_corrections(state.get("check_results"))
+    # check_results 提取不到时再从 issues 提取（fragment 对准；correct 缺省为空，正确句归 LLM 路径产出）
+    corrections = _extract_corrections(state.get("check_results")) or _extract_corrections(issues)
     return {
         "tutor_reply": reply,
         "corrections": corrections,
@@ -372,12 +396,14 @@ if __name__ == "__main__":
             else:
                 print(f"[{tag}] 无{name}发音（TTS 失败或无朗读文本）")
 
-    # 场景1：上游给了 issues（grammar_check 升级后的正常路径）
+    # 场景1：上游给了 issues（grammar_check 真实契约：{fragment, error_type, description}，只标记不纠错）
     print("[场景1] 开始...")
     res = grammer_tutor_subgraph.invoke(
         {
             "raw_text": "She go to school yesterday.",
-            "issues": ["go → went：一般过去时要用动词过去式"],
+            "issues": [
+                {"fragment": "She go", "error_type": "主谓一致", "description": "主语 She 是第三人称单数，一般现在时动词要加 -es"},
+            ],
         }
     )
     print(res.get("tutor_reply"))
@@ -395,7 +421,9 @@ if __name__ == "__main__":
     res3 = grammer_tutor_subgraph.invoke(
         {
             "raw_text": "I like apples.",
-            "issues": ["like → likes：主谓一致错误"],
+            "issues": [
+                {"fragment": "like", "error_type": "主谓一致", "description": "like → likes：主谓一致错误"},
+            ],
         }
     )
     print(res3.get("logger"))

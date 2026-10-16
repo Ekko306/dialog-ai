@@ -37,7 +37,6 @@ class OverAllState(TypedDict, total=False):
     new_dialog: bool
 
     # 语法辅导（grammar_check → grammer_tutor 的契约字段）
-    issues: list[str]  # 上游 grammar_check 输出的错误列表
     tutor_reply: str  # grammer_tutor 输出的纠错讲解
     check_results: dict  # 上游 LLM 解析 XML 后的结构化清单（语法错误 + 发音问题）
     corrections: list  # grammer_tutor 输出：修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
@@ -84,9 +83,10 @@ class SubgraphState(TypedDict, total=False):
     has_issue: bool
 
     # 语法辅导（grammar_check → grammer_tutor → coach_reply 的契约字段）
-    issues: list[str]  # 上游 grammar_check 输出的错误列表
+    issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
     tutor_reply: str  # grammer_tutor 输出的纠错讲解
     check_results: dict  # 上游 LLM 解析 XML 后的结构化清单（语法错误 + 发音问题）
+    ise_xml_info: str  # ISE 原始评测 XML（check 产出，tutor 消费做文本+发音纠错）
     corrections: list  # grammer_tutor 输出：修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
     tutor_audio: bytes  # grammer_tutor 输出：正确句的美式发音 MP3（供前端播放示范跟读）
     raw_audio: bytes  # grammer_tutor 输出：用户原句的美式发音 MP3（供前端对照播放原句）
