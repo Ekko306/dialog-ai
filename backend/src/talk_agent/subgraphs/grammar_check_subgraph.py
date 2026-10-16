@@ -35,7 +35,7 @@ from langchain_deepseek import ChatDeepSeek
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import RetryPolicy  # langgraph 1.x 中 RetryPolicy 位于 langgraph.types
 
-from src.talk_agent.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
+from src.talk_agent.subgraphs.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
 from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
     xfyun_iat_tool_by_mic,
     xfyun_iat_tool_by_audio_data,
@@ -100,7 +100,7 @@ class GrammarCheckState(TypedDict, total=False):
     iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
     audio_data: bytes  # 麦克风录音 PCM（ita 存入，ISE 消费，一次录音两份产出）
     audio_file_path: str  # IAT/ISE 音频文件路径（mock/dev/Studio 测试素材）
-    ref_text: str  # ISE 标准参考句（教练预设，非 IAT 识别结果）
+    ref_text: str  # ISE 标准参考句（教练预设优先；未传时自动回退用 IAT 转写文本）
     ise_lang: str  # 评测语言 cn/en（缺省 en）；工具层映射 ent=cn_vip/en_vip
     ise_status: str  # ok / no_audio / no_ref / unavailable（独立于语法状态）
     ise_xml_info: str  # ISE 原始评测 XML
@@ -117,6 +117,8 @@ class GrammarCheckState(TypedDict, total=False):
 
     # 日志：add 累积；字段名独立于父图 logger，避免父子 reducer 冲突
     grammar_check_logs: Annotated[list[str], add]
+
+    user_input: str
 
 
 # ========== 模型配置（checker 依赖 GrammarVerdict） ==========
@@ -160,7 +162,11 @@ def xfyun_ita_tool_node(state: GrammarCheckState) -> GrammarCheckState:
       （下游 empty_input → fallback 兜底，不会炸图）
     """
     audio_bytes = state.get("audio_data")
-    audio_file = (state.get("audio_file_path") or "").strip()
+
+    # audio_file = (state.get("audio_file_path") or "").strip()
+    audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
+    print(f"test_audio_file:{audio_file}")
+
     try:
         if audio_bytes or audio_file:
             # 已有音频 → 直接转写它（测试素材/上游复用路径）
@@ -203,8 +209,10 @@ def xfyun_ise_tool_node(state: GrammarCheckState) -> GrammarCheckState:
 
     - 输入优先级：audio_data（生产主路径，来自 ita 存的录音 PCM）
                   > audio_file_path（mock/dev 调试用）> 没音频 → no_audio 短路
-    - ref_text 用教练预设句（不从 raw_text 取，避免自证循环）；
-      有音频但没参考句（终端麦克风流程不传 ref_text）→ no_ref 短路
+    - ref_text 优先用教练预设句；未传时自动回退用 IAT 转写文本
+      （"跟读自己"单输入模式：无需预设答案，识别到什么就评什么；
+      代价：ASR 自动纠错会让参考句失真，is_rejected 校验形同虚设）；
+      两者都没有 → no_ref 短路
     - ise_lang 选评测引擎语言（cn/en，缺省 en=英文，产品定位），
       工具层映射 ent=cn_vip/en_vip；英文引擎逐词有真实分数，中文没有
     - 瞬态异常上抛 → RetryPolicy 重试；非瞬态/空结果 → unavailable 降级
@@ -212,12 +220,22 @@ def xfyun_ise_tool_node(state: GrammarCheckState) -> GrammarCheckState:
     """
     ref = (state.get("ref_text") or "").strip()
     audio_bytes = state.get("audio_data")
-    audio_file = (state.get("audio_file_path") or "").strip()
+
+    # audio_file = (state.get("audio_file_path") or "").strip()
+    audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
+    print("test_audio_file:{audio_file}")
+
     # 评测语言：产品定位英文学习 → 缺省 en；State 传 "cn" 可切中文引擎
     lang = (state.get("ise_lang") or "en").strip().lower()
     ent = f"{lang}_vip"
     if not audio_bytes and not audio_file:
         return {"ise_status": "no_audio", "ise_xml_info": ""}
+    auto_ref = False
+    if not ref:
+        # 单输入模式：未传教练预设句 → 自动用 IAT 转写文本当参考句（识别到什么评什么）；
+        # 显式传了 ref_text 仍优先，此处只是兜底
+        ref = (state.get("raw_text") or "").strip()
+        auto_ref = bool(ref)
     if not ref:
         return {"ise_status": "no_ref", "ise_xml_info": ""}
     try:
@@ -236,7 +254,12 @@ def xfyun_ise_tool_node(state: GrammarCheckState) -> GrammarCheckState:
     info = parse_ise_xml(xml, max_score=100.0 if lang == "cn" else 5.0)
     if info and not info["is_rejected"] and info["total"]:
         grade = float(info["total"])  # _pct 已兜住坏值（返回 None 不会进到这里）
-    return {"ise_status": "ok", "ise_xml_info": xml, "ise_grade": grade}
+    out = {"ise_status": "ok", "ise_xml_info": xml, "ise_grade": grade}
+    if auto_ref:  # 标记自证模式，方便 trace/调试追溯
+        out["grammar_check_logs"] = [
+            "xfyun_ise_tool_node：未传 ref_text，自动以 IAT 转写文本作为参考句（自证模式）"
+        ]
+    return out
 
 
 # ========== 节点 ==========
