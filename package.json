@@ -5,10 +5,9 @@
   "scripts": {
     "dev": "concurrently -n frontend,backend -c cyan,magenta \"pnpm dev:frontend\" \"pnpm dev:backend\"",
     "dev:frontend": "cd frontend && pnpm dev",
-    "dev:backend": "cd backend && cross-env PYTHONUTF8=1 uv run langgraph dev"
+    "dev:backend": "cd backend && set PYTHONUTF8=1&& uv run langgraph dev"
   },
   "devDependencies": {
-    "concurrently": "^10.0.5",
-    "cross-env": "^7.0.3"
+    "concurrently": "^10.0.5"
   }
 }
