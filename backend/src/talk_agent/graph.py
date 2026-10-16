@@ -8,10 +8,8 @@ if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 
 from langgraph.graph import StateGraph,START,END  # noqa: E402
-from langgraph.types import RetryPolicy  # noqa: E402
 
 from src.talk_agent.state import OverAllState  # noqa: E402
-from src.talk_agent.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
 from src.talk_agent.subgraphs.grammar_check_subgraph import grammar_check_subgraph  # noqa: E402
 
 from src.talk_agent.subgraphs.grammer_tutor_subgraph import grammer_tutor_subgraph  # noqa: E402
@@ -19,105 +17,6 @@ from src.talk_agent.subgraphs.polisher_subgraph import polisher_subgraph  # noqa
 
 from src.talk_agent.subgraphs.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
 from typing import Literal  # noqa: E402
-from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
-    xfyun_iat_tool_by_mic,
-    xfyun_iat_tool_by_audio_data,
-    xfyun_iat_tool_by_audio_file,
-)
-from src.tools.audio_tool.xfyun_ise.xfyun_ise_tool import (  # noqa: E402
-    xfyun_ise_tool_by_audio_data,
-    xfyun_ise_tool_by_audio_file,
-)
-
-
-def xfyun_ita_tool_node(state: OverAllState) -> OverAllState:
-    """IAT 语音转写节点（加固版）：讯飞听写 → raw_text + 音频字节存 State。
-
-    - 输入优先级：audio_data（上游复用）> audio_file_path（mock/dev/Studio 测试素材）
-      > 麦克风（生产路径）；有音频就转写它，不开麦、不卡 input()
-    - 麦克风录音只发生一次：文本走语法链，PCM 存 State 喂 ISE（一次录音两份产出）
-    - 瞬态异常上抛 → RetryPolicy；非瞬态（401/无麦克风/EOF/KeyError）→ unavailable 降级
-    - 空识别结果（没说话/纯噪声/英文音频走中文引擎转不出）→ no_speech，raw_text=""
-      （下游 empty_input → fallback 兜底，不会炸图）
-    """
-    audio_bytes = state.get("audio_data")
-    audio_file = (state.get("audio_file_path") or "").strip()
-    try:
-        if audio_bytes or audio_file:
-            # 已有音频 → 直接转写它（测试素材/上游复用路径）
-            if audio_bytes:
-                text = xfyun_iat_tool_by_audio_data(audio_bytes)
-            else:
-                text = xfyun_iat_tool_by_audio_file(audio_file)
-            audio = audio_bytes or b""
-        else:
-            text, audio = xfyun_iat_tool_by_mic()  # 生产路径：真实麦克风录音
-    except Exception as e:
-        if _is_transient(e):
-            raise  # 瞬态上抛 → RetryPolicy；3 次耗尽由调用方兜底
-        return {
-            "iat_status": "unavailable",
-            "raw_text": "",
-            "grammar_check_logs": [f"xfyun_ita_tool_node：语音识别失败({type(e).__name__}) → unavailable"],
-        }
-    if not (text or "").strip():
-        return {
-            "iat_status": "no_speech",
-            "raw_text": "",
-            "audio_data": audio or b"",
-            "grammar_check_logs": ["xfyun_ita_tool_node：未识别到有效语音 → no_speech"],
-        }
-    # 录音只发生一次：文本走语法链，PCM 存 State 喂 ISE（发音评测复用同一份音频）
-    return {"iat_status": "ok", "raw_text": text, "audio_data": audio}
-
-
-def _is_transient(e: Exception) -> bool:
-    """瞬态错误判定（与 grammar_check 节点同款）：连接失败/超时/5xx 可重试。"""
-    if isinstance(e, (ConnectionError, TimeoutError)):
-        return True
-    status = getattr(e, "status_code", None)
-    return isinstance(status, int) and status >= 500
-
-
-def xfyun_ise_tool_node(state: OverAllState) -> OverAllState:
-    """ISE 发音评测节点：同一次录音的 PCM + 预设参考句 → 评测 XML 存进 State。
-
-    - 输入优先级：audio_data（生产主路径，来自 ita 存的录音 PCM）
-                  > audio_file_path（mock/dev 调试用）> 没音频 → no_audio 短路
-    - ref_text 用教练预设句（不从 raw_text 取，避免自证循环）；
-      有音频但没参考句（终端麦克风流程不传 ref_text）→ no_ref 短路
-    - ise_lang 选评测引擎语言（cn/en，缺省 en=英文，产品定位），
-      工具层映射 ent=cn_vip/en_vip；英文引擎逐词有真实分数，中文没有
-    - 瞬态异常上抛 → RetryPolicy 重试；非瞬态/空结果 → unavailable 降级
-    - ise_status 独立于 grammar_check_status，ISE 失败绝不阻塞语法主链路
-    """
-    ref = (state.get("ref_text") or "").strip()
-    audio_bytes = state.get("audio_data")
-    audio_file = (state.get("audio_file_path") or "").strip()
-    # 评测语言：产品定位英文学习 → 缺省 en；State 传 "cn" 可切中文引擎
-    lang = (state.get("ise_lang") or "en").strip().lower()
-    ent = f"{lang}_vip"
-    if not audio_bytes and not audio_file:
-        return {"ise_status": "no_audio", "ise_xml_info": ""}
-    if not ref:
-        return {"ise_status": "no_ref", "ise_xml_info": ""}
-    try:
-        if audio_bytes:
-            xml = xfyun_ise_tool_by_audio_data(audio_bytes, answer_text=ref, ent=ent)
-        else:
-            xml = xfyun_ise_tool_by_audio_file(audio_file, answer_text=ref, ent=ent)
-    except Exception as e:
-        if _is_transient(e):
-            raise  # 瞬态上抛 → RetryPolicy；3 次耗尽由调用方兜底
-        return {"ise_status": "unavailable", "ise_xml_info": ""}
-    if not (xml or "").strip():
-        return {"ise_status": "unavailable", "ise_xml_info": ""}
-    # 总分直取（已归一化为百分制）：XML 里的确定性数据不等 LLM；is_rejected 分数作废 / 解析失败 → None
-    grade = None
-    info = parse_ise_xml(xml, max_score=100.0 if lang == "cn" else 5.0)
-    if info and not info["is_rejected"] and info["total"]:
-        grade = float(info["total"])  # _pct 已兜住坏值（返回 None 不会进到这里）
-    return {"ise_status": "ok", "ise_xml_info": xml, "ise_grade": grade}
 
 
 def grammar_check_fallback_node(state: OverAllState) -> OverAllState:
@@ -132,23 +31,9 @@ def grammar_check_fallback_node(state: OverAllState) -> OverAllState:
     return {"grammar_check_logs": logs}
 
 
-# 定义节点
+# 定义节点（语音链路 + 语法检查已整体移入 grammar_check_subgraph，
+# 拍平后的执行顺序不变：ita → ise → ise_analyze → grammar_check → 路由）
 parent_builder = StateGraph(state_schema=OverAllState)
-parent_builder.add_node(
-    "xfyun_ita_tool_node",
-    xfyun_ita_tool_node,
-    retry_policy=RetryPolicy(max_attempts=3, backoff_factor=2.0, initial_interval=1.0, retry_on=_is_transient),
-)
-parent_builder.add_node(
-    "xfyun_ise_tool_node",
-    xfyun_ise_tool_node,
-    retry_policy=RetryPolicy(max_attempts=3, backoff_factor=2.0, initial_interval=1.0, retry_on=_is_transient),
-)
-parent_builder.add_node(
-    "ise_analyze_node",
-    ise_analyze_node,
-    retry_policy=RetryPolicy(max_attempts=3, backoff_factor=2.0, initial_interval=1.0, retry_on=_is_transient),
-)
 parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
 parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
 parent_builder.add_node("polisher_subgraph",polisher_subgraph)
@@ -165,10 +50,7 @@ def my_route(state: OverAllState) -> Literal["has_issue", "has_no_issue", "check
     return "has_issue" if state.get("has_issue") else "has_no_issue"
 
 # 定义边
-parent_builder.add_edge(START,"xfyun_ita_tool_node")
-parent_builder.add_edge("xfyun_ita_tool_node","xfyun_ise_tool_node")
-parent_builder.add_edge("xfyun_ise_tool_node","ise_analyze_node")
-parent_builder.add_edge("ise_analyze_node","grammar_check_subgraph")
+parent_builder.add_edge(START,"grammar_check_subgraph")
 parent_builder.add_conditional_edges("grammar_check_subgraph", my_route, path_map={
     "has_issue": "grammer_tutor_subgraph",
     "has_no_issue": "polisher_subgraph",

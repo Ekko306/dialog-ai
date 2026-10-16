@@ -1,8 +1,9 @@
-"""grammar_check 子图：语法检查模块（ LangGraph 官网规范结构）。
+"""grammar_check 子图：语音链路 + 语法检查模块（ LangGraph 官网规范结构）。
 
 职责边界：
-- 只接收上游父图节点（xfyun_ita_tool_node）产出的 raw_text 纯文本；
-  语音识别与 ISE 评测由上游完成，不在本子图内
+- 承接完整语音链路：IAT 语音转写（xfyun_ita_tool_node）→ ISE 发音评测
+  （xfyun_ise_tool_node）→ 发音点评（ise_analyze_node）→ 语法检查（grammar_check_node），
+  与原主图的节点执行顺序完全一致
 - 只检测硬语法错误（时态/主谓一致/单复数/词性误用），
   语法正确但不自然的表达留给润色模块（polisher）
 - 输出结构化契约字段（has_issue/issues/feedback），只检测标记不纠错：
@@ -33,6 +34,17 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_deepseek import ChatDeepSeek
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import RetryPolicy  # langgraph 1.x 中 RetryPolicy 位于 langgraph.types
+
+from src.talk_agent.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
+from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
+    xfyun_iat_tool_by_mic,
+    xfyun_iat_tool_by_audio_data,
+    xfyun_iat_tool_by_audio_file,
+)
+from src.tools.audio_tool.xfyun_ise.xfyun_ise_tool import (  # noqa: E402
+    xfyun_ise_tool_by_audio_data,
+    xfyun_ise_tool_by_audio_file,
+)
 
 # 复用 backend/.env（backend/src/talk_agent/subgraphs → parents[3] = backend）
 load_dotenv(_BACKEND_DIR / ".env")
@@ -83,6 +95,18 @@ class GrammarCheckState(TypedDict, total=False):
     # 输入
     raw_text: str
 
+    # 语音链路（IAT/ISE）：子图经同名共享 key 与父图 OverAllState 互通，
+    # 这些字段必须与父图 schema 同名声明，否则运行时 InvalidUpdateError
+    iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
+    audio_data: bytes  # 麦克风录音 PCM（ita 存入，ISE 消费，一次录音两份产出）
+    audio_file_path: str  # IAT/ISE 音频文件路径（mock/dev/Studio 测试素材）
+    ref_text: str  # ISE 标准参考句（教练预设，非 IAT 识别结果）
+    ise_lang: str  # 评测语言 cn/en（缺省 en）；工具层映射 ent=cn_vip/en_vip
+    ise_status: str  # ok / no_audio / no_ref / unavailable（独立于语法状态）
+    ise_xml_info: str  # ISE 原始评测 XML
+    ise_grade: float | None  # 评测总分（XML total_score 直取；无效/解析失败为 None）
+    ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[...], "advice": str}
+
     # 检查结果（由 grammar_check_node 从 GrammarVerdict 写入；只标记不纠错）
     has_issue: bool
     issues: list[dict]  # 每处错误 {fragment, error_type, description}
@@ -121,6 +145,99 @@ GRAMMAR_CHECK_PROMPT = (
     "5. feedback 只用一句话概述错误类型，同样不含任何正确写法。\n"
     "6. 无语法错误时：has_issue=False，issues 为空列表，feedback 为空字符串。"
 )
+
+# ========== 语音链路节点（从 graph.py 搬入） ==========
+
+
+def xfyun_ita_tool_node(state: GrammarCheckState) -> GrammarCheckState:
+    """IAT 语音转写节点（加固版）：讯飞听写 → raw_text + 音频字节存 State。
+
+    - 输入优先级：audio_data（上游复用）> audio_file_path（mock/dev/Studio 测试素材）
+      > 麦克风（生产路径）；有音频就转写它，不开麦、不卡 input()
+    - 麦克风录音只发生一次：文本走语法链，PCM 存 State 喂 ISE（一次录音两份产出）
+    - 瞬态异常上抛 → RetryPolicy；非瞬态（401/无麦克风/EOF/KeyError）→ unavailable 降级
+    - 空识别结果（没说话/纯噪声/英文音频走中文引擎转不出）→ no_speech，raw_text=""
+      （下游 empty_input → fallback 兜底，不会炸图）
+    """
+    audio_bytes = state.get("audio_data")
+    audio_file = (state.get("audio_file_path") or "").strip()
+    try:
+        if audio_bytes or audio_file:
+            # 已有音频 → 直接转写它（测试素材/上游复用路径）
+            if audio_bytes:
+                text = xfyun_iat_tool_by_audio_data(audio_bytes)
+            else:
+                text = xfyun_iat_tool_by_audio_file(audio_file)
+            audio = audio_bytes or b""
+        else:
+            text, audio = xfyun_iat_tool_by_mic()  # 生产路径：真实麦克风录音
+    except Exception as e:
+        if _is_transient(e):
+            raise  # 瞬态上抛 → RetryPolicy；3 次耗尽由调用方兜底
+        return {
+            "iat_status": "unavailable",
+            "raw_text": "",
+            "grammar_check_logs": [f"xfyun_ita_tool_node：语音识别失败({type(e).__name__}) → unavailable"],
+        }
+    if not (text or "").strip():
+        return {
+            "iat_status": "no_speech",
+            "raw_text": "",
+            "audio_data": audio or b"",
+            "grammar_check_logs": ["xfyun_ita_tool_node：未识别到有效语音 → no_speech"],
+        }
+    # 录音只发生一次：文本走语法链，PCM 存 State 喂 ISE（发音评测复用同一份音频）
+    return {"iat_status": "ok", "raw_text": text, "audio_data": audio}
+
+
+def _is_transient(e: Exception) -> bool:
+    """瞬态错误判定（与 grammar_check 节点同款）：连接失败/超时/5xx 可重试。"""
+    if isinstance(e, (ConnectionError, TimeoutError)):
+        return True
+    status = getattr(e, "status_code", None)
+    return isinstance(status, int) and status >= 500
+
+
+def xfyun_ise_tool_node(state: GrammarCheckState) -> GrammarCheckState:
+    """ISE 发音评测节点：同一次录音的 PCM + 预设参考句 → 评测 XML 存进 State。
+
+    - 输入优先级：audio_data（生产主路径，来自 ita 存的录音 PCM）
+                  > audio_file_path（mock/dev 调试用）> 没音频 → no_audio 短路
+    - ref_text 用教练预设句（不从 raw_text 取，避免自证循环）；
+      有音频但没参考句（终端麦克风流程不传 ref_text）→ no_ref 短路
+    - ise_lang 选评测引擎语言（cn/en，缺省 en=英文，产品定位），
+      工具层映射 ent=cn_vip/en_vip；英文引擎逐词有真实分数，中文没有
+    - 瞬态异常上抛 → RetryPolicy 重试；非瞬态/空结果 → unavailable 降级
+    - ise_status 独立于 grammar_check_status，ISE 失败绝不阻塞语法主链路
+    """
+    ref = (state.get("ref_text") or "").strip()
+    audio_bytes = state.get("audio_data")
+    audio_file = (state.get("audio_file_path") or "").strip()
+    # 评测语言：产品定位英文学习 → 缺省 en；State 传 "cn" 可切中文引擎
+    lang = (state.get("ise_lang") or "en").strip().lower()
+    ent = f"{lang}_vip"
+    if not audio_bytes and not audio_file:
+        return {"ise_status": "no_audio", "ise_xml_info": ""}
+    if not ref:
+        return {"ise_status": "no_ref", "ise_xml_info": ""}
+    try:
+        if audio_bytes:
+            xml = xfyun_ise_tool_by_audio_data(audio_bytes, answer_text=ref, ent=ent)
+        else:
+            xml = xfyun_ise_tool_by_audio_file(audio_file, answer_text=ref, ent=ent)
+    except Exception as e:
+        if _is_transient(e):
+            raise  # 瞬态上抛 → RetryPolicy；3 次耗尽由调用方兜底
+        return {"ise_status": "unavailable", "ise_xml_info": ""}
+    if not (xml or "").strip():
+        return {"ise_status": "unavailable", "ise_xml_info": ""}
+    # 总分直取（已归一化为百分制）：XML 里的确定性数据不等 LLM；is_rejected 分数作废 / 解析失败 → None
+    grade = None
+    info = parse_ise_xml(xml, max_score=100.0 if lang == "cn" else 5.0)
+    if info and not info["is_rejected"] and info["total"]:
+        grade = float(info["total"])  # _pct 已兜住坏值（返回 None 不会进到这里）
+    return {"ise_status": "ok", "ise_xml_info": xml, "ise_grade": grade}
+
 
 # ========== 节点 ==========
 
@@ -200,8 +317,40 @@ def grammar_check_node(state: GrammarCheckState) -> GrammarCheckState:
 
 # ========== 构建子图 ==========
 builder = StateGraph(state_schema=GrammarCheckState)
+
 # RetryPolicy = 系统异常重试：只重试 _is_transient 认定的瞬态错误，
 # 与"用户答错/检查出问题"的正常学习循环完全无关，不要混淆两条路径
+# （各节点重试参数与原主图挂载时完全一致，仅注册位置移入子图）
+builder.add_node(
+    "xfyun_ita_tool_node",
+    xfyun_ita_tool_node,
+    retry_policy=RetryPolicy(
+        max_attempts=3,
+        backoff_factor=2.0,
+        initial_interval=1.0,
+        retry_on=_is_transient,
+    ),
+)
+builder.add_node(
+    "xfyun_ise_tool_node",
+    xfyun_ise_tool_node,
+    retry_policy=RetryPolicy(
+        max_attempts=3,
+        backoff_factor=2.0,
+        initial_interval=1.0,
+        retry_on=_is_transient,
+    ),
+)
+builder.add_node(
+    "ise_analyze_node",
+    ise_analyze_node,
+    retry_policy=RetryPolicy(
+        max_attempts=3,
+        backoff_factor=2.0,
+        initial_interval=1.0,
+        retry_on=_is_transient,
+    ),
+)
 builder.add_node(
     "grammar_check_node",
     grammar_check_node,
@@ -213,19 +362,17 @@ builder.add_node(
     ),
 )
 
-builder.add_edge(START, "grammar_check_node")
+# 链路与原主图完全一致：IAT 转写 → ISE 评测 → 发音点评 → 语法检查
+builder.add_edge(START, "xfyun_ita_tool_node")
+builder.add_edge("xfyun_ita_tool_node", "xfyun_ise_tool_node")
+builder.add_edge("xfyun_ise_tool_node", "ise_analyze_node")
+builder.add_edge("ise_analyze_node", "grammar_check_node")
 builder.add_edge("grammar_check_node", END)
 
 grammar_check_subgraph = builder.compile()
 
 if __name__ == "__main__":
-    # stream_mode="updates"：逐节点打印状态写入（终端可观测方案）
-    for text in ["She go to school every day.", "I agree with you.", ""]:
-        print(f"\n{'=' * 60}")
-        print(f"输入: {text!r}")
-        print("=" * 60)
-        for step in grammar_check_subgraph.stream({"raw_text": text}, stream_mode="updates"):
-            for node_name, update in step.items():
-                print(f"\n--- 节点 [{node_name}] 写入的状态 ---")
-                for key, value in update.items():
-                    print(f"  {key} = {value!r}")
+    # 独立运行本子图：入口已是 xfyun_ita_tool_node（语音链路），
+    # 无 audio_data/audio_file_path 时会请求麦克风录音，再走全链路
+    # （stream_mode="updates"：逐节点打印状态写入，终端可观测）
+    grammar_check_subgraph.invoke({})
