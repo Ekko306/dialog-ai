@@ -4,17 +4,17 @@
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="title" value="grammar_check 子图 · LangGraph 官网规范渲染&lt;br&gt;&lt;font style=&quot;font-size:11px&quot; color=&quot;#666666&quot;&gt;参照官方 display(graph) 渲染：节点名 = add_node 注册名 · 实线 = add_edge 静态边 · 虚线 = add_conditional_edges 动态分支 · 条件边函数不渲染为节点&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#333333;" parent="1" vertex="1">
+                <mxCell id="title" value="grammar_check 子图 · LangGraph 官网规范渲染&lt;br&gt;&lt;font style=&quot;font-size:11px&quot; color=&quot;#666666&quot;&gt;2026-10-15 已对齐实现：节点名 = add_node 注册名 · 实线 = add_edge 静态边 · 虚线 = add_conditional_edges 动态分支 · 条件边函数不渲染为节点&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#333333;" parent="1" vertex="1">
                     <mxGeometry x="340" y="15" width="720" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="start" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="640" y="80" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="gnode" value="grammar_check_node&#10;─────────────────&#10;桩实现：&quot;天气&quot; in raw_text → has_issue&#10;目标实现：raw_text + ise_results → LLM&#10;with_structured_output(GrammarVerdict)&#10;输出：has_issue / grammar_feedback / logger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="540" y="165" width="320" height="110" as="geometry"/>
+                <mxCell id="gnode" value="grammar_check_node（唯一节点，RetryPolicy 挂载）&lt;br&gt;──────────────────────────&lt;br&gt;输入守卫：空文本 → empty_input&lt;br&gt;　　　　　超长(&gt;500字) → invalid_input&lt;br&gt;未配 DEEPSEEK_API_KEY → unavailable&lt;br&gt;ChatDeepSeek(temperature=0)&lt;br&gt;+ with_structured_output(GrammarVerdict)&lt;br&gt;瞬态异常上抛 → RetryPolicy 指数退避重试&lt;br&gt;输出：grammar_check_status / has_issue&lt;br&gt;/ issues / feedback / grammar_check_logs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="150" width="360" height="180" as="geometry"/>
                 </mxCell>
                 <mxCell id="end" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
-                    <mxGeometry x="640" y="320" width="120" height="40" as="geometry"/>
+                    <mxGeometry x="640" y="370" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="e1" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="start" target="gnode" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -22,68 +22,89 @@
                 <mxCell id="e2" style="edgeStyle=none;html=1;strokeColor=#333333;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gnode" target="end" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="parentC" value="父图 talk_agent_graph · OverAllState（本子图作为节点挂载 · 条件边 my_route 注册在父图）" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontStyle=1;fontSize=12;dashed=1;fillColor=none;strokeColor=#666666;fontColor=#333333;" parent="1" vertex="1">
-                    <mxGeometry x="280" y="430" width="840" height="520" as="geometry"/>
+                <mxCell id="parentC" value="父图 talk_agent_graph · OverAllState（语音分支节选 · coach_reply/tts/HITL 交互循环略 · 三分支条件边 my_route 注册在父图）" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontStyle=1;fontSize=12;dashed=1;fillColor=none;strokeColor=#666666;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="430" width="840" height="540" as="geometry"/>
                 </mxCell>
-                <mxCell id="gcsub" value="grammar_check_subgraph（本图）&#10;add_node(&quot;grammar_check_subgraph&quot;, ...)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="540" y="490" width="320" height="60" as="geometry"/>
+                <mxCell id="xfyun" value="xfyun_ita_tool_node&lt;br&gt;语音转写（IAT 听写）&lt;br&gt;→ raw_text + audio_data" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="300" y="490" width="160" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="xfyun" value="xfyun_ita_tool_node&#10;语音评测 → raw_text" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="300" y="490" width="200" height="60" as="geometry"/>
+                <mxCell id="isenode" value="xfyun_ise_tool_node&lt;br&gt;发音评测（ISE，en_vip）&lt;br&gt;→ ise_xml_info / ise_grade" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="490" width="170" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="tutor" value="grammer_tutor_subgraph&#10;语法纠错" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="320" y="630" width="220" height="60" as="geometry"/>
+                <mxCell id="analyze" value="ise_analyze_node&lt;br&gt;XML → LLM 发音点评&lt;br&gt;→ ise_check_results&lt;br&gt;（不进本子图）" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="670" y="490" width="170" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="polisher" value="polisher_subgraph&#10;语法润色" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="600" y="630" width="220" height="60" as="geometry"/>
+                <mxCell id="gcsub" value="grammar_check_subgraph（本图）&lt;br&gt;add_node(&quot;grammar_check_subgraph&quot;, ...)&lt;br&gt;输入：只收 raw_text" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="870" y="490" width="210" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="coach" value="coach_reply_subgraph&#10;教练回复" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="460" y="760" width="220" height="60" as="geometry"/>
+                <mxCell id="tutor" value="grammer_tutor_subgraph&lt;br&gt;语法纠错（给出正确写法）" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="640" width="210" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="pend" value="__end__&#10;（父图）" style="ellipse;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="530" y="870" width="120" height="40" as="geometry"/>
+                <mxCell id="polisher" value="polisher_subgraph&lt;br&gt;语法润色（不自然表达）" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="570" y="640" width="210" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="fallback" value="grammar_check_fallback_node&lt;br&gt;占位：手动补日志保齐&lt;br&gt;（check_failed 兜底路径）" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="820" y="640" width="220" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="coach" value="coach_reply_subgraph&lt;br&gt;教练回复" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="770" width="220" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="pend" value="__end__&lt;br&gt;（父图）" style="ellipse;whiteSpace=wrap;html=1;dashed=1;fillColor=#F5F5F5;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="610" y="890" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="mount" value="挂载为父图节点" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999999;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="end" target="gcsub" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="p1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="xfyun" target="gcsub" edge="1">
+                <mxCell id="p0a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="xfyun" target="isenode" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p0b" value="ise_xml_info" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="isenode" target="analyze" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p0c" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="analyze" target="gcsub" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="p2" value="my_route → has_issue" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9370DB;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gcsub" target="tutor" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="p3" value="my_route → has_no_issue" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9370DB;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gcsub" target="polisher" edge="1">
+                <mxCell id="p3" value="my_route → has_no_issue" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9370DB;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gcsub" target="polisher" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="p4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="tutor" target="coach" edge="1">
+                <mxCell id="p7" value="my_route → check_failed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#9370DB;strokeWidth=1.5;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="gcsub" target="fallback" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="p5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="polisher" target="coach" edge="1">
+                <mxCell id="p4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.2;entryY=0;entryDx=0;entryDy=0;" parent="1" source="tutor" target="coach" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="polisher" target="coach" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.8;entryY=0;entryDx=0;entryDy=0;" parent="1" source="fallback" target="coach" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="p6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#666666;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="coach" target="pend" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="schema" value="【输入 / 输出 Schema】&#10;SubgraphState（子图）&#10;· raw_text: str&#10;· has_issue: bool&#10;· logger: Annotated[list[str], add]&#10;&#10;GrammarVerdict(BaseModel) 目标输出&#10;· has_issue: bool&#10;· issues: list[str]&#10;· feedback: str&#10;&#10;父子衔接&#10;· 子图 logger 挂 add 累积&#10;· 父图 logger 用 LastValue 整体接管&#10;· 子图只输出 has_issue，路由在父图" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="10" y="80" width="250" height="330" as="geometry"/>
+                <mxCell id="schema" value="【输入 / 输出 Schema】&lt;br&gt;&lt;b&gt;GrammarCheckState（子图 State）&lt;/b&gt;&lt;br&gt;· raw_text: str（唯一输入）&lt;br&gt;· has_issue: bool&lt;br&gt;· issues: list[dict]&lt;br&gt;　每处 {fragment, error_type, description}&lt;br&gt;· feedback: str（概述，不含正确答案）&lt;br&gt;· grammar_check_status:&lt;br&gt;　ok / empty_input / invalid_input / unavailable&lt;br&gt;· grammar_check_logs: add 累积&lt;br&gt;&lt;br&gt;&lt;b&gt;GrammarVerdict（LLM 契约）&lt;/b&gt;&lt;br&gt;· has_issue: bool&lt;br&gt;· issues: list[GrammarIssue]&lt;br&gt;· feedback: str&lt;br&gt;&lt;br&gt;&lt;b&gt;父子衔接&lt;/b&gt;&lt;br&gt;· 子图输出 key 必须在父图 OverAllState&lt;br&gt;　声明，否则状态合并失败&lt;br&gt;· grammar_check_logs 独立于父图 logger&lt;br&gt;　（子图 add / 父图 LastValue，避免重复累积）&lt;br&gt;· 子图不自行路由，路由在父图 my_route" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="80" width="270" height="380" as="geometry"/>
                 </mxCell>
-                <mxCell id="duty" value="【节点职责（与代码对应）】&#10;grammar_check_node&#10;· 桩：&quot;天气&quot; in raw_text → has_issue&#10;· 目标：读 raw_text + 最近3条 messages&#10;· with_structured_output(GrammarVerdict)&#10;· 评测只评有错内容，纠错输出 JSON 化&#10;（指出错误单词并生成正确语句）&#10;&#10;my_route（父图条件边函数，非节点）&#10;· 读 state[&quot;has_issue&quot;]&#10;· 返回 &quot;has_issue&quot; / &quot;has_no_issue&quot;&#10;· path_map 映射到两个子图节点" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="10" y="440" width="250" height="310" as="geometry"/>
+                <mxCell id="duty" value="【节点职责（与代码对应）】&lt;br&gt;&lt;b&gt;grammar_check_node（唯一节点）&lt;/b&gt;&lt;br&gt;· 只检测硬语法错误：时态 / 主谓一致 /&lt;br&gt;　单复数 / 词性误用&lt;br&gt;· 语法正确但不自然 → 不算错误，&lt;br&gt;　留给 polisher 润色&lt;br&gt;· 只标记不纠错：严禁给出正确答案&lt;br&gt;　或改写句子，纠错归 grammar_tutor&lt;br&gt;· 空文本 / 超长 → 独立 status，&lt;br&gt;　不伪装成 has_issue=False&lt;br&gt;&lt;br&gt;&lt;b&gt;my_route（父图条件边函数，非节点）&lt;/b&gt;&lt;br&gt;· status != &quot;ok&quot; 或 has_issue 为 None&lt;br&gt;　→ &quot;check_failed&quot;&lt;br&gt;· has_issue=True → &quot;has_issue&quot;&lt;br&gt;· 否则 → &quot;has_no_issue&quot;&lt;br&gt;· path_map 映射到三个下游节点" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="490" width="270" height="330" as="geometry"/>
                 </mxCell>
-                <mxCell id="obs" value="【可观测性】&#10;LangSmith 记录每次调用&#10;token 用量与延迟统计" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="10" y="780" width="250" height="120" as="geometry"/>
+                <mxCell id="obs" value="【可观测性】&lt;br&gt;LangSmith 记录每次调用&lt;br&gt;token 用量与延迟统计&lt;br&gt;grammar_check_logs 随 State 落库" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="850" width="270" height="110" as="geometry"/>
                 </mxCell>
-                <mxCell id="params" value="【模型与参数调控】&#10;主模型 + fallbacks=[备用模型]&#10;temperature = 0（判定要稳定）&#10;CachePolicy：同句缓存不重复调用&#10;with_structured_output 约束输出" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="1140" y="80" width="250" height="200" as="geometry"/>
+                <mxCell id="params" value="【模型与参数】&lt;br&gt;ChatDeepSeek(deepseek-chat)&lt;br&gt;temperature = 0（判定要稳定）&lt;br&gt;with_structured_output 约束输出&lt;br&gt;（fallbacks / CachePolicy 未实现，团队待办）" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="80" width="250" height="150" as="geometry"/>
                 </mxCell>
-                <mxCell id="fault" value="【容错链（LangGraph 原生）】&#10;RetryPolicy(max_attempts=3)&#10;指数退避 + timeout=30s&#10;解析失败走 fallback 分支&#10;兜底文案保证图不断流" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="1140" y="310" width="250" height="200" as="geometry"/>
+                <mxCell id="fault" value="【容错链（LangGraph 原生）】&lt;br&gt;RetryPolicy(max_attempts=3,&lt;br&gt;backoff_factor=2.0, initial_interval=1.0)&lt;br&gt;retry_on=_is_transient：仅重试连接失败/&lt;br&gt;超时/5xx；401 等非瞬态就地 unavailable&lt;br&gt;timeout=30s：未实现（团队待办）&lt;br&gt;status 非 ok → 父图 check_failed 分支兜底" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="260" width="250" height="200" as="geometry"/>
                 </mxCell>
-                <mxCell id="conv" value="【本次修改要点（对齐官网规范）】&#10;1. 节点名 = add_node 注册名&#10;2. __start__ / __end__ 用椭圆&#10;3. 实线 = add_edge 静态边&#10;4. 虚线 = add_conditional_edges&#10;5. 条件边函数（my_route）是普通&#10;Python 函数，不是节点，不画菱形&#10;6. 父图条件边画在父图视角内；&#10;子图只输出 has_issue，不自行路由&#10;7. 灰色虚线框 = 父图上下文，&#10;非本子图内部节点" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#B85450;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;fontColor=#B85450;" parent="1" vertex="1">
-                    <mxGeometry x="1140" y="540" width="250" height="300" as="geometry"/>
+                <mxCell id="conv" value="【本次更新要点（2026-10-15 对齐代码）】&lt;br&gt;1. 节点注释：桩实现 → 真实 LLM 实现&lt;br&gt;2. 输入只有 raw_text，ISE 结果不进本子图&lt;br&gt;3. 契约：issues = GrammarIssue 三要素&lt;br&gt;　（fragment/error_type/description）&lt;br&gt;4. 明确&quot;只标记不纠错&quot;边界&lt;br&gt;5. my_route 两分支 → 三分支（+check_failed）&lt;br&gt;6. 新增 grammar_check_fallback_node&lt;br&gt;7. 子图 State 更名 GrammarCheckState，&lt;br&gt;　日志独立为 grammar_check_logs&lt;br&gt;8. ita 标注更正：语音转写(IAT)，&lt;br&gt;　语音评测是 ise → analyze 链路" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#B85450;align=left;verticalAlign=top;fontSize=11;spacingLeft=8;spacingTop=6;fontColor=#B85450;" parent="1" vertex="1">
+                    <mxGeometry x="1140" y="490" width="250" height="300" as="geometry"/>
                 </mxCell>
                 <mxCell id="legend" value="图例：实线 = add_edge 静态边  |  虚线(紫) = add_conditional_edges 动态分支  |  浅紫椭圆 = __start__/__end__  |  浅紫圆角矩形 = 图节点  |  灰色虚线框 = 父图上下文（非本子图内部节点）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;align=center;" parent="1" vertex="1">
-                    <mxGeometry x="280" y="980" width="840" height="50" as="geometry"/>
+                    <mxGeometry x="280" y="990" width="840" height="40" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
