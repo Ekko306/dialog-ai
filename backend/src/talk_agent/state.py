@@ -12,6 +12,18 @@ class OverAllState(TypedDict, total=False):
     # （MessagesState = 只有 messages 字段的 TypedDict，等价展开而非继承）
     messages: Annotated[list[AnyMessage], add_messages]
 
+    # 语音链路（IAT/ISE）
+    iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
+    audio_data: bytes  # 麦克风录音 PCM（ita 节点存入，ISE 节点消费，一次录音两份产出）
+    audio_file_path: str  # ISE 音频文件路径（mock/dev 调试用，生产不走）
+    ref_text: str  # ISE 标准参考句（教练预设，非 IAT 识别结果）
+    ise_lang: str  # 评测语言 cn/en（引擎 ent=cn_vip/en_vip）；缺省 en（产品定位英文学习）
+    ise_status: str  # ok / no_audio / no_ref / unavailable（独立于语法状态，不参与路由）
+    ise_xml_info: str  # ISE 原始评测 XML（带详细发音错误）
+    ise_grade: float | None  # 评测总分（XML total_score 直取；is_rejected/解析失败时为 None）
+    ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[{word,score,comment}], "advice": str}
+
+    # 逻辑类
     raw_text: str  # 未清洗的文本
     audio: bytes
 
@@ -24,12 +36,19 @@ class OverAllState(TypedDict, total=False):
     has_issue: bool
     new_dialog: bool
 
+    # grammar_check 子图输出契约（子图 key 必须在父图 schema 声明，否则状态合并失败）
+    issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
+    feedback: str  # 错误简短概述（不含正确答案）；无错误为空字符串
+    grammar_check_status: str  # ok / empty_input / invalid_input / unavailable
+
     # 日志类
     talk_ids: Annotated[list[str], add]  # 对话id，某次图执行
     cur_talk_id: str  # 当前对话id
     # LastValue：值由子图输出整体接管（子图内部用 add 累积后整表输出）。
     # 注意：父图层面不要直接写 logger，LastValue 语义下会覆盖而非追加。
     logger: list[str]
+    # LastValue：同 logger——子图内 add 累积，父图整表接管（父图节点追加日志需手动 list+append）
+    grammar_check_logs: list[str]
 
 
 class SubgraphState(TypedDict, total=False):

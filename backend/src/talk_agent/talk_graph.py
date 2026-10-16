@@ -83,12 +83,24 @@ def new_context_node(state: OverAllState, runtime: Runtime[CoachContext]) -> Sub
         "new_dialog": True
     }
 
-# 定义自定义路由
-def has_issue_route(state: OverAllState) -> Literal["has_issue", "has_no_issue"]:
-    if state.get("has_issue", False):
-        return "has_issue"
-    else:
-        return "has_no_issue"
+# 定义自定义路由：三分支——检查成功按 has_issue 走纠错/润色；
+# 检查未完成一律 check_failed，绝不能把"没检查成"当成"没有语法问题"
+def has_issue_route(state: OverAllState) -> Literal["has_issue", "has_no_issue", "check_failed"]:
+    if state.get("grammar_check_status") != "ok" or state.get("has_issue") is None:
+        return "check_failed"
+
+    return "has_issue" if state.get("has_issue") else "has_no_issue"
+
+def grammar_check_fallback_node(state: OverAllState) -> OverAllState:
+    """语法检查未完成（empty_input / invalid_input / unavailable）时的兜底占位节点。
+
+    占位实现：只记录失败原因，等团队后续决定兜底话术如何回给用户。
+    """
+    status = state.get("grammar_check_status", "unknown")
+    # grammar_check_logs 在父图是 LastValue（整表接管），父图节点追加日志需手动合并
+    logs = list(state.get("grammar_check_logs", []))
+    logs.append(f"grammar_check_fallback_node：语法检查未完成({status})，走兜底分支")
+    return {"grammar_check_logs": logs}
 
 
 # 定义节点
@@ -98,6 +110,7 @@ parent_builder.add_node("coach_reply_subgraph",coach_reply_subgraph)
 parent_builder.add_node("new_context_node", new_context_node) # 更新state数据到store
 parent_builder.add_node("HITL_node", HITL_node)
 parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
+parent_builder.add_node("grammar_check_fallback_node",grammar_check_fallback_node)
 parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
 parent_builder.add_node("polisher_subgraph",polisher_subgraph)
 
@@ -122,11 +135,15 @@ parent_builder.add_edge("new_context_node",END)
 parent_builder.add_conditional_edges("grammar_check_subgraph", has_issue_route, path_map={
     "has_issue": "grammer_tutor_subgraph",
     "has_no_issue": "polisher_subgraph",
+    "check_failed": "grammar_check_fallback_node",
 })
 # has_issue分支
 parent_builder.add_edge("grammer_tutor_subgraph", END)
 # has_no_issue分支
 parent_builder.add_edge("polisher_subgraph", END)
+# check_failed分支
+parent_builder.add_edge("grammar_check_fallback_node", END)
+
 
 # 构建图
 # langgraph dev / LangGraph 平台会自动注入持久化 checkpointer，
