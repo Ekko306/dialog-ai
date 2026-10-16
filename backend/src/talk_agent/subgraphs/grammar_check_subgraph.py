@@ -10,12 +10,19 @@ if str(_BACKEND_DIR) not in sys.path:
 from langgraph.graph import StateGraph,START,END  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
+from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import xfyun_iat_tool_by_mic
+
 
 # 输入音频
 # 1. 测试通过文件
 # 2. 开发环境通过主节点传递音频变量
-def get_audio_node():
-    pass
+# ita_audio分支
+def ita_tool_node(state:SubgraphState) -> SubgraphState:
+    text, _audio = xfyun_iat_tool_by_mic()  # audio 为录音 PCM 字节，暂不放入 state
+    return {
+        "raw_text": text,
+        "audio": _audio  # todo优化成落盘，现在每次很大数据一直携带
+    }
 
 
 # 1. 先调用ise
@@ -34,9 +41,11 @@ def grammar_check_node(state:SubgraphState) -> SubgraphState:
 
 #1.4 构建子图
 builder = StateGraph(state_schema=SubgraphState)
+builder.add_node("ita_tool_node",ita_tool_node)
 builder.add_node("grammar_check_node",grammar_check_node)
 
-builder.add_edge(START,"grammar_check_node")
+builder.add_edge(START,"ita_tool_node")
+builder.add_edge("ita_tool_node","grammar_check_node")
 builder.add_edge("grammar_check_node",END)
 
 grammar_check_subgraph = builder.compile()

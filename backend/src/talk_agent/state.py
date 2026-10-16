@@ -47,6 +47,7 @@ class SubgraphState(TypedDict, total=False):
     messages: Annotated[list[AnyMessage], add_messages]
 
     raw_text: str  # 未清洗的文本
+    audio: bytes
 
     # context 快照：入口节点从 runtime.context/Store 解析一次后写入，
     # 下游节点直接读 state，无需各自调 resolve_context

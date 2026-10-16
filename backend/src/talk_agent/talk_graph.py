@@ -17,7 +17,6 @@ from src.talk_agent.subgraphs.polisher_subgraph import polisher_subgraph  # noqa
 
 from src.talk_agent.subgraphs.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
 from typing import Literal  # noqa: E402
-from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import xfyun_iat_tool_by_mic
 from langgraph.types import interrupt  # noqa: E402
 from src.tools.text_tool.scene_tool import new_scene_tool
 
@@ -52,14 +51,14 @@ def HITL_node(state: OverAllState) -> OverAllState:
     }
 
 
-def HITL_route(state: OverAllState) -> Literal["new_context", "ita_audio", "__end__"]:
+def HITL_route(state: OverAllState) -> Literal["new_context", "audio_check", "__end__"]:
     user_input = state.get("user_input", "")
     if "_new_context_" in user_input:
         return "new_context"
     if "_test_coach_" in user_input:
         return "__end__"
     else:
-        return "ita_audio"
+        return "audio_check"
 
 
 # new_context分支
@@ -84,14 +83,6 @@ def new_context_node(state: OverAllState, runtime: Runtime[CoachContext]) -> Sub
         "new_dialog": True
     }
 
-# ita_audio分支
-def ita_tool_node(state:OverAllState) -> OverAllState:
-    text, _audio = xfyun_iat_tool_by_mic()  # audio 为录音 PCM 字节，暂不放入 state
-    return {
-        "raw_text": text,
-        "audio": _audio  # todo优化成落盘，现在每次很大数据一直携带
-    }
-
 # 定义自定义路由
 def has_issue_route(state: OverAllState) -> Literal["has_issue", "has_no_issue"]:
     if state.get("has_issue", False):
@@ -106,7 +97,6 @@ parent_builder.add_node("store_resolve_node", store_resolve_node)  # store数据
 parent_builder.add_node("coach_reply_subgraph",coach_reply_subgraph)
 parent_builder.add_node("new_context_node", new_context_node) # 更新state数据到store
 parent_builder.add_node("HITL_node", HITL_node)
-parent_builder.add_node("ita_tool_node", ita_tool_node)
 parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
 parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
 parent_builder.add_node("polisher_subgraph",polisher_subgraph)
@@ -118,7 +108,7 @@ parent_builder.add_edge("store_resolve_node","coach_reply_subgraph")
 parent_builder.add_edge("coach_reply_subgraph","HITL_node")
 parent_builder.add_conditional_edges("HITL_node", HITL_route, path_map={
     "new_context": "new_context_node",
-    "ita_audio": "ita_tool_node",
+    "audio_check": "grammar_check_subgraph",
     "__end__": END,  # 路由返回的每个值都必须在 path_map 里，END 分支也要登记
 })
 
@@ -127,8 +117,8 @@ parent_builder.add_edge("new_context_node",END)
 
 
 
-# ita_audio分支
-parent_builder.add_edge("ita_tool_node","grammar_check_subgraph")
+# audio_check分支：ita_tool_node 是 grammar_check_subgraph 的入口节点，
+# 上方 HITL_route 的 "audio_check" → "grammar_check_subgraph" 即进入 语音转写→语法检查 链路
 parent_builder.add_conditional_edges("grammar_check_subgraph", has_issue_route, path_map={
     "has_issue": "grammer_tutor_subgraph",
     "has_no_issue": "polisher_subgraph",
