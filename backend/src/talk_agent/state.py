@@ -2,9 +2,15 @@ from typing import Annotated, TypedDict
 
 from operator import add
 
+from langchain_core.messages import AnyMessage
+from langgraph.graph.message import add_messages
+
 
 class OverAllState(TypedDict, total=False):
-    raw_text: str  # 未清洗的文本
+    # messages 显式声明在 total=False 类内：全部 key 可省略，
+    # 节点返回部分更新（如只有 logger）时类型检查才可通过。
+    # （MessagesState = 只有 messages 字段的 TypedDict，等价展开而非继承）
+    messages: Annotated[list[AnyMessage], add_messages]
 
     # 语音链路（IAT/ISE）
     iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
@@ -18,7 +24,17 @@ class OverAllState(TypedDict, total=False):
     ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[{word,score,comment}], "advice": str}
 
     # 逻辑类
+    raw_text: str  # 未清洗的文本
+    audio: bytes
+
+    # context 快照（子图 hydrate 后经共享 key 回流到父图，父图分支也可直接读）
+    role: str
+    scenario: str
+
+    # 走分支类状态 （#todo ，改成Command?）
+    user_input: str
     has_issue: bool
+    new_dialog: bool
 
     # grammar_check 子图输出契约（子图 key 必须在父图 schema 声明，否则状态合并失败）
     issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
@@ -47,10 +63,22 @@ class SubgraphState(TypedDict, total=False):
     - 父图 logger 用 LastValue：直接接管子图输出的累积列表
     """
 
+    messages: Annotated[list[AnyMessage], add_messages]
+
     raw_text: str  # 未清洗的文本
+    audio: bytes
+
+    # context 快照：入口节点从 runtime.context/Store 解析一次后写入，
+    # 下游节点直接读 state，无需各自调 resolve_context
+    role: str
+    scenario: str
 
     # 逻辑类
     has_issue: bool
 
     # 日志类（add：累积之前的日志 + 本次新增，输出完整列表）
     logger: Annotated[list[str], add]
+
+    new_dialog: bool # 默认值None
+    user_input: str
+
