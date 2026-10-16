@@ -1,17 +1,28 @@
 from typing import Annotated, TypedDict
 
 from operator import add
-from langgraph.graph import MessagesState, StateGraph,START,END
+
+from langchain_core.messages import AnyMessage
+from langgraph.graph.message import add_messages
 
 
+class OverAllState(TypedDict, total=False):
+    # messages 显式声明在 total=False 类内：全部 key 可省略，
+    # 节点返回部分更新（如只有 logger）时类型检查才可通过。
+    # （MessagesState = 只有 messages 字段的 TypedDict，等价展开而非继承）
+    messages: Annotated[list[AnyMessage], add_messages]
 
-class OverAllState(MessagesState, total=False):
     raw_text: str  # 未清洗的文本
+    audio: bytes
 
-    
+    # context 快照（子图 hydrate 后经共享 key 回流到父图，父图分支也可直接读）
+    role: str
+    scenario: str
+
     # 走分支类状态 （#todo ，改成Command?）
     user_input: str
     has_issue: bool
+    new_dialog: bool
 
     # 语法辅导（grammar_check → grammer_tutor 的契约字段）
     issues: list[str]  # 上游 grammar_check 输出的错误列表
@@ -29,7 +40,7 @@ class OverAllState(MessagesState, total=False):
     logger: list[str]
 
 
-class SubgraphState(MessagesState, total=False):
+class SubgraphState(TypedDict, total=False):
     """子图 schema：logger 挂 add reducer，在子图内部累积。
 
     机制：子图作为节点挂载时，父图把共享 key 的当前值喂给子图，
@@ -41,7 +52,14 @@ class SubgraphState(MessagesState, total=False):
     - 父图 logger 用 LastValue：直接接管子图输出的累积列表
     """
 
+    messages: Annotated[list[AnyMessage], add_messages]
+
     raw_text: str  # 未清洗的文本
+
+    # context 快照：入口节点从 runtime.context/Store 解析一次后写入，
+    # 下游节点直接读 state，无需各自调 resolve_context
+    role: str
+    scenario: str
 
     # 逻辑类
     has_issue: bool
@@ -56,3 +74,7 @@ class SubgraphState(MessagesState, total=False):
 
     # 日志类（add：累积之前的日志 + 本次新增，输出完整列表）
     logger: Annotated[list[str], add]
+
+    new_dialog: bool # 默认值None
+    user_input: str
+

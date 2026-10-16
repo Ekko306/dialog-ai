@@ -16,26 +16,22 @@ from langgraph.store.base import BaseStore
 
 #1.1 上下文 schema：字段为 None 表示"本次未指定"，节点将沿用 Store 里上次的值。
 # Studio 的 Assistant Default Configuration / 主图 / curl 传值时字段非 None，视为本次显式覆盖
+
+
+DEFAULT_ROLE = "英语口语教练"
+DEFAULT_SCENARIO = "日常闲聊"
+
 @dataclass
 class CoachContext:
     role: str | None = None
     scenario: str | None = None
 
 
-DEFAULT_ROLE = "英语口语教练"
-DEFAULT_SCENARIO = "日常闲聊"
+
 
 # Store 命名空间：生产可改为 ("coach_context", user_id) 做用户级隔离
 _CONTEXT_NS = ("coach_context",)
 _CONTEXT_KEY = "current"
-
-# context 轮换数组：human-in-the-loop 触发"切换下一个"时按此顺序循环
-CONTEXT_SEQUENCE = [
-    CoachContext(role="英语口语教练", scenario="日常闲聊"),
-    CoachContext(role="雅思口语考官", scenario="Part 1 面试"),
-    CoachContext(role="雅思口语考官", scenario="Part 2 话题陈述"),
-    CoachContext(role="商务英语教练", scenario="职场会议"),
-]
 
 
 #1.2 Store 读写（跨对话记住 context 的持久化后盾）
@@ -79,12 +75,3 @@ def resolve_context(
         scenario, scenario_src = DEFAULT_SCENARIO, "默认值"
 
     return role, scenario, f"role:{role_src}/scenario:{scenario_src}"
-
-
-#1.4 轮换：取当前 context 在 CONTEXT_SEQUENCE 中的下一个（找不到则从头开始）
-def mock_next_context(role: str, scenario: str) -> CoachContext:
-    idx = next(
-        (i for i, c in enumerate(CONTEXT_SEQUENCE) if c.role == role and c.scenario == scenario),
-        -1,
-    )
-    return CONTEXT_SEQUENCE[(idx + 1) % len(CONTEXT_SEQUENCE)] if idx >= 0 else CONTEXT_SEQUENCE[0]
