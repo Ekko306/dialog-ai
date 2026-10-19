@@ -5,10 +5,10 @@
       "course_agent": "./src/course_agent/course_graph.py:graph",
       "talk_agent": "./src/talk_agent/talk_graph.py:graph",
       "tool_agent": "./src/tool_agent/tool_graph.py:graph",
-      "grammar_check": "./src/talk_agent/subgraphs/grammar_check_subgraph.py:grammar_check_subgraph",
-      "grammer_tutor": "./src/talk_agent/subgraphs/grammer_tutor_subgraph.py:grammer_tutor_subgraph",
-      "polisher": "./src/talk_agent/subgraphs/polisher_subgraph.py:polisher_subgraph",
-      "coach_reply": "./src/talk_agent/subgraphs/coach_reply_subgraph.py:coach_reply_subgraph"
+      "grammar_check": "./src/talk_agent/subgraphs/grammar_check_subgraph/grammar_check_subgraph.py:grammar_check_subgraph",
+      "grammer_tutor": "./src/talk_agent/subgraphs/grammar_tutor_subgraph/grammar_tutor_subgraph.py:grammer_tutor_subgraph",
+      "polisher": "./src/talk_agent/subgraphs/polisher_subgraph/polisher_subgraph.py:polisher_subgraph",
+      "coach_reply": "./src/talk_agent/subgraphs/coach_reply_subgraph/coach_reply_subgraph.py:coach_reply_subgraph"
   },
   "env": ".env",
   "image_distro": "wolfi"
