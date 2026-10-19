@@ -110,7 +110,7 @@ TUTOR_SYSTEM_PROMPT = (
 
 
 # ---------------- 纠错准则 Skill（加载式接入，参考 Agent Skills 的 SKILL.md 规范） ----------------
-# 路径：src/talk_agent/skills/grammar-error-precision/SKILL.md
+# 路径：src/llm_models/prompts/skills/grammar-error-precision/SKILL.md
 # 模块级缓存：进程内只读一次磁盘，避免每次请求 IO；开发期改动 SKILL.md 后重启进程生效
 _SKILL_CACHE: dict[str, str] = {}
 
@@ -119,7 +119,7 @@ def load_tutor_skill() -> str:
     """读取纠错准则正文（剥离 YAML frontmatter 元数据）；文件缺失或不可读时返回空串，不阻塞流程。"""
     if "text" in _SKILL_CACHE:
         return _SKILL_CACHE["text"]
-    skill_path = Path(__file__).resolve().parents[1] / "skills" / "grammar-error-precision" / "SKILL.md"
+    skill_path = Path(__file__).resolve().parents[3] / "llm_models" / "prompts" / "skills" / "grammar-error-precision" / "SKILL.md"
     try:
         text = skill_path.read_text(encoding="utf-8")
         if text.startswith("---"):  # --- 之间是 name/description 元数据，不进提示词
