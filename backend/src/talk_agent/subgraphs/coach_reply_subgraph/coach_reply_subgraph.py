@@ -12,14 +12,14 @@ from langgraph.runtime import Runtime  # noqa: E402
 from langgraph.types import interrupt  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
-from src.talk_agent.coach_context import (  # noqa: E402
+from src.talk_agent.context.coach_context import (  # noqa: E402
     CoachContext,
 )
 from src.llm_models.coach_model import (get_coach_model, NEW_DIALOG_START)
 from langchain_core.messages import HumanMessage
 from typing import Literal  # noqa: E402
 
-from src.talk_agent.coach_context import (  # noqa: E402
+from src.talk_agent.context.coach_context import (  # noqa: E402
     DEFAULT_ROLE,
     DEFAULT_SCENARIO,
     CoachContext,

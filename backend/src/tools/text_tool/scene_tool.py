@@ -1,6 +1,6 @@
 # user_input： 1. 新场景 2. 换话题 3. 选场景
 
-from src.talk_agent.coach_context import CoachContext
+from src.talk_agent.context.coach_context import CoachContext
 
 DEFAULT_ROLE = "英语口语教练"
 DEFAULT_SCENARIO = "日常闲聊"

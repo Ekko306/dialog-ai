@@ -10,17 +10,17 @@ if str(_BACKEND_DIR) not in sys.path:
 from langgraph.graph import StateGraph,START,END  # noqa: E402
 
 from src.talk_agent.state import OverAllState, SubgraphState  # noqa: E402
-from src.talk_agent.subgraphs.grammar_check_subgraph import grammar_check_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.grammar_check_subgraph.grammar_check_subgraph import grammar_check_subgraph  # noqa: E402
 
-from src.talk_agent.subgraphs.grammer_tutor_subgraph import grammer_tutor_subgraph  # noqa: E402
-from src.talk_agent.subgraphs.polisher_subgraph import polisher_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.grammar_tutor_subgraph.grammar_tutor_subgraph import grammer_tutor_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.polisher_subgraph.polisher_subgraph import polisher_subgraph  # noqa: E402
 
-from src.talk_agent.subgraphs.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.coach_reply_subgraph.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
 from typing import Literal  # noqa: E402
 from langgraph.types import interrupt  # noqa: E402
 from src.tools.text_tool.scene_tool import new_scene_tool
 
-from src.talk_agent.coach_context import (  # noqa: E402
+from src.talk_agent.context.coach_context import (  # noqa: E402
     DEFAULT_ROLE,
     DEFAULT_SCENARIO,
     CoachContext,
