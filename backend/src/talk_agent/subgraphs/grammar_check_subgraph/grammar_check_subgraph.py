@@ -35,7 +35,7 @@ from langchain_deepseek import ChatDeepSeek
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import RetryPolicy  # langgraph 1.x 中 RetryPolicy 位于 langgraph.types
 
-from src.talk_agent.subgraphs.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
+from src.talk_agent.subgraphs.grammar_check_subgraph.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
 from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
     xfyun_iat_tool_by_mic,
     xfyun_iat_tool_by_audio_data,

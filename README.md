@@ -13,6 +13,8 @@
 
 # 前端Typescript
 - 脚手架：npx create-assistant-ui@latest -t langchain
+- Github: https://github.com/assistant-ui/assistant-ui
+- 官网：https://www.assistant-ui.com/
 
 
 # 配置环境参数
