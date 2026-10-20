@@ -142,40 +142,69 @@ def polisher_node(state: SubgraphState) -> dict:
 
         logger.append("polisher_node: 润色失败，已回退到原文")
 
-    # 5. enable_tts 从顶层 state 读取（方案 C：控制开关不打包）
+    # 5. TTS 交给下游 tts_node 负责
+    logger.append("polisher_node: 润色完成，交由 tts_node")
+    return {"polisher": polisher_out, "logger": logger}
+
+
+def tts_node(state: SubgraphState) -> dict:
+    """独立节点：读取润色结果，按 enable_tts 开关合成语音。
+
+    续杯模式：
+    - polisher_node 已返回完整 7 字段 polisher 字典
+    - 本节点读走 state["polisher"] 的完整内容
+    - 只更新 polished_audio 和 tts_status 两个字段
+    - 再把完整字典写回（LangGraph 字段级整体替换，不能只返回部分字段）
+    """
+    logger = ["tts_node: 开始执行"]
+
+    # 1. 续杯：读上游已写入的完整 polisher 字典
+    polisher = dict(state.get("polisher", {}))
+
+    # 2. enable_tts 从顶层 state 读取（方案 C：控制开关不打包）
     enable_tts = state.get("enable_tts", False)
 
     if not enable_tts:
-        polisher_out["tts_status"] = "skipped"
-        logger.append("polisher_node: 已跳过 TTS")
-        return {"polisher": polisher_out, "logger": logger}
+        polisher["tts_status"] = "skipped"
+        logger.append("tts_node: enable_tts=False，跳过语音合成")
+        return {"polisher": polisher, "logger": logger}
 
-    # 6. 调用科大讯飞 TTS（普通函数，直接调用）
+    # 3. 调用科大讯飞 TTS（普通函数，直接调用）
+    polished_text = polisher.get("polished_text", "")
+
+    if not polished_text:
+        polisher["tts_status"] = "skipped"
+        logger.append("tts_node: polished_text 为空，跳过语音合成")
+        return {"polisher": polisher, "logger": logger}
+
     try:
-        audio_bytes = xfyun_tts_tool_by_text(polisher_out["polished_text"])
+        audio_bytes = xfyun_tts_tool_by_text(polished_text)
 
         if not isinstance(audio_bytes, bytes) or not audio_bytes:
-            raise ValueError("TTS 未返回有效音频字节，请检查工具的返回格式")
+            raise ValueError("TTS 未返回有效音频字节")
 
-        polisher_out["polished_audio"] = audio_bytes
-        polisher_out["tts_status"] = "success"
-        logger.append("polisher_node: TTS 合成成功")
+        polisher["polished_audio"] = audio_bytes
+        polisher["tts_status"] = "success"
+        logger.append("tts_node: 语音合成成功")
 
     except Exception:
         python_logger.exception("科大讯飞 TTS 调用失败")
-        polisher_out["tts_status"] = "failed"
-        logger.append("polisher_node: TTS 合成失败")
+        polisher["polished_audio"] = b""
+        polisher["tts_status"] = "failed"
+        logger.append("tts_node: 语音合成失败")
 
-    return {"polisher": polisher_out, "logger": logger}
+    return {"polisher": polisher, "logger": logger}
 
 
 # 构建 LangGraph 子图。
 builder = StateGraph(SubgraphState)
 
 builder.add_node("polisher_node", polisher_node)
+builder.add_node("tts_node", tts_node)
 
 builder.add_edge(START, "polisher_node")
-builder.add_edge("polisher_node", END)
+builder.add_edge("polisher_node", "tts_node")
+builder.add_edge("tts_node", END)
 
 polisher_subgraph = builder.compile()
 
