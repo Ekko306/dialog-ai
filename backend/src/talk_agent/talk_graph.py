@@ -10,17 +10,18 @@ if str(_BACKEND_DIR) not in sys.path:
 from langgraph.graph import StateGraph,START,END  # noqa: E402
 
 from src.talk_agent.state import OverAllState, SubgraphState  # noqa: E402
-from src.talk_agent.subgraphs.grammar_check_subgraph import grammar_check_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.grammar_check_subgraph.grammar_check_subgraph import grammar_check_subgraph  # noqa: E402
 
-from src.talk_agent.subgraphs.grammer_tutor_subgraph import grammer_tutor_subgraph  # noqa: E402
-from src.talk_agent.subgraphs.polisher_subgraph import polisher_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.grammar_tutor_subgraph.grammar_tutor_subgraph import grammer_tutor_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.polisher_subgraph.polisher_subgraph import polisher_subgraph  # noqa: E402
 
-from src.talk_agent.subgraphs.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
+from src.talk_agent.subgraphs.coach_reply_subgraph.coach_reply_subgraph import coach_reply_subgraph  # noqa: E402
 from typing import Literal  # noqa: E402
 from langgraph.types import interrupt  # noqa: E402
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage  # noqa: E402
 from src.tools.text_tool.scene_tool import new_scene_tool
 
-from src.talk_agent.coach_context import (  # noqa: E402
+from src.talk_agent.context.coach_context import (  # noqa: E402
     DEFAULT_ROLE,
     DEFAULT_SCENARIO,
     CoachContext,
@@ -47,9 +48,14 @@ def store_resolve_node(state: OverAllState, runtime: Runtime[CoachContext]) -> O
 def HITL_node(state: OverAllState) -> OverAllState:
     user_input = interrupt({"prompt": "请输入指令（输入 '_new_context_' 进入下一个教练场景， '_test_coach_'跳过纠错，直接coach对话）"})
     print(f"user_input:{user_input}")
-    return {
-        "user_input": user_input
-    }
+    # LangGraph 官方 HITL 范式：resume 值作为用户回合写入 messages。
+    # 前端 useStreamRuntime 以图状态 messages 为唯一渲染源，
+    # 不写入则用户输入永远不出现在对话流里，轮次之间也就没有分隔边界。
+    # _new_context_/_test_coach_ 是内部指令（与 HITL_route 同一判定约定），不入对话记录。
+    update: OverAllState = {"user_input": user_input}
+    if "_new_context_" not in user_input and "_test_coach_" not in user_input:
+        update["messages"] = [HumanMessage(content=user_input)]
+    return update
 
 
 def HITL_route(state: OverAllState) -> Literal["new_context", "audio_check", "__end__"]:
@@ -104,6 +110,27 @@ def grammar_check_fallback_node(state: OverAllState) -> OverAllState:
     return {"grammar_check_logs": logs}
 
 
+def tutor_reply_message_node(state: OverAllState) -> OverAllState:
+    """把 grammer_tutor 输出的 tutor_reply 从 state 提升为对话消息（round 收尾）。
+
+    - AIMessage(tutor_reply)：纠错讲解作为一条教练侧 AI 消息进入 messages，
+      前端 useStreamRuntime 只渲染 messages，由此成为常驻的左侧对话消息
+      （与 HITL_node 写 HumanMessage 同一官方范式，历史/checkpointer/刷新均保留）。
+    - SystemMessage("")：空系统消息分隔符。assistant-ui 转换层会把相邻的
+      assistant 消息合并成同一个气泡，tutor 讲解与下一轮 coach 话题相邻会被
+      粘连；system 角色在消息块切分时强制断开，空内容渲染近乎零占位。
+    """
+    tutor_reply = state.get("tutor_reply") or ""
+    if not tutor_reply.strip():
+        return {}
+    return {
+        "messages": [
+            AIMessage(content=tutor_reply),
+            SystemMessage(content=""),
+        ]
+    }
+
+
 # 定义节点
 parent_builder = StateGraph(state_schema=OverAllState, context_schema=CoachContext)
 parent_builder.add_node("store_resolve_node", store_resolve_node)  # store数据转state
@@ -113,6 +140,7 @@ parent_builder.add_node("HITL_node", HITL_node)
 parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
 parent_builder.add_node("grammar_check_fallback_node",grammar_check_fallback_node)
 parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
+parent_builder.add_node("tutor_reply_message_node",tutor_reply_message_node)
 parent_builder.add_node("polisher_subgraph",polisher_subgraph)
 
 
@@ -138,8 +166,9 @@ parent_builder.add_conditional_edges("grammar_check_subgraph", has_issue_route, 
     "has_no_issue": "polisher_subgraph",
     "check_failed": "grammar_check_fallback_node",
 })
-# has_issue分支
-parent_builder.add_edge("grammer_tutor_subgraph", END)
+# has_issue分支：tutor 输出先落成对话消息（tutor_reply → AI 消息），再结束
+parent_builder.add_edge("grammer_tutor_subgraph", "tutor_reply_message_node")
+parent_builder.add_edge("tutor_reply_message_node", END)
 # has_no_issue分支
 parent_builder.add_edge("polisher_subgraph", END)
 # check_failed分支

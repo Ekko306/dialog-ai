@@ -2,6 +2,15 @@
   "mcpServers": {
     "docs-langchain": {
       "url": "https://docs.langchain.com/mcp"
+    },
+    "assistant-ui": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@assistant-ui/mcp-docs-server"
+      ]
     }
   }
 }
+
+
