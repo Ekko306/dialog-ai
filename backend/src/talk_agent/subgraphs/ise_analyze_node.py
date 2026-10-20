@@ -34,6 +34,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_deepseek import ChatDeepSeek
 
 from src.talk_agent.state import OverAllState  # noqa: E402
+from src.talk_agent.utils import is_transient  # noqa: E402  公共瞬态判定（PR 评审：提炼为公共函数）
 
 # 复用 backend/.env（DEEPSEEK_API_KEY 在里面）
 load_dotenv(_BACKEND_DIR / ".env")
@@ -178,11 +179,8 @@ def ise_analyze_node(state: OverAllState) -> OverAllState:
     if not xml:
         return _degraded(f"本次无发音评测数据（ise_status={state.get('ise_status', 'unknown')}），跳过点评")
 
-    # 量表满分：cn 引擎百分制(100)，en 引擎 5 分制(5)——归一化成统一百分制
-    lang = (state.get("ise_lang") or "en").strip().lower()
-    max_score = 100.0 if lang == "cn" else 5.0
-
-    info = parse_ise_xml(xml, max_score=max_score)
+    # 量表满分：评测引擎固定英文 en_vip，5 分制——解析层归一化成统一百分制
+    info = parse_ise_xml(xml, max_score=5.0)
     if info is None:
         return _degraded("评测结果 XML 解析失败，无法点评")
     if info["is_rejected"]:
@@ -196,7 +194,7 @@ def ise_analyze_node(state: OverAllState) -> OverAllState:
             [SystemMessage(content=ANALYZE_PROMPT), HumanMessage(content=_build_summary(info))]
         )
     except Exception as e:
-        if ise_is_transient(e):
+        if is_transient(e):
             raise  # 瞬态上抛 → RetryPolicy；3 次耗尽由调用方兜底
         return _degraded(f"点评生成失败（{type(e).__name__}），请稍后重试")
 
@@ -206,14 +204,6 @@ def ise_analyze_node(state: OverAllState) -> OverAllState:
             "advice": res.scoring_advice,
         }
     }
-
-
-def ise_is_transient(e: Exception) -> bool:
-    """瞬态错误判定（与父图 _is_transient 同款，供 RetryPolicy 挂载引用）。"""
-    if isinstance(e, (ConnectionError, TimeoutError)):
-        return True
-    status = getattr(e, "status_code", None)
-    return isinstance(status, int) and status >= 500
 
 
 if __name__ == "__main__":

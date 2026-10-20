@@ -8,6 +8,8 @@ from langgraph.graph.message import add_messages
 
 from langgraph.graph import MessagesState, StateGraph, START, END
 
+from src.talk_agent.subgraphs.grammar_check_contracts import GrammarCheckStatus  # noqa: E402
+
 class OverAllState(TypedDict, total=False):
     # messages 显式声明在 total=False 类内：全部 key 可省略，
     # 节点返回部分更新（如只有 logger）时类型检查才可通过。
@@ -19,7 +21,6 @@ class OverAllState(TypedDict, total=False):
     audio_data: bytes  # 麦克风录音 PCM（ita 节点存入，ISE 节点消费，一次录音两份产出）
     audio_file_path: str  # ISE 音频文件路径（mock/dev 调试用，生产不走）
     ref_text: str  # ISE 标准参考句（教练预设优先；未传时自动回退用 IAT 转写文本）
-    ise_lang: str  # 评测语言 cn/en（引擎 ent=cn_vip/en_vip）；缺省 en（产品定位英文学习）
     ise_status: str  # ok / no_audio / no_ref / unavailable（独立于语法状态，不参与路由）
     ise_xml_info: str  # ISE 原始评测 XML（带详细发音错误）
     ise_grade: float | None  # 评测总分（XML total_score 直取；is_rejected/解析失败时为 None）
@@ -46,7 +47,7 @@ class OverAllState(TypedDict, total=False):
     new_dialog: bool
 
     # 语法辅导（grammar_check → grammer_tutor 的契约字段）
-    issues: list[str]  # 上游 grammar_check 输出的错误列表
+    # issues 由下方 grammar_check 子图输出契约统一定义（list[dict]；旧 list[str] 重复声明已去重）
     tutor_reply: str  # grammer_tutor 输出的纠错讲解
     check_results: dict  # 上游 LLM 解析 XML 后的结构化清单（语法错误 + 发音问题）
     corrections: list  # grammer_tutor 输出：修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
@@ -55,7 +56,7 @@ class OverAllState(TypedDict, total=False):
     # grammar_check 子图输出契约（子图 key 必须在父图 schema 声明，否则状态合并失败）
     issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
     feedback: str  # 错误简短概述（不含正确答案）；无错误为空字符串
-    grammar_check_status: str  # ok / empty_input / invalid_input / unavailable
+    grammar_check_status: GrammarCheckStatus  # 取值域枚举定义在 grammar_check_contracts.py
 
     # 日志类
     talk_ids: Annotated[list[str], add]  # 对话 ID，某次图执行
@@ -112,5 +113,41 @@ class SubgraphState(TypedDict, total=False):
     logger: Annotated[list[str], add]
 
     new_dialog: bool # 默认值None
+    user_input: str
+
+
+class GrammarCheckState(TypedDict, total=False):
+    """grammar_check 子图的状态 schema（统一定义在本文件，与 OverAllState 同处维护）。
+
+    与 GrammarVerdict 分开定义的原因：
+    GrammarVerdict 是 LLM 的输出契约；Graph State 还要承载
+    运行状态（grammar_check_status）和日志等图运行时字段。
+    """
+
+    # 输入
+    raw_text: str
+
+    # 语音链路（IAT/ISE）：子图经同名共享 key 与父图 OverAllState 互通，
+    # 这些字段必须与父图 schema 同名声明，否则运行时 InvalidUpdateError
+    iat_status: str  # ok / no_speech / unavailable（语音转写状态；no_speech 时 raw_text=""）
+    audio_data: bytes  # 麦克风录音 PCM（ita 存入，ISE 消费，一次录音两份产出）
+    audio_file_path: str  # IAT/ISE 音频文件路径（mock/dev/Studio 测试素材）
+    ref_text: str  # ISE 标准参考句（教练预设优先；未传时自动回退用 IAT 转写文本）
+    ise_status: str  # ok / no_audio / no_ref / unavailable（独立于语法状态）
+    ise_xml_info: str  # ISE 原始评测 XML
+    ise_grade: float | None  # 评测总分（XML total_score 直取；无效/解析失败为 None）
+    ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[...], "advice": str}
+
+    # 检查结果（由 grammar_check_node 从 GrammarVerdict 写入；只标记不纠错）
+    has_issue: bool
+    issues: list[dict]  # 每处错误 {fragment, error_type, description}
+    feedback: str  # 错误简短概述（不含正确答案，纠错归下游 tutor）
+
+    # 运行状态取值域见 GrammarCheckStatus（grammar_check_contracts.py）
+    grammar_check_status: GrammarCheckStatus
+
+    # 日志：add 累积；字段名独立于父图 logger，避免父子 reducer 冲突
+    grammar_check_logs: Annotated[list[str], add]
+
     user_input: str
 

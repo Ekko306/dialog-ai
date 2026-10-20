@@ -35,11 +35,11 @@ except ImportError:
 load_dotenv()
 
 
-def _create_client(aue="raw", ent="cn_vip"):
+def _create_client(aue="raw", ent="en_vip"):
     """创建讯飞评测客户端（read_sentence 句子朗读评测）
 
     aue —— 音频格式声明：raw=裸PCM，lame=MP3；需与实际音频格式一致
-    ent —— 评测引擎语言：cn_vip=中文，en_vip=英文（产品为英文学习，上游按需传入）
+    ent —— 评测引擎语言：默认 en_vip=英文（产品定位英语对话）；cn_vip=中文备用
     """
     return IseClient(
         app_id=os.getenv('XF_APP_ID', ''),
@@ -75,10 +75,10 @@ def _evaluate(client, answer_text, audio_source) -> str:
 
 # 输入：本地ide录音机能力
 # 输出：评测结果XML，语音字节流
-def xfyun_ise_tool_by_mic(answer_text="今天天气怎么样", ent="cn_vip"):
+def xfyun_ise_tool_by_mic(answer_text="今天天气怎么样", ent="en_vip"):
     """入口 1：麦克风录音并评测，按回车开始录入，再按回车结束。
 
-    ent —— 评测引擎语言：cn_vip（默认）/ en_vip
+    ent —— 评测引擎语言：默认 en_vip=英文（产品定位英语对话）/ cn_vip=中文备用
 
     返回 (xml, audio) 二元组：
       xml   —— 完整评测结果 XML（解析 total_score 等分数）
@@ -110,10 +110,10 @@ def xfyun_ise_tool_by_mic(answer_text="今天天气怎么样", ent="cn_vip"):
 
 # 输入：内存中的音频字节（raw PCM 16kHz/16bit/单声道）
 # 输出：评测结果XML
-def xfyun_ise_tool_by_audio_data(audio_data, answer_text="今天天气怎么样", ent="cn_vip") -> str:
+def xfyun_ise_tool_by_audio_data(audio_data, answer_text="今天天气怎么样", ent="en_vip") -> str:
     """入口 2：内存音频字节评测（如 IAT 麦克风录音返回的 audio、前端上传的 PCM）
 
-    ent —— 评测引擎语言：cn_vip（默认）/ en_vip
+    ent —— 评测引擎语言：默认 en_vip=英文（产品定位英语对话）/ cn_vip=中文备用
     """
     client = _create_client(ent=ent)
     return _evaluate(client, answer_text, io.BytesIO(audio_data))
@@ -121,11 +121,11 @@ def xfyun_ise_tool_by_audio_data(audio_data, answer_text="今天天气怎么样"
 
 # 输入：本地音频文件的电脑路径
 # 输出：评测结果XML
-def xfyun_ise_tool_by_audio_file(audio_file_path, answer_text="今天天气怎么样", ent="cn_vip") -> str:
+def xfyun_ise_tool_by_audio_file(audio_file_path, answer_text="今天天气怎么样", ent="en_vip") -> str:
     """入口 3：本地音频文件评测（文件不存在时由 open 抛 FileNotFoundError）
 
     按扩展名声明音频格式（aue）：.mp3 -> lame，其余(.pcm/.raw) -> raw
-    ent —— 评测引擎语言：cn_vip（默认）/ en_vip
+    ent —— 评测引擎语言：默认 en_vip=英文（产品定位英语对话）/ cn_vip=中文备用
     """
     aue = "lame" if Path(audio_file_path).suffix.lower() == ".mp3" else "raw"
     client = _create_client(aue=aue, ent=ent)

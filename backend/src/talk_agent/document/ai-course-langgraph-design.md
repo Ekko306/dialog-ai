@@ -1,4 +1,4 @@
-d:\shuo.learn\work project\dialog-ai\docs\ai-course-langgraph-design.md
+backend/src/talk_agent/document/ai-course-langgraph-design.md
 # AI 精品课程系统 · LangGraph 架构设计 v1.1（纯文本版）
 
 > 状态：设计稿，待确认后生成 agent.drawio 和 Python 代码
