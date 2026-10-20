@@ -86,24 +86,25 @@ def polisher_node(state: SubgraphState) -> dict:
 
     original_text = original_text.strip()
 
-    # 2. 初始化状态，避免部分分支没有返回必要字段
-    update = {
+    # 2. 初始化打包输出（LangGraph 字段级整体替换，必须每次返回完整 7 字段）
+    polisher_out = {
         "original_text": original_text,
         "polished_text": original_text,
         "explanation": "",
         "polish_comment": "",
+        "polished_audio": b"",
         "polish_status": "fallback",
         "tts_status": "skipped",
-        "logger": ["polisher_node: 开始执行"],
     }
+    logger = ["polisher_node: 开始执行"]
 
     # 3. 输入为空时跳过模型调用
     if not original_text:
-        update["polish_status"] = "skipped"
-        update["explanation"] = "没有检测到需要润色的英文内容。"
-        update["polish_comment"] = update["explanation"]
-        update["logger"].append("polisher_node: 输入为空")
-        return update
+        polisher_out["polish_status"] = "skipped"
+        polisher_out["explanation"] = "没有检测到需要润色的英文内容。"
+        polisher_out["polish_comment"] = polisher_out["explanation"]
+        logger.append("polisher_node: 输入为空")
+        return {"polisher": polisher_out, "logger": logger}
 
     # 4. 调用大模型进行润色
     try:
@@ -121,56 +122,51 @@ def polisher_node(state: SubgraphState) -> dict:
         if not polished_text:
             raise ValueError("模型返回的润色文本为空")
 
-        update["polished_text"] = polished_text
-        update["explanation"] = explanation
-        update["polish_comment"] = explanation
-        update["polish_status"] = "success"
+        polisher_out["polished_text"] = polished_text
+        polisher_out["explanation"] = explanation
+        polisher_out["polish_comment"] = explanation
+        polisher_out["polish_status"] = "success"
 
-        update["logger"].append("polisher_node: 润色成功")
+        logger.append("polisher_node: 润色成功")
 
     except Exception:
         python_logger.exception("英语表达润色失败")
 
         # 失败时保留原文，避免中断整个训练流程
-        update["polished_text"] = original_text
-        update["explanation"] = (
+        polisher_out["polished_text"] = original_text
+        polisher_out["explanation"] = (
             "润色服务暂时不可用，当前保留原始表达。"
         )
-        update["polish_comment"] = update["explanation"]
-        update["polish_status"] = "fallback"
+        polisher_out["polish_comment"] = polisher_out["explanation"]
+        polisher_out["polish_status"] = "fallback"
 
-        update["logger"].append(
-            "polisher_node: 润色失败，已回退到原文"
-        )
+        logger.append("polisher_node: 润色失败，已回退到原文")
 
-    # 5. 根据调用方的 enable_tts 开关决定是否合成语音
+    # 5. enable_tts 从顶层 state 读取（方案 C：控制开关不打包）
     enable_tts = state.get("enable_tts", False)
 
     if not enable_tts:
-        update["tts_status"] = "skipped"
-        update["logger"].append("polisher_node: 已跳过 TTS")
-        return update
+        polisher_out["tts_status"] = "skipped"
+        logger.append("polisher_node: 已跳过 TTS")
+        return {"polisher": polisher_out, "logger": logger}
 
-    # 6. 调用科大讯飞 TTS（普通函数，直接调用，返回值就是 bytes）
+    # 6. 调用科大讯飞 TTS（普通函数，直接调用）
     try:
-        audio_bytes = xfyun_tts_tool_by_text(update["polished_text"])
+        audio_bytes = xfyun_tts_tool_by_text(polisher_out["polished_text"])
 
         if not isinstance(audio_bytes, bytes) or not audio_bytes:
-            raise ValueError(
-                "TTS 未返回有效音频字节，请检查工具的返回格式"
-            )
+            raise ValueError("TTS 未返回有效音频字节，请检查工具的返回格式")
 
-        update["polished_audio"] = audio_bytes
-        update["tts_status"] = "success"
-        update["logger"].append("polisher_node: TTS 合成成功")
+        polisher_out["polished_audio"] = audio_bytes
+        polisher_out["tts_status"] = "success"
+        logger.append("polisher_node: TTS 合成成功")
 
     except Exception:
         python_logger.exception("科大讯飞 TTS 调用失败")
+        polisher_out["tts_status"] = "failed"
+        logger.append("polisher_node: TTS 合成失败")
 
-        update["tts_status"] = "failed"
-        update["logger"].append("polisher_node: TTS 合成失败")
-
-    return update
+    return {"polisher": polisher_out, "logger": logger}
 
 
 # 构建 LangGraph 子图。
@@ -202,13 +198,15 @@ if __name__ == "__main__":
 
     print("\n========== 润色测试结果 ==========")
     print("用户原文：", test_state["raw_text"])
-    print("润色结果：", result.get("polished_text", ""))
-    print("修改说明：", result.get("explanation", ""))
+    polisher = result.get("polisher", {})
+    print("润色结果：", polisher.get("polished_text", ""))
+    print("修改说明：", polisher.get("explanation", ""))
+    print("润色状态：", polisher.get("polish_status", ""))
     print("执行日志：", result.get("logger", []))
 
     if ENABLE_TTS:
-        tts_status = result.get("tts_status", "")
-        audio_bytes = result.get("polished_audio", b"")
+        tts_status = polisher.get("tts_status", "")
+        audio_bytes = polisher.get("polished_audio", b"")
         print("TTS 状态：", tts_status)
         print("音频字节数：", len(audio_bytes))
         if audio_bytes:
