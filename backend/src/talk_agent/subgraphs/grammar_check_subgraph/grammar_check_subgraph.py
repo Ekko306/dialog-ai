@@ -34,6 +34,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_deepseek import ChatDeepSeek
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import RetryPolicy  # langgraph 1.x 中 RetryPolicy 位于 langgraph.types
+from langgraph.constants import TAG_NOSTREAM  # nostream 标签：把内部 LLM 调用排除出 messages 流
 
 from src.talk_agent.subgraphs.grammar_check_subgraph.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
 from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
@@ -132,7 +133,9 @@ if _api_key:
         api_key=_api_key,
         temperature=0,  # 语法判定要稳定，不要创造性
     )
-    checker = model.with_structured_output(GrammarVerdict)  # 强制按 Schema 返回
+    # TAG_NOSTREAM：结构化输出底层是 function calling，其 tool_call chunks 若流入
+    # stream_mode="messages" 会在前端渲染成幽灵 "Used Tool" 消息且跨轮合并，必须排除
+    checker = model.with_structured_output(GrammarVerdict).with_config(tags=[TAG_NOSTREAM])  # 强制按 Schema 返回
 else:
     model = None
     checker = None
