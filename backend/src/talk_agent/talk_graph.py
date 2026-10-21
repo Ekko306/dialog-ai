@@ -52,6 +52,19 @@ def HITL_node(state: OverAllState) -> OverAllState:
     }
 
 
+def audio_choice_node(state: OverAllState) -> OverAllState:
+    """进入润色子图前的 HITL：让用户决定是否生成语音。"""
+    choice = interrupt({
+        "prompt": "是否将润色结果合成为语音？(yes/no)",
+        "options": ["yes", "no"],
+    })
+    enable = str(choice).strip().lower() in {"yes", "y", "true", "1"}
+    return {
+        "enable_tts": enable,
+        "logger": [*state.get("logger", []), f"audio_choice_node: 用户选择 enable_tts={enable}"],
+    }
+
+
 def HITL_route(state: OverAllState) -> Literal["new_context", "audio_check", "__end__"]:
     user_input = state.get("user_input", "")
     if "_new_context_" in user_input:
@@ -113,6 +126,7 @@ parent_builder.add_node("HITL_node", HITL_node)
 parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
 parent_builder.add_node("grammar_check_fallback_node",grammar_check_fallback_node)
 parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
+parent_builder.add_node("audio_choice_node", audio_choice_node)
 parent_builder.add_node("polisher_subgraph",polisher_subgraph)
 
 
@@ -135,12 +149,13 @@ parent_builder.add_edge("new_context_node",END)
 # 上方 HITL_route 的 "audio_check" → "grammar_check_subgraph" 即进入 语音转写→语法检查 链路
 parent_builder.add_conditional_edges("grammar_check_subgraph", has_issue_route, path_map={
     "has_issue": "grammer_tutor_subgraph",
-    "has_no_issue": "polisher_subgraph",
+    "has_no_issue": "audio_choice_node",
     "check_failed": "grammar_check_fallback_node",
 })
 # has_issue分支
 parent_builder.add_edge("grammer_tutor_subgraph", END)
-# has_no_issue分支
+# has_no_issue分支：先弹 HITL 询问是否生成语音，再进润色子图
+parent_builder.add_edge("audio_choice_node", "polisher_subgraph")
 parent_builder.add_edge("polisher_subgraph", END)
 # check_failed分支
 parent_builder.add_edge("grammar_check_fallback_node", END)
