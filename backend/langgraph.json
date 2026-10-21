@@ -12,5 +12,6 @@
       "coach_reply": "./src/talk_agent/subgraphs/coach_reply_subgraph/coach_reply_subgraph.py:coach_reply_subgraph"
   },
   "env": ".env",
+  "http": { "app": "./src/webapp.py:app" },
   "image_distro": "wolfi"
 }

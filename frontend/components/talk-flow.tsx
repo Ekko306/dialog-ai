@@ -5,6 +5,7 @@ import {
   useLangChainStream,
   useLangChainSubmit,
 } from "@assistant-ui/react-langchain";
+import { MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 /**
@@ -42,16 +43,15 @@ export function NewDialogButton() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-(--thread-max-width) justify-center pb-2">
-      <button
-        type="button"
-        onClick={() => void start()}
-        disabled={starting}
-        className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-5 py-2 text-sm font-medium transition-colors disabled:opacity-50"
-      >
-        {starting ? "启动中…" : "新对话"}
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={() => void start()}
+      disabled={starting}
+      className="bg-background text-foreground flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-shadow hover:shadow-md disabled:opacity-50"
+    >
+      <MessageCircle className="size-4" aria-hidden />
+      {starting ? "启动中…" : "新会话"}
+    </button>
   );
 }
 

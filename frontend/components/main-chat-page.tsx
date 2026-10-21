@@ -1,0 +1,58 @@
+import { Camera, MessageCircleMore, SlidersHorizontal, Volume2 } from "lucide-react";
+import { InterruptPrompt } from "@/components/interrupt-prompt";
+import { Thread } from "@/components/thread.aui";
+import { AutoContinue, NewDialogButton } from "@/components/talk-flow";
+
+/**
+ * Tab1 主页面（US3 T022 按原型图补全样式）：
+ * - 顶部栏：左会话入口图标、居中头像 + "Ella"、右音频/设置图标；
+ *   无子功能支撑的图标按 FR-010 静态展示（非按钮，点击无行为不报错）
+ * - 嵌入 thread.aui.tsx（消息流，行为不改）
+ * - NewDialogButton / AutoContinue / InterruptPrompt（US2 迁入，行为不改；
+ *   research R7：interrupt 恢复必须走 respond 路径）
+ * - 底部常驻区域 absolute 定位，等效原 ViewportFooter sticky bottom-0 的吸附位置；
+ *   max-w 与 thread.aui.tsx Root 的 --thread-max-width 保持一致（44rem）；
+ *   "新会话 / 选场景"按钮区按原型图置于输入条上方（NewDialogButton 视觉整合，
+ *   "选场景"按 FR-010 静态展示）
+ */
+export function MainChatPage() {
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <header className="grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b bg-background px-4">
+        <MessageCircleMore className="text-foreground size-5 justify-self-start" aria-hidden />
+        <div className="flex items-center gap-2">
+          <div
+            className="bg-primary/15 text-primary flex size-8 items-center justify-center rounded-full text-sm font-semibold"
+            aria-hidden
+          >
+            E
+          </div>
+          <span className="text-base font-semibold">Ella</span>
+        </div>
+        <div className="flex items-center gap-3 justify-self-end" aria-hidden>
+          <Volume2 className="text-(--icon-brand-green) size-5" />
+          <SlidersHorizontal className="text-foreground size-5" />
+        </div>
+      </header>
+      <div className="relative min-h-0 flex-1">
+        <Thread />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-4 px-4 pb-4 md:pb-6">
+          <div className="pointer-events-auto mx-auto flex w-full max-w-[44rem] flex-col gap-3">
+            <div className="flex items-center justify-center gap-3">
+              <NewDialogButton />
+              <span
+                className="bg-background text-foreground flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm"
+                aria-label="选场景（暂未开放）"
+              >
+                <Camera className="size-4" aria-hidden />
+                选场景
+              </span>
+            </div>
+            <InterruptPrompt />
+            <AutoContinue />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
