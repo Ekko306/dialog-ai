@@ -8,6 +8,19 @@ from langgraph.graph.message import add_messages
 
 from langgraph.graph import MessagesState, StateGraph, START, END
 
+
+class CorrectionItem(TypedDict, total=False):
+    """corrections 列表元素的结构化标注（纯类型提示，运行时擦除，不改变 channel 语义）。
+
+    仅约束类型供 IDE 提示与静态检查；LLM 侧的强校验由子图 Pydantic schema
+    （Correction / TutorOutput + with_structured_output）负责，两者各司其职。
+    """
+
+    wrong: str  # 错误片段（原句照抄）
+    correct: str  # 修正后的完整句（TTS 整句朗读、前端 ✅ 展示用）
+    type: str  # 错误类型（grammar / pronunciation / chinese-style 等）
+
+
 class OverAllState(TypedDict, total=False):
     # messages 显式声明在 total=False 类内：全部 key 可省略，
     # 节点返回部分更新（如只有 logger）时类型检查才可通过。
@@ -48,9 +61,10 @@ class OverAllState(TypedDict, total=False):
     # 语法辅导（grammar_check → grammer_tutor 的契约字段）
     tutor_reply: str  # grammer_tutor 输出的纠错讲解
     check_results: dict  # 上游 LLM 解析 XML 后的结构化清单（语法错误 + 发音问题）
-    corrections: list  # grammer_tutor 输出：修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
-    tutor_audio: bytes  # grammer_tutor 输出：正确句的美式发音 MP3（供前端播放示范跟读）
-    raw_audio: bytes  # grammer_tutor 输出：用户原句的美式发音 MP3（供前端对照播放原句）
+    corrections: list[CorrectionItem]  # 修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
+    # 音频输出为公共属性（懒加载）：tutor / polisher 共用；主链不合成，由独立 tts 子图在用户点击发音时按需生成
+    tutor_audio: bytes  # 公共音频输出：正确句/润色句的美式发音 MP3（供前端播放示范跟读；懒加载按需合成）
+    raw_audio: bytes  # 公共音频输出：用户原句的美式发音 MP3（供前端对照播放；懒加载按需合成）
     # grammar_check 子图输出契约（子图 key 必须在父图 schema 声明，否则状态合并失败）
     issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
     feedback: str  # 错误简短概述（不含正确答案）；无错误为空字符串
@@ -99,14 +113,17 @@ class SubgraphState(TypedDict, total=False):
     # 逻辑类
     has_issue: bool
 
-    # 语法辅导（grammar_check → grammer_tutor → coach_reply 的契约字段）
+    # 语法辅导（grammar_check → grammer_tutor → coach_reply 的契约字段，与 OverAllState 一致）
     issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
     tutor_reply: str  # grammer_tutor 输出的纠错讲解
     check_results: dict  # 上游 LLM 解析 XML 后的结构化清单（语法错误 + 发音问题）
     ise_xml_info: str  # ISE 原始评测 XML（check 产出，tutor 消费做文本+发音纠错）
-    corrections: list  # grammer_tutor 输出：修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
-    tutor_audio: bytes  # grammer_tutor 输出：正确句的美式发音 MP3（供前端播放示范跟读）
-    raw_audio: bytes  # grammer_tutor 输出：用户原句的美式发音 MP3（供前端对照播放原句）
+    corrections: list[CorrectionItem]  # 修正句/示范词结构化结果（供前端高亮 + TTS 朗读）
+    # 音频输出为公共属性（懒加载）：tutor / polisher 共用；主链不合成，由独立 tts 子图在用户点击发音时按需生成
+    tutor_audio: bytes  # 公共音频输出：正确句/润色句的美式发音 MP3（供前端播放示范跟读；懒加载按需合成）
+    raw_audio: bytes  # 公共音频输出：用户原句的美式发音 MP3（供前端对照播放；懒加载按需合成）
+    feedback: str  # 错误简短概述（不含正确答案）；无错误为空字符串
+    grammar_check_status: str  # ok / empty_input / invalid_input / unavailable
 
     # 日志类（add：累积之前的日志 + 本次新增，输出完整列表）
     logger: Annotated[list[str], add]

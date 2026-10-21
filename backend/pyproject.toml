@@ -59,7 +59,8 @@ lint.ignore = [
     "E501",
 ]
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["D", "UP"]
+# 测试允许 print（打印讲解/调试输出，配 pytest -s 查看）与中文 docstring
+"tests/*" = ["D", "UP", "T201"]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 

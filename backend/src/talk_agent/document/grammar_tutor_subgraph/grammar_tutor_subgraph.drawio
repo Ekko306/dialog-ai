@@ -4,8 +4,8 @@
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="title" value="grammar_tutor 子图 · 语法纠错讲解（LangGraph 规范画法）&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;上游 grammar_check 发现问题（has_issue=True），本子图负责把问题讲清楚；实线 = add_edge 静态边，虚线 = add_conditional_edges 动态分支&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#333333;" parent="1" vertex="1">
-                    <mxGeometry x="240" y="20" width="680" height="40" as="geometry"/>
+                <mxCell id="title" value="grammar_tutor 子图 · 语法纠错讲解（单图双入口 · TTS 懒加载）&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;上游 grammar_check 发现问题（has_issue=True）进入本图；入口条件边 route_entry 分流：无 tts_request 走讲解主链，带 tts_request=True 直达 tts 发音旁路（用户点发音按钮才合成语音）；实线 = add_edge 静态边，虚线 = add_conditional_edges 动态分支&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#333333;" parent="1" vertex="1">
+                    <mxGeometry x="240" y="20" width="680" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="start" value="__start__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="520" y="90" width="120" height="40" as="geometry"/>
@@ -25,13 +25,13 @@
                 <mxCell id="write_state" value="write_state&lt;br&gt;写回状态&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;输出：tutor_reply（讲解）+ corrections（LLM 结构化产出，fallback 时上游提取；供前端高亮与 TTS 朗读）；后续可在此接长期记忆&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="470" y="530" width="220" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="tts" value="tts&lt;br&gt;原句 + 正确句 → 两段美式发音 MP3&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;讯飞 TTS（vixy 美式女声）；raw_audio=原句对照朗读，tutor_audio=改正句示范朗读（优先 corrections[0].correct，无修正降级原句）；各自独立降级置空，不阻塞讲解&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=12;" parent="1" vertex="1">
-                    <mxGeometry x="470" y="620" width="220" height="70" as="geometry"/>
+                <mxCell id="tts" value="tts · 发音旁路（懒加载）&lt;br&gt;原句 + 正确句 → 两段美式发音 MP3&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;仅当 invoke 带 tts_request=True 时经 route_entry 进入，讲解主链永不触发；讯飞 TTS（vixy 美式女声）；raw_audio=原句对照朗读，tutor_audio=改正句示范朗读（优先 corrections[0].correct，无修正降级原句）；各自独立降级置空，不阻塞讲解&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="530" width="200" height="90" as="geometry"/>
                 </mxCell>
                 <mxCell id="end" value="__end__" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ECECFF;strokeColor=#9370DB;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="520" y="740" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#333333;fontSize=11;" parent="1" source="start" target="load_input" edge="1">
+                <mxCell id="e1" value="route_entry：无 tts_request（讲解调用）" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#333333;fontSize=11;" parent="1" source="start" target="load_input" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#333333;fontSize=11;" parent="1" source="load_input" target="build_prompt" edge="1">
@@ -49,25 +49,28 @@
                 <mxCell id="e6" value="兜底回复也写入 state" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#333333;fontSize=11;" parent="1" source="fallback" target="write_state" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#333333;fontSize=11;" parent="1" source="write_state" target="tts" edge="1">
+                <mxCell id="e7" value="route_entry：tts_request=True（前端点发音）" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;strokeColor=#82B366;fontSize=11;" parent="1" source="start" target="tts" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#333333;fontSize=11;" parent="1" source="tts" target="end" edge="1">
+                <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#82B366;fontSize=11;" parent="1" source="tts" target="end" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="contract" value="&lt;b&gt;与上游 check 的契约（重要）&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;grammar_check 负责「发现问题」：输出 check_results（语法+发音清单）+ issues（兼容旧字段）&lt;br&gt;本子图负责「讲清问题」，不再重复完整语法检查&lt;br&gt;是否进入本子图由父图条件边 my_route 决定：has_issue=True 才进来，子图内部无需再判 has_issue&lt;br&gt;上游占位阶段清单全为空 → build_prompt 自动降级为整句讲解，不阻塞流程&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="10" y="200" width="340" height="170" as="geometry"/>
+                <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#333333;fontSize=11;" parent="1" source="write_state" target="end" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="node_duty" value="&lt;b&gt;节点职责（与代码一一对应）&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;load_input：读 raw_text + check_results/issues，记日志&lt;br&gt;build_prompt：加载纠错准则 Skill + 三级进料（check_results &amp;gt; issues &amp;gt; 整句降级）&lt;br&gt;llm_call：结构化输出 reply + corrections 一次产出，异常/解析失败置空走 fallback&lt;br&gt;parse_validate：条件边函数（非空校验），非节点&lt;br&gt;fallback：按 issues 回显模板文案，corrections 从上游提取&lt;br&gt;write_state：输出 tutor_reply + corrections（LLM 产出优先，fallback 时上游提取）&lt;br&gt;tts：原句+正确句 → 两段美式发音 MP3（讯飞 TTS），独立降级置空&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="10" y="420" width="340" height="245" as="geometry"/>
+                <mxCell id="contract" value="&lt;b&gt;与上游 check 的契约（重要）&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;grammar_check 负责「发现问题」：输出 check_results（语法+发音清单）+ issues（兼容旧字段）&lt;br&gt;本子图负责「讲清问题」，不再重复完整语法检查&lt;br&gt;是否进入本子图由父图条件边 my_route 决定：has_issue=True 才进来，子图内部无需再判 has_issue&lt;br&gt;上游占位阶段清单全为空 → build_prompt 自动降级为整句讲解，不阻塞流程&lt;br&gt;主链不合成语音：raw_audio / tutor_audio 由发音旁路 tts 在用户点击发音时按需合成（懒加载）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="200" width="340" height="190" as="geometry"/>
                 </mxCell>
-                <mxCell id="schema" value="&lt;b&gt;输入 / 输出 Schema（state.py）&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;in: raw_text: str（学生原句）&lt;br&gt;in: check_results: dict（核心：语法+发音清单，LLM 解析 XML）&lt;br&gt;in: issues: list[str]（兼容旧字段，check_results 缺失时用）&lt;br&gt;inner: tutor_prompt: str（子图本地 TutorState，不在 state.py）&lt;br&gt;out: tutor_reply: str（给人看的讲解）&lt;br&gt;out: corrections: list（wrong/correct/type，供前端高亮）&lt;br&gt;out: tutor_audio: bytes（正确句美式发音 MP3，供前端示范跟读）&lt;br&gt;out: raw_audio: bytes（原句美式发音 MP3，供前端对照播放）&lt;br&gt;logger 带 add 累积，父图 LastValue 接管&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="940" y="180" width="240" height="270" as="geometry"/>
+                <mxCell id="node_duty" value="&lt;b&gt;节点职责（与代码一一对应）&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;load_input：读 raw_text + check_results/issues，记日志&lt;br&gt;build_prompt：加载纠错准则 Skill + 三级进料（check_results &amp;gt; issues &amp;gt; 整句降级）&lt;br&gt;llm_call：结构化输出 reply + corrections 一次产出，异常/解析失败置空走 fallback&lt;br&gt;route_entry：入口条件边函数（按 tts_request 分流主链/发音旁路），非节点&lt;br&gt;parse_validate：条件边函数（非空校验），非节点&lt;br&gt;fallback：按 issues 回显模板文案，corrections 从上游提取&lt;br&gt;write_state：输出 tutor_reply + corrections（LLM 产出优先，fallback 时上游提取）&lt;br&gt;tts：发音旁路（懒加载），invoke 带 tts_request=True 才进入；原句+正确句 → 两段美式发音 MP3（讯飞 TTS），独立降级置空&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="420" width="340" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="schema" value="&lt;b&gt;输入 / 输出 Schema（state.py）&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;in: raw_text: str（学生原句）&lt;br&gt;in: check_results: dict（核心：语法+发音清单，LLM 解析 XML）&lt;br&gt;in: issues: list[str]（兼容旧字段，check_results 缺失时用）&lt;br&gt;inner: tutor_prompt: str（子图本地 TutorState，不在 state.py）&lt;br&gt;inner: tts_request: bool（子图本地 TutorState；父图契约无此 key，主链不可能误触发发音旁路，只有前端直接 invoke 本图才会带上）&lt;br&gt;out: tutor_reply: str（给人看的讲解）&lt;br&gt;out: corrections: list（wrong/correct/type，供前端高亮）&lt;br&gt;out(旁路): tutor_audio: bytes（正确句 MP3，示范跟读，点击发音才合成）&lt;br&gt;out(旁路): raw_audio: bytes（原句 MP3，对照播放，点击发音才合成）&lt;br&gt;logger 带 add 累积，父图 LastValue 接管&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="180" width="240" height="310" as="geometry"/>
                 </mxCell>
                 <mxCell id="params" value="&lt;b&gt;模型与参数&lt;/b&gt;&lt;hr&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;ChatDeepSeek · deepseek-v4-flash&lt;br&gt;thinking 禁用（团队约定）&lt;br&gt;temperature = 0.2（讲解要稳）&lt;br&gt;top_p = 0.9&lt;br&gt;未配置 DEEPSEEK_API_KEY 或调用失败 → 走 fallback&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacingLeft=8;spacingTop=6;" parent="1" vertex="1">
-                    <mxGeometry x="940" y="440" width="220" height="150" as="geometry"/>
+                    <mxGeometry x="940" y="510" width="220" height="150" as="geometry"/>
                 </mxCell>
-                <mxCell id="legend" value="图例：实线 = add_edge 静态边  |  虚线 = add_conditional_edges 动态分支&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;浅紫椭圆 = __start__/__end__，浅紫圆角矩形 = 节点，橙色 = 兜底节点；条件边函数 parse_validate 不渲染为节点（同官网 display() 规范）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;align=center;" parent="1" vertex="1">
+                <mxCell id="legend" value="图例：实线 = add_edge 静态边  |  虚线 = add_conditional_edges 动态分支&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#666666&quot;&gt;浅紫椭圆 = __start__/__end__，浅紫圆角矩形 = 节点，橙色 = 兜底节点，绿色 = 懒加载发音旁路；条件边函数 route_entry / parse_validate 不渲染为节点，仅标注在分叉箭头上（同官网 display() 规范）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;align=center;" parent="1" vertex="1">
                     <mxGeometry x="230" y="860" width="700" height="54" as="geometry"/>
                 </mxCell>
             </root>
