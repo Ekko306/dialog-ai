@@ -14,6 +14,12 @@ function isAllowedRequestContext(req: NextRequest) {
   if (origin === null) return true;
 
   try {
+    // 官方模板 fallback 依赖 nextUrl.origin，但 Next dev 下以局域网 IP 访问时
+    // nextUrl.origin 仍为 localhost，且部分 WebView 客户端不带 Sec-Fetch-Site，
+    // 会把同源请求误判为跨域（403）。Origin 的 host 与请求 Host 头一致即为同源直连。
+    const host = req.headers.get("host");
+    if (host !== null && new URL(origin).host === host) return true;
+
     return new URL(origin).origin === req.nextUrl.origin;
   } catch {
     return false;

@@ -106,6 +106,13 @@ export class ServerDictationAdapter implements DictationAdapter {
     // 异步启动采集；失败统一走 fail() → ended/error
     void (async () => {
       try {
+        // getUserMedia 仅在安全上下文（https:// 或 http://localhost）可用，
+        // http://<局域网IP> 下 navigator.mediaDevices 为 undefined
+        if (!navigator.mediaDevices) {
+          throw new Error(
+            "navigator.mediaDevices 不可用：麦克风 API 仅在安全上下文（https:// 或 http://localhost）启用，请改用 localhost 或 dev:https 访问",
+          );
+        }
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: { channelCount: { ideal: 1 } },
         });

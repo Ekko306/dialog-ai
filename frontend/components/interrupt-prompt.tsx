@@ -94,6 +94,12 @@ export function InterruptPrompt() {
   };
 
   const startDictation = () => {
+    // getUserMedia 仅在安全上下文（https:// 或 http://localhost）可用；
+    // http://<局域网IP> 下提前提示，避免进入录音态后报晦涩的 TypeError
+    if (!window.isSecureContext || !navigator.mediaDevices) {
+      showToast("语音输入需 https 或 localhost 访问（可运行 npm run dev:https）");
+      return;
+    }
     const session = serverDictationAdapter.listen();
     sessionRef.current = session;
     resultRef.current = null;

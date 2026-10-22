@@ -185,7 +185,7 @@ const ThreadRoot: FC<{ isEmpty: boolean }> = ({ isEmpty }) => {
             <ThreadHistorySkeleton />
           </AuiIf>
 
-          <div data-slot="aui_message-group" className="mb-14 flex flex-col gap-y-6 empty:hidden">
+          <div data-slot="aui_message-group" style={{"marginBottom": '140px'}} className="mb-14 flex flex-col gap-y-6 empty:hidden">
             <ThreadPrimitive.Messages>{() => <ThreadMessage />}</ThreadPrimitive.Messages>
           </div>
 
