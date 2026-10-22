@@ -99,15 +99,28 @@ def has_issue_route(state: OverAllState) -> Literal["has_issue", "has_no_issue",
     return "has_issue" if state.get("has_issue") else "has_no_issue"
 
 def grammar_check_fallback_node(state: OverAllState) -> OverAllState:
-    """语法检查未完成（empty_input / invalid_input / unavailable）时的兜底占位节点。
+    """语法检查未完成（empty_input / invalid_input / unavailable）时的兜底节点。
 
-    占位实现：只记录失败原因，等团队后续决定兜底话术如何回给用户。
+    用户要求每轮输入（语音/文本一致）都必须有可见反馈：检查没完成绝不能静默，
+    更不能当成"没有语法问题"，因此除记录原因外，补一条诚实的兜底 AI 消息告知用户。
     """
     status = state.get("grammar_check_status", "unknown")
     # grammar_check_logs 在父图是 LastValue（整表接管），父图节点追加日志需手动合并
     logs = list(state.get("grammar_check_logs", []))
     logs.append(f"grammar_check_fallback_node：语法检查未完成({status})，走兜底分支")
-    return {"grammar_check_logs": logs}
+    # 兜底话术按状态给出诚实原因（不是"没有错误"，是"没检查成"）
+    reason = {
+        "empty_input": "没有识别到有效内容",
+        "invalid_input": "输入内容无法用于语法检查",
+        "unavailable": "语法检查服务暂时不可用",
+    }.get(status, f"语法检查未完成（{status}）")
+    return {
+        "grammar_check_logs": logs,
+        "messages": [
+            AIMessage(content=f"{reason}，本次无法给出语法反馈，请稍后重试。"),
+            SystemMessage(content=""),
+        ],
+    }
 
 
 def tutor_reply_message_node(state: OverAllState) -> OverAllState:
@@ -131,6 +144,34 @@ def tutor_reply_message_node(state: OverAllState) -> OverAllState:
     }
 
 
+def polisher_reply_message_node(state: OverAllState) -> OverAllState:
+    """把 polisher 分支（语法正确）的反馈提升为对话消息（round 收尾）.
+
+    - 用户要求每轮输入（语音/文本一致）都必须有可见反馈：has_issue=True 走
+      tutor_reply_message_node，语法正确（has_no_issue）走本节点，两条路径
+      都写 messages，不再静默。反馈文案按用户指定方向必含"当前语句没有错误"。
+    - polisher 有实际润色产出（polished_text 非空且 ≠ original_text）时，
+      附上润色建议与说明；无润色（或降级保留原文）时只给"没有错误"提示。
+    - SystemMessage("")：空系统消息分隔符，理由同 tutor_reply_message_node——
+      本反馈与下一轮 coach 话题 AIMessage 相邻会被 assistant-ui 合并成一个气泡。
+    """
+    original_text = (state.get("original_text") or "").strip()
+    polished_text = (state.get("polished_text") or "").strip()
+    explanation = (state.get("explanation") or "").strip()
+
+    parts = ["当前语句没有错误，没有tutor_reply。"]
+    if polished_text and polished_text != original_text:
+        parts.append(f"润色建议：{polished_text}")
+        if explanation:
+            parts.append(explanation)
+    return {
+        "messages": [
+            AIMessage(content="\n".join(parts)),
+            SystemMessage(content=""),
+        ]
+    }
+
+
 # 定义节点
 parent_builder = StateGraph(state_schema=OverAllState, context_schema=CoachContext)
 parent_builder.add_node("store_resolve_node", store_resolve_node)  # store数据转state
@@ -142,6 +183,7 @@ parent_builder.add_node("grammar_check_fallback_node",grammar_check_fallback_nod
 parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
 parent_builder.add_node("tutor_reply_message_node",tutor_reply_message_node)
 parent_builder.add_node("polisher_subgraph",polisher_subgraph)
+parent_builder.add_node("polisher_reply_message_node",polisher_reply_message_node)
 
 
 # 定义边
@@ -169,8 +211,9 @@ parent_builder.add_conditional_edges("grammar_check_subgraph", has_issue_route, 
 # has_issue分支：tutor 输出先落成对话消息（tutor_reply → AI 消息），再结束
 parent_builder.add_edge("grammer_tutor_subgraph", "tutor_reply_message_node")
 parent_builder.add_edge("tutor_reply_message_node", END)
-# has_no_issue分支
-parent_builder.add_edge("polisher_subgraph", END)
+# has_no_issue分支：语法正确也要有可见反馈（polisher 结果 → 反馈消息），再结束
+parent_builder.add_edge("polisher_subgraph", "polisher_reply_message_node")
+parent_builder.add_edge("polisher_reply_message_node", END)
 # check_failed分支
 parent_builder.add_edge("grammar_check_fallback_node", END)
 

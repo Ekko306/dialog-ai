@@ -216,6 +216,11 @@ const ThreadMessage: FC = () => {
   const isEditing = useAuiState((s) => s.message.composer.isEditing);
   const isSpoken = useAuiState((s) => s.message.metadata.modality === "voice");
 
+  // system 消息（T031 范式的空 SystemMessage 分隔符）仅用于切断相邻 assistant
+  // 消息的气泡合并，不是对话内容：assistant-ui 官方范式（/docs/elements/message-pair）
+  // 按 s.message.role 分支渲染，system 不渲染为气泡（否则空绿底容器成为空白气泡）。
+  // 注：hooks 已在上方全部执行，此处 return null 符合 React 规则。
+  if (role === "system") return null;
   if (isEditing) return <EditComposer />;
   if (isSpoken) return <SpokenMessage />;
   if (role === "user") return <UserMessage />;
