@@ -2,6 +2,7 @@
 """英语表达润色业务逻辑。"""
 
 import logging
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -93,7 +94,38 @@ def polish_text(text: str) -> dict:
             if not explanation:
                 raise ValueError("模型返回的中文解释为空")
 
-            # 基础校验通过，返回业务结果。
+            # ---- 轻量自我校验（确定性规则，不额外调 LLM）----
+            original_len = len(text)
+            polished_len = len(polished_text)
+
+            # 规则 1：长度异常——润色结果不能比原文短 50%（丢核心内容）或长 300%（加无关内容）
+            if polished_len < original_len * 0.5:
+                raise ValueError(
+                    f"润色结果过短，可能丢失核心内容"
+                    f"（原文 {original_len} 字符，润色后 {polished_len} 字符）"
+                )
+            if polished_len > original_len * 3:
+                raise ValueError(
+                    f"润色结果过长，可能引入无关内容"
+                    f"（原文 {original_len} 字符，润色后 {polished_len} 字符）"
+                )
+
+            # 规则 2：无有效英文字母——模型可能输出了全标点、全中文或乱码
+            english_letters = re.findall(r"[a-zA-Z]", polished_text)
+            if len(english_letters) < 3:
+                raise ValueError(
+                    f"润色结果英文字母过少，可能是无效输出"
+                    f"：{polished_text[:50]!r}"
+                )
+
+            # 规则 3：非英文混入过多中文——polished_text 应主要是英文
+            chinese_chars = re.findall(r"[\u4e00-\u9fff]", polished_text)
+            if chinese_chars and len(chinese_chars) > len(english_letters) * 0.2:
+                raise ValueError(
+                    f"润色结果混入过多中文字符，可能是格式化错误"
+                )
+
+            # 基础校验 + 自我校验均通过，返回业务结果。
             return {
                 "polished_text": polished_text,
                 "explanation": explanation,
