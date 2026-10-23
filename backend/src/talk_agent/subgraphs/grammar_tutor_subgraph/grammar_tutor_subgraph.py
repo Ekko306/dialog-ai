@@ -38,6 +38,7 @@ from src.talk_agent.tutor_utils import (  # noqa: E402
     extract_pronunciation_issues,
     format_issue,
     load_tutor_skill,
+    verify_corrections,
 )
 from src.tools.audio_tool.xfyun_tts.xfyun_tts_tool import xfyun_tts_tool_by_text  # noqa: E402
 
@@ -113,13 +114,15 @@ TUTOR_SYSTEM_PROMPT = (
     "1. 语法问题逐条讲解，每条先给出「错误 → 正确」的修改，再用一两句通俗的话解释原因；"
     "2. 先肯定说对的部分，语气鼓励友好；"
     "3. 用中文讲解，例句保留英文；"
-    "4. 发音问题单独成段（明确说明这不属于语法错误）：逐个单词讲解，指出读错的词、"
-    "用户实际读音（清单有标注时）、正确读法（用中文谐音或自然拼读通俗描述），"
-    "并提示重音或易错音素，最后建议学生跟读正确句示范音频；"
+    "4. 发音问题单独成段（明确说明这不属于语法错误）：发音讲解只能依据上游清单给出的读音信息转述，"
+    "禁止自行编造清单中没有的中文谐音或拼读描述；清单未标注读音的单词，只指出「该词发音需改进」，"
+    "并引导用户听示范音频跟读；"
     "5. 上游清单的修正经你核对合理时，corrections 必须收录该条目（correct 给修正后的完整句子）；"
     "中式英语、表达不地道等建议整句改写的问题同样收录（type 标注实际类型），"
     "仅当原句确实无问题时 corrections 才为空列表；"
-    "6. 总长不超过 250 字。"
+    "6. corrections 的 wrong 必须是学生原句中逐字存在的片段（可截取子串），"
+    "禁止改写、缩写、概括原句后当作 wrong；"
+    "7. 总长不超过 250 字。"
 )
 
 
@@ -178,10 +181,15 @@ def llm_call_node(state: TutorState) -> TutorState:
 
     include_raw=True 时返回 {raw, parsed, parsing_error}，解析失败 parsed 为 None，
     交给 parse_validate 路由 fallback；任何异常同样置空输出走兜底。
+
+    输出后处理内联在本节点末尾（不设独立 verify 节点，避免拓扑膨胀）：
+    调用 verify_corrections 做防幻觉程序化校验——corrections[].wrong 逐字锚定学生原句，
+    编造/无效条目直接丢弃（纯函数实现在 tutor_utils，单测覆盖校验规则）。
     """
     model = _get_model()
     if model is None:
         return {"tutor_reply": "", "logger": ["llm_call: LLM 不可用，交由 fallback"]}
+    reply, corrections, dropped = "", [], []
     try:
         result = model.with_structured_output(TutorOutput, include_raw=True).invoke(
             state.get("tutor_prompt", "")
@@ -193,13 +201,20 @@ def llm_call_node(state: TutorState) -> TutorState:
                 "logger": [f"llm_call: 结构化解析失败，交由 fallback（{result.get('parsing_error')}）"],
             }
         reply = parsed.reply.strip()
-        corrections = [c.model_dump() for c in parsed.corrections]
+        corrections, dropped = verify_corrections(
+            [c.model_dump() for c in parsed.corrections], state.get("raw_text", "")
+        )
     except Exception:
         reply, corrections = "", []
+    logs = [f"llm_call: 结构化输出 {'成功' if reply else '失败'}，corrections {len(corrections)} 条"]
+    if dropped:
+        logs.append(
+            f"verify: 拦截编造/无效条目 {len(dropped)} 条，wrong={[d.get('wrong') for d in dropped]}"
+        )
     return {
         "tutor_reply": reply,
         "corrections": corrections,
-        "logger": [f"llm_call: 结构化输出 {'成功' if reply else '失败'}，corrections {len(corrections)} 条"],
+        "logger": logs,
     }
 
 
@@ -292,7 +307,7 @@ def route_entry(state: TutorState) -> Literal["tts_node", "load_input_node"]:
 
 
 def parse_validate(state: SubgraphState) -> Literal["write_state_node", "fallback_node"]:
-    """校验 LLM 输出是否可展示：非空即通过，否则走 fallback。"""
+    """校验 LLM 输出是否可展示：非空直接落状态（事实校验已内联在 llm_call_node），空/解析失败走 fallback。"""
     if state.get("tutor_reply", "").strip():
         return "write_state_node"
     return "fallback_node"

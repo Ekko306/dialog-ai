@@ -4,6 +4,7 @@ from src.talk_agent.tutor_utils import (
     extract_corrections,
     extract_pronunciation_issues,
     format_issue,
+    verify_corrections,
 )
 
 
@@ -92,3 +93,67 @@ def test_pronunciation_empty_inputs():
     assert extract_pronunciation_issues(None) == []
     assert extract_pronunciation_issues({}) == []
     assert extract_pronunciation_issues(123) == []
+
+
+# ---------------- verify_corrections（防幻觉程序化校验） ----------------
+RAW = "She go to school yesterday."
+
+
+def test_verify_passes_legitimate_correction():
+    """合法条目（wrong 逐字在原句中、correct 不同）→ 通过。"""
+    items = [{"wrong": "She go", "correct": "She went to school yesterday.", "type": "grammar"}]
+    checked, dropped = verify_corrections(items, RAW)
+    assert checked == items
+    assert dropped == []
+
+
+def test_verify_drops_fabricated_wrong():
+    """幻觉拦截：wrong 不在原句中（LLM 编造/改写原文）→ 丢弃，合法条目不受影响。"""
+    items = [
+        {"wrong": "She goes to school", "correct": "She went to school yesterday."},  # 编造（原文是 go）
+        {"wrong": "go", "correct": "went"},  # 合法
+    ]
+    checked, dropped = verify_corrections(items, RAW)
+    assert [c["wrong"] for c in checked] == ["go"]
+    assert [d["wrong"] for d in dropped] == ["She goes to school"]
+
+
+def test_verify_drops_noop_correction():
+    """改了等于没改：correct 与 wrong 相同（忽略大小写）→ 丢弃。"""
+    items = [{"wrong": "go", "correct": "GO"}]
+    checked, dropped = verify_corrections(items, RAW)
+    assert checked == []
+    assert len(dropped) == 1
+
+
+def test_verify_drops_incomplete_items():
+    """缺 wrong 或缺 correct 的条目无法展示 → 丢弃。"""
+    items = [
+        {"wrong": "She go", "correct": ""},
+        {"wrong": "", "correct": "She went"},
+    ]
+    checked, _ = verify_corrections(items, RAW)
+    assert checked == []
+
+
+def test_verify_case_insensitive_anchor():
+    """锚定原文忽略大小写：wrong「she GO」仍算原句片段 → 通过。"""
+    items = [{"wrong": "she GO", "correct": "she went"}]
+    checked, dropped = verify_corrections(items, RAW)
+    assert checked == items
+    assert dropped == []
+
+
+def test_verify_empty_raw_text_skips_anchor_rule():
+    """raw_text 为空（无事实源）时跳过锚定规则，只查完整性与 no-op，不误杀。"""
+    items = [{"wrong": "anything", "correct": "something"}]
+    checked, dropped = verify_corrections(items, "")
+    assert checked == items
+    assert dropped == []
+
+
+def test_verify_non_dict_and_invalid_container():
+    """非 dict 条目丢弃；corrections 非 list 时返回空通过+空拦截。"""
+    _, dropped = verify_corrections(["plain", {"wrong": "go", "correct": "went"}], RAW)
+    assert len(dropped) == 1
+    assert verify_corrections("not-a-list", RAW) == ([], [])

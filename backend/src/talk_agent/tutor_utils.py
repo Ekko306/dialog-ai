@@ -85,3 +85,35 @@ def extract_pronunciation_issues(check_results) -> list:
     else:
         return []
     return [i for i in items if isinstance(i, dict)]
+
+
+def verify_corrections(corrections, raw_text: str) -> tuple[list, list]:
+    """程序化事实校验（防幻觉外部验证器）：核查 LLM 产出的 corrections 与事实源（学生原句）的一致性。
+
+    纯字符串运算，不调 LLM、零网络开销。核查规则：
+    - 锚定原文：wrong 必须逐字出现在 raw_text 中（忽略大小写与首尾空白），否则视为编造 → 丢弃；
+      raw_text 为空时跳过本规则（无事实源可对照，不能误杀）
+    - 修正有效：correct 去空白后与 wrong 相同（改了等于没改）→ 丢弃
+    - 条目缺 wrong 或缺 correct：信息不完整无法展示 → 丢弃
+
+    返回 (通过列表, 拦截列表)，供节点写日志：拦截是静默降级，不报错、不阻塞讲解文本输出。
+    """
+    checked, dropped = [], []
+    raw_lower = (raw_text or "").lower()
+    for item in corrections if isinstance(corrections, list) else []:
+        if not isinstance(item, dict):
+            dropped.append(item if isinstance(item, dict) else {"wrong": str(item)})
+            continue
+        wrong = (item.get("wrong") or "").strip()
+        correct = (item.get("correct") or "").strip()
+        if not wrong or not correct:
+            dropped.append(item)
+            continue
+        if correct.lower() == wrong.lower():
+            dropped.append(item)
+            continue
+        if raw_lower and wrong.lower() not in raw_lower:
+            dropped.append(item)
+            continue
+        checked.append(item)
+    return checked, dropped
