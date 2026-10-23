@@ -42,7 +42,7 @@ from langgraph.constants import TAG_NOSTREAM  # nostream 标签：把内部 LLM 
 
 from src.llm_models.get_model import get_model  # noqa: E402  团队统一模型工厂（PR 评审：模仿 get_coach_model 接入）
 from src.talk_agent.state import GrammarCheckState  # noqa: E402  状态契约统一在 state.py
-from src.talk_agent.utils import is_transient  # noqa: E402  公共瞬态判定（PR 评审：提炼为公共函数）
+from src.talk_agent.utils import is_transient, validate_audio_file  # noqa: E402  公共函数（PR 评审：提炼复用）
 from src.talk_agent.subgraphs.grammar_check_contracts import (  # noqa: E402
     GrammarIssue,  # noqa: F401  re-export：保持原导入路径可用
     GrammarVerdict,
@@ -175,6 +175,14 @@ class GrammarCheckSubgraph:
         audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
         print(f"test_audio_file:{audio_file}")
 
+        # 参数前置校验：无效文件直接降级，不浪费讯飞 API 往返（原因写进日志便于排查）
+        if audio_file and (reason := validate_audio_file(audio_file)):
+            return {
+                "iat_status": "unavailable",
+                "raw_text": "",
+                "grammar_check_logs": [f"xfyun_ita_tool_node：音频文件无效（{reason}）→ unavailable"],
+            }
+
         try:
             if audio_bytes or audio_file:
                 # 已有音频 → 直接转写它（测试素材/上游复用路径）
@@ -223,6 +231,10 @@ class GrammarCheckSubgraph:
         # audio_file = (state.get("audio_file_path") or "").strip()
         audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
         print(f"test_audio_file:{audio_file}")
+
+        # 参数前置校验：与 ita 节点同款，无效文件直接降级
+        if audio_file and (reason := validate_audio_file(audio_file)):
+            return {"ise_status": "unavailable", "ise_xml_info": ""}
 
         if not audio_bytes and not audio_file:
             return {"ise_status": "no_audio", "ise_xml_info": ""}
