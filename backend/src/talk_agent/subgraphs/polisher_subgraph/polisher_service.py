@@ -13,6 +13,8 @@ _BACKEND_DIR = Path(__file__).resolve().parents[4]
 # 先加载 backend/.env：本模块在导入时会构建模型链，密钥必须先就绪。
 load_dotenv(_BACKEND_DIR / ".env", override=True)
 
+from langgraph.constants import TAG_NOSTREAM  # noqa: E402
+
 from src.llm_models.get_model import get_polisher_model  # noqa: E402
 
 
@@ -31,7 +33,9 @@ SKILL_PATH = (
 MAX_POLISH_ATTEMPTS = 2
 
 # 模块加载时构建一次模型链，避免每次调用重复构建。
-polisher_chain = get_polisher_model()
+# TAG_NOSTREAM：结构化输出底层是 function calling，其 tool_call chunks 若流入
+# stream_mode="messages" 会在前端渲染成幽灵 "Used Tool" 消息且跨轮合并，必须排除
+polisher_chain = get_polisher_model().with_config(tags=[TAG_NOSTREAM])
 
 
 def load_skill_content() -> str:

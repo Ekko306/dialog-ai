@@ -61,10 +61,7 @@ function getMimeTypeIcon(mimeType: string): FC<{ className?: string }> {
 
 export type FileDataKind = "data-uri" | "url" | "base64" | "id";
 
-function getFileDataKind(
-  data: string,
-  sourceType?: "url" | "id",
-): FileDataKind {
+function getFileDataKind(data: string, sourceType?: "url" | "id"): FileDataKind {
   if (sourceType === "url" && /^data:/i.test(data)) return "data-uri";
   if (sourceType) return sourceType;
   if (/^data:/i.test(data)) return "data-uri";
@@ -86,9 +83,7 @@ function getBase64PayloadSize(payload: string): number {
 }
 
 function getBase64Size(base64: string): number {
-  const payload = /[\t\n\f\r ]/.test(base64)
-    ? base64.replace(/[\t\n\f\r ]/g, "")
-    : base64;
+  const payload = /[\t\n\f\r ]/.test(base64) ? base64.replace(/[\t\n\f\r ]/g, "") : base64;
   return getBase64PayloadSize(payload);
 }
 
@@ -112,8 +107,7 @@ function getDataUrlSize(data: string): number {
   }
 
   // Each percent escape is one byte, including octets that are not valid UTF-8.
-  return new TextEncoder().encode(payload.replace(/%[\da-f]{2}/gi, "_"))
-    .byteLength;
+  return new TextEncoder().encode(payload.replace(/%[\da-f]{2}/gi, "_")).byteLength;
 }
 
 function formatFileSize(bytes: number): string {
@@ -126,16 +120,9 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export type FileRootProps = React.ComponentProps<"div"> &
-  VariantProps<typeof fileVariants>;
+export type FileRootProps = React.ComponentProps<"div"> & VariantProps<typeof fileVariants>;
 
-function FileRoot({
-  className,
-  variant,
-  size,
-  children,
-  ...props
-}: FileRootProps) {
+function FileRoot({ className, variant, size, children, ...props }: FileRootProps) {
   return (
     <div
       data-slot="file-root"
@@ -153,12 +140,7 @@ type FileIconDisplayProps = React.ComponentProps<"span"> & {
   mimeType?: string;
 };
 
-function FileIconDisplay({
-  mimeType,
-  className,
-  children,
-  ...props
-}: FileIconDisplayProps) {
+function FileIconDisplay({ mimeType, className, children, ...props }: FileIconDisplayProps) {
   const IconComponent = mimeType ? getMimeTypeIcon(mimeType) : FileIcon;
 
   return (
@@ -173,11 +155,7 @@ function FileIconDisplay({
   );
 }
 
-function FileName({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"span">) {
+function FileName({ className, children, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       data-slot="file-name"
@@ -245,15 +223,9 @@ function FileDownload({
   );
 }
 
-const FileImpl: FileMessagePartComponent = ({
-  filename,
-  data,
-  mimeType,
-  sourceType,
-}) => {
+const FileImpl: FileMessagePartComponent = ({ filename, data, mimeType, sourceType }) => {
   const kind = getFileDataKind(data, sourceType);
-  const showSize =
-    typeof data === "string" && (kind === "base64" || kind === "data-uri");
+  const showSize = typeof data === "string" && (kind === "base64" || kind === "data-uri");
 
   return (
     <FileRoot>
@@ -262,9 +234,7 @@ const FileImpl: FileMessagePartComponent = ({
         <FileName>{filename}</FileName>
         {showSize && (
           <FileSize
-            bytes={
-              kind === "data-uri" ? getDataUrlSize(data) : getBase64Size(data)
-            }
+            bytes={kind === "data-uri" ? getDataUrlSize(data) : getBase64Size(data)}
             className="text-xs"
           />
         )}

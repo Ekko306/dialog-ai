@@ -32,6 +32,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_deepseek import ChatDeepSeek
+from langgraph.constants import TAG_NOSTREAM
 
 from src.talk_agent.state import OverAllState  # noqa: E402
 
@@ -144,6 +145,8 @@ if _api_key:
     analyzer = (
         ChatDeepSeek(model=os.getenv("DEEPSEEK_MODEL", "deepseek-chat"), api_key=_api_key, temperature=0)
         .with_structured_output(IseAnalysis)
+        # TAG_NOSTREAM：内部结构化调用的 tool_call chunks 不进 messages 流（否则前端出现幽灵 tool call）
+        .with_config(tags=[TAG_NOSTREAM])
     )
 else:
     analyzer = None
