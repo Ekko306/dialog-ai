@@ -31,6 +31,7 @@ from dotenv import load_dotenv  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 from langgraph.graph import END, START, StateGraph  # noqa: E402
+from langgraph.constants import TAG_NOSTREAM  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
 from src.talk_agent.tutor_utils import (  # noqa: E402
@@ -191,7 +192,9 @@ def llm_call_node(state: TutorState) -> TutorState:
         return {"tutor_reply": "", "logger": ["llm_call: LLM 不可用，交由 fallback"]}
     reply, corrections, dropped = "", [], []
     try:
-        result = model.with_structured_output(TutorOutput, include_raw=True).invoke(
+        result = model.with_structured_output(TutorOutput, include_raw=True).with_config(
+            tags=[TAG_NOSTREAM]  # 内部结构化调用不进 messages 流（前端幽灵 tool call 根因）
+        ).invoke(
             state.get("tutor_prompt", "")
         )
         parsed = result.get("parsed")

@@ -35,6 +35,7 @@ def load_skill_content() -> str:
 
 
 from langgraph.graph import StateGraph, START, END  # noqa: E402
+from langgraph.constants import TAG_NOSTREAM  # noqa: E402
 from langchain_deepseek import ChatDeepSeek  # noqa: E402
 from langchain_core.prompts import ChatPromptTemplate  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
@@ -114,10 +115,12 @@ polisher_prompt = ChatPromptTemplate.from_messages([
 
 
 # 4. 构建模型处理链
+# TAG_NOSTREAM：结构化输出底层是 function calling，其 tool_call chunks 若流入
+# stream_mode="messages" 会在前端渲染成幽灵 "Used Tool" 消息且跨轮合并，必须排除
 polisher_chain = (
     polisher_prompt
     | llm.with_structured_output(PolishResult)
-)
+).with_config(tags=[TAG_NOSTREAM])
 
 
 # 5. 定义润色节点

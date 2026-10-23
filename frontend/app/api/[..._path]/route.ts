@@ -14,6 +14,12 @@ function isAllowedRequestContext(req: NextRequest) {
   if (origin === null) return true;
 
   try {
+    // 官方模板 fallback 依赖 nextUrl.origin，但 Next dev 下以局域网 IP 访问时
+    // nextUrl.origin 仍为 localhost，且部分 WebView 客户端不带 Sec-Fetch-Site，
+    // 会把同源请求误判为跨域（403）。Origin 的 host 与请求 Host 头一致即为同源直连。
+    const host = req.headers.get("host");
+    if (host !== null && new URL(origin).host === host) return true;
+
     return new URL(origin).origin === req.nextUrl.origin;
   } catch {
     return false;
@@ -21,10 +27,7 @@ function isAllowedRequestContext(req: NextRequest) {
 }
 
 function crossOriginResponse() {
-  return NextResponse.json(
-    { error: "Cross-origin requests are not allowed." },
-    { status: 403 },
-  );
+  return NextResponse.json({ error: "Cross-origin requests are not allowed." }, { status: 403 });
 }
 
 async function handleRequest(req: NextRequest, method: string) {
@@ -33,19 +36,14 @@ async function handleRequest(req: NextRequest, method: string) {
   try {
     const apiUrl = process.env.LANGGRAPH_API_URL?.trim();
     if (!apiUrl) {
-      return NextResponse.json(
-        { error: "LANGGRAPH_API_URL is not configured." },
-        { status: 503 },
-      );
+      return NextResponse.json({ error: "LANGGRAPH_API_URL is not configured." }, { status: 503 });
     }
 
     const path = req.nextUrl.pathname.replace(/^\/?api\//, "");
     const searchParams = new URLSearchParams(req.nextUrl.search);
     searchParams.delete("_path");
     searchParams.delete("nxtP_path");
-    const queryString = searchParams.toString()
-      ? `?${searchParams.toString()}`
-      : "";
+    const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
     const headers = new Headers();
     const apiKey = process.env.LANGCHAIN_API_KEY?.trim();
@@ -65,7 +63,9 @@ async function handleRequest(req: NextRequest, method: string) {
     };
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
-      options.body = await req.text();
+      // 二进制安全转发：arrayBuffer 保留原始字节（语音 PCM 等），
+      // 文本请求体（JSON）经 UTF-8 编码后同样正确转发
+      options.body = await req.arrayBuffer();
     }
 
     const res = await fetch(`${apiUrl}/${path}${queryString}`, options);
@@ -105,10 +105,7 @@ async function handleRequest(req: NextRequest, method: string) {
   } catch (e: unknown) {
     if (e instanceof Error) {
       const typedError = e as Error & { status?: number };
-      return NextResponse.json(
-        { error: typedError.message },
-        { status: typedError.status ?? 500 },
-      );
+      return NextResponse.json({ error: typedError.message }, { status: typedError.status ?? 500 });
     }
     return NextResponse.json({ error: "Unknown error" }, { status: 500 });
   }

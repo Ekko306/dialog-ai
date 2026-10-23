@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 from pathlib import Path
 
 # 兼容直接运行本文件：把 backend 目录加入 sys.path，使 src.* 绝对导入可用；
@@ -16,7 +16,7 @@ from src.talk_agent.context.coach_context import (  # noqa: E402
     CoachContext,
 )
 from src.llm_models.get_model import (get_coach_model, NEW_COACH_DIALOG_START)
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from typing import Literal  # noqa: E402
 
 from src.talk_agent.context.coach_context import (  # noqa: E402
@@ -50,9 +50,11 @@ def continue_dialog_node(state: SubgraphState, runtime: Runtime[CoachContext]) -
     model = get_coach_model(role, scenario)
     # 链入参是 dict：MessagesPlaceholder 变量名 -> 消息列表；不能传裸列表
     res = model.invoke({"messages": [HumanMessage(raw_text)]})
+    # SystemMessage("")：assistant-ui 会把相邻 assistant 消息合并成同一气泡，
+    # system 角色强制断开消息块（与主图 tutor_reply_message_node 同一范式）
     return {
         "logger": [f"continue_dialog_node执行完毕raw_text={raw_text}"],
-        "messages": [res]
+        "messages": [res, SystemMessage(content="")]
     }
 
 
@@ -62,9 +64,10 @@ def new_dialog_node(state: SubgraphState, runtime: Runtime[CoachContext]) -> Sub
 
     model = get_coach_model(role, scenario)
     res = model.invoke({"messages": [HumanMessage(NEW_COACH_DIALOG_START)]})
+    # 同 continue_dialog_node：空 SystemMessage 分隔，防止跨轮话题粘连一个气泡
     return {
         "logger": [f"new_dialog_node执行完毕（role={role}, scenario={scenario}"],
-        "messages": [res],
+        "messages": [res, SystemMessage(content="")],
         "new_dialog": False,
     }
 
