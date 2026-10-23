@@ -90,6 +90,8 @@
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.678 0.18 247.4);
   --bubble-ai: oklch(0.946 0.138 127.7);
+  /* 002 场景弹窗专属高亮（原型图选中胶囊/底部按钮的黄绿色，比 bubble-ai 更偏黄） */
+  --scene-highlight: oklch(0.89 0.15 122);
   --icon-brand-green: oklch(0.787 0.239 137.4);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -126,6 +128,8 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.72 0.15 247.4);
   --bubble-ai: oklch(0.35 0.06 130);
+  /* 002 场景弹窗专属高亮（暗色主题下提亮保证可读） */
+  --scene-highlight: oklch(0.84 0.15 122);
   --icon-brand-green: oklch(0.787 0.239 137.4);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);

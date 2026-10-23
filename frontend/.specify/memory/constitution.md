@@ -1,23 +1,4 @@
 # DialogAi 前端 Constitution
-<!--
-=====================================================
-  SYNC IMPACT REPORT（提交前请删除本注释块）
-=====================================================
-Version change: 1.0.0 → 1.1.0
-Amended: 2026-10-21
-
-Modified principles:
-  - 原则 III 第 3 条收窄（原型图相关要求移入新原则 IV）
-  - 「开发工作流」需求输入条目更新（指向原则 IV 与原型图目录）
-
-Added sections:
-  - Core Principles IV. 原型图驱动开发
-
-Removed sections: 无
-
-Follow-up TODOs: 无
-=====================================================
--->
 
 ## Core Principles
 
