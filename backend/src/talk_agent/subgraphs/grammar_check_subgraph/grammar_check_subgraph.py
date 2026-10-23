@@ -17,9 +17,12 @@
 结构组织（PR 评审意见落地）：
 - 状态契约 GrammarCheckState 统一定义在 src/talk_agent/state.py（与 OverAllState 同处）
 - LLM 输出契约 GrammarIssue/GrammarVerdict 单独定义在 grammar_check_contracts.py
-- 瞬态错误判定 is_transient 提炼为公共函数（src/talk_agent/utils.py），各节点可复用
-- 检查逻辑聚合为 GrammarCheckSubgraph 类：LLM 客户端、节点实现、图构建全收进对象；
+- 瞬态错误判定 is_transient / 音频前置校验 validate_audio_file 提炼为公共函数
+  （src/talk_agent/utils.py），各节点可复用
+- 检查逻辑聚合为 GrammarCheckSubgraph 类：LLM 链工厂、节点实现、图构建全收进对象；
   LangGraph 原生支持把编译后的图（Runnable）直接作为节点挂载父图
+- user_input 双模式（main 分支前端集成）：音频文件路径走文件转写/评测测试通道，
+  已转写文本直通语法链（不调 IAT 不开麦），语义自适应判定见 _is_audio_path
 - 模块级导出名 grammar_check_subgraph 保持不变，父图 / langgraph.json 零改动
 """
 
@@ -86,6 +89,24 @@ GRAMMAR_CHECK_PROMPT = (
     "5. feedback 只用一句话概述错误类型，同样不含任何正确写法。\n"
     "6. 无语法错误时：has_issue=False，issues 为空列表，feedback 为空字符串。"
 )
+
+
+# ========== user_input 双模式判定（main 分支前端集成） ==========
+
+_AUDIO_SUFFIXES = {".pcm", ".wav", ".mp3", ".m4a"}
+
+
+def _is_audio_path(candidate: str) -> bool:
+    """判定 user_input 是否为音频文件路径：音频后缀且文件真实存在.
+
+    双条件防误判——前端语音输入的 user_input 是讯飞转写文本而非路径，
+    只有同时满足音频后缀与 os.path.isfile 才走旧的文件转写/评测测试通道。
+    """
+    if not candidate:
+        return False
+    if Path(candidate).suffix.lower() not in _AUDIO_SUFFIXES:
+        return False
+    return os.path.isfile(candidate)
 
 
 # ========== LLM 链工厂（模仿 get_coach_model 的 LCEL 写法，PR 评审意见落地） ==========
@@ -160,22 +181,23 @@ class GrammarCheckSubgraph:
     # ---- 节点实现（原模块级函数收进类；ise_analyze_node 留在独立模块） ----
 
     def xfyun_ita_tool_node(self, state: GrammarCheckState) -> GrammarCheckState:
-        """IAT 语音转写节点（加固版）：讯飞听写 → raw_text + 音频字节存 State。
+        """IAT 语音转写节点（加固 + 双模式输入）：讯飞听写 → raw_text + 音频字节存 State。
 
-        - 输入优先级：audio_data（上游复用）> audio_file_path（mock/dev/Studio 测试素材）
-          > 麦克风（生产路径）；有音频就转写它，不开麦、不卡 input()
+        - 输入优先级：audio_data（上游复用）> user_input 为音频文件路径（mock/dev/Studio
+          测试通道，validate_audio_file 前置拦截无效文件）> user_input 已转写文本直通
+          （前端语音输入，不调 IAT 不开麦）> 麦克风（生产路径）
         - 麦克风录音只发生一次：文本走语法链，PCM 存 State 喂 ISE（一次录音两份产出）
         - 瞬态异常上抛 → RetryPolicy；非瞬态（401/无麦克风/EOF/KeyError）→ unavailable 降级
         - 空识别结果（没说话/纯噪声/英文音频走中文引擎转不出）→ no_speech，raw_text=""
           （下游 empty_input → fallback 兜底，不会炸图）
         """
         audio_bytes = state.get("audio_data")
+        candidate = (state.get("user_input") or "").strip()
+        # user_input 语义自适应：音频文件路径 → 测试通道；否则视为前端语音转写文本直通
+        audio_file = candidate if _is_audio_path(candidate) else ""
+        text_input = candidate if candidate and not audio_file else ""
 
-        # audio_file = (state.get("audio_file_path") or "").strip()
-        audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
-        print(f"test_audio_file:{audio_file}")
-
-        # 参数前置校验：无效文件直接降级，不浪费讯飞 API 往返（原因写进日志便于排查）
+        # 参数前置校验：仅对真实存在的路径生效（0 字节等），原因写进日志便于排查
         if audio_file and (reason := validate_audio_file(audio_file)):
             return {
                 "iat_status": "unavailable",
@@ -184,13 +206,17 @@ class GrammarCheckSubgraph:
             }
 
         try:
-            if audio_bytes or audio_file:
-                # 已有音频 → 直接转写它（测试素材/上游复用路径）
-                if audio_bytes:
-                    text = xfyun_iat_tool_by_audio_data(audio_bytes)
-                else:
-                    text = xfyun_iat_tool_by_audio_file(audio_file)
-                audio = audio_bytes or b""
+            if audio_bytes:
+                # 上游复用音频 → 直接转写它（一次录音两份产出）
+                text = xfyun_iat_tool_by_audio_data(audio_bytes)
+                audio = audio_bytes
+            elif audio_file:
+                # 音频文件路径（mock/dev/Studio 测试通道保留）
+                text = xfyun_iat_tool_by_audio_file(audio_file)
+                audio = b""
+            elif text_input:
+                # 前端语音输入：user_input 已是讯飞转写文本，直通语法链（不调 IAT、不开麦）
+                return {"iat_status": "ok", "raw_text": text_input}
             else:
                 text, audio = xfyun_iat_tool_by_mic()  # 生产路径：真实麦克风录音
         except Exception as e:
@@ -215,7 +241,8 @@ class GrammarCheckSubgraph:
         """ISE 发音评测节点：同一次录音的 PCM + 预设参考句 → 评测 XML 存进 State。
 
         - 输入优先级：audio_data（生产主路径，来自 ita 存的录音 PCM）
-                      > audio_file_path（mock/dev 调试用）> 没音频 → no_audio 短路
+                      > user_input 为音频文件路径（mock/dev 调试通道保留，validate 前置拦截）
+                      > 没音频（含 user_input 为转写文本时）→ no_audio 短路
         - ref_text 优先用教练预设句；未传时自动回退用 IAT 转写文本
           （"跟读自己"单输入模式：无需预设答案，识别到什么就评什么；
           代价：ASR 自动纠错会让参考句失真，is_rejected 校验形同虚设）；
@@ -228,9 +255,9 @@ class GrammarCheckSubgraph:
         ref = (state.get("ref_text") or "").strip()
         audio_bytes = state.get("audio_data")
 
-        # audio_file = (state.get("audio_file_path") or "").strip()
-        audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
-        print(f"test_audio_file:{audio_file}")
+        candidate = (state.get("user_input") or "").strip()
+        # 同 ita 节点：user_input 仅在为音频文件路径时走文件评测；转写文本无音频 → no_audio 短路
+        audio_file = candidate if _is_audio_path(candidate) else ""
 
         # 参数前置校验：与 ita 节点同款，无效文件直接降级
         if audio_file and (reason := validate_audio_file(audio_file)):
