@@ -8,7 +8,7 @@ from langgraph.graph.message import add_messages
 
 from langgraph.graph import MessagesState, StateGraph, START, END
 
-from src.talk_agent.subgraphs.grammar_check_contracts import GrammarCheckStatus  # noqa: E402
+from src.talk_agent.subgraphs.grammar_check_subgraph.check_conatants import GrammarCheckStatus  # noqa: E402
 
 class OverAllState(TypedDict, total=False):
     # messages 显式声明在 total=False 类内：全部 key 可省略，

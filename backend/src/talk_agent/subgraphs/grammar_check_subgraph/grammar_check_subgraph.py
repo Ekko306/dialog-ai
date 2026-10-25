@@ -46,10 +46,7 @@ from langgraph.constants import TAG_NOSTREAM  # nostream 标签：把内部 LLM 
 from src.llm_models.get_model import get_model  # noqa: E402  团队统一模型工厂（PR 评审：模仿 get_coach_model 接入）
 from src.talk_agent.state import GrammarCheckState  # noqa: E402  状态契约统一在 state.py
 from src.talk_agent.utils import is_transient, validate_audio_file  # noqa: E402  公共函数（PR 评审：提炼复用）
-from src.talk_agent.subgraphs.grammar_check_contracts import (  # noqa: E402
-    GrammarIssue,  # noqa: F401  re-export：保持原导入路径可用
-    GrammarVerdict,
-)
+
 from src.talk_agent.subgraphs.grammar_check_subgraph.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
 from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
     xfyun_iat_tool_by_mic,
@@ -60,6 +57,7 @@ from src.tools.audio_tool.xfyun_ise.xfyun_ise_tool import (  # noqa: E402
     xfyun_ise_tool_by_audio_data,
     xfyun_ise_tool_by_audio_file,
 )
+from src.llm_models.get_model import get_checker_model
 
 # 复用 backend/.env（backend/src/talk_agent/subgraphs/grammar_check_subgraph → parents[4] = backend）
 load_dotenv(_BACKEND_DIR / ".env")
@@ -79,16 +77,7 @@ _RETRY_POLICY = RetryPolicy(
 
 MAX_TEXT_LENGTH = 500  # 输入长度上限：超过视为无效输入
 
-# 语法检查规则（模块级常量：LLM 链工厂与节点共用）
-GRAMMAR_CHECK_PROMPT = (
-    "你是英语语法检查助手，只负责检测和标记用户句子中的语法错误，不要纠错。规则：\n"
-    "1. 只判定语法错误：时态、主谓一致、单复数、词性误用等。\n"
-    "2. 语法正确但表达不自然的句子不算语法错误，例如 'I agree with you.' 没有语法错误。\n"
-    "3. 每处错误标记三要素：fragment=出错的原文片段、error_type=错误类型、description=中文简述错在哪。\n"
-    "4. 严禁给出正确答案或修改后的句子（哪怕一个词）——纠错由下游 grammar_tutor 节点负责。\n"
-    "5. feedback 只用一句话概述错误类型，同样不含任何正确写法。\n"
-    "6. 无语法错误时：has_issue=False，issues 为空列表，feedback 为空字符串。"
-)
+
 
 
 # ========== user_input 双模式判定（main 分支前端集成） ==========
@@ -112,32 +101,7 @@ def _is_audio_path(candidate: str) -> bool:
 # ========== LLM 链工厂（模仿 get_coach_model 的 LCEL 写法，PR 评审意见落地） ==========
 
 
-def get_checker_model(base_model: Runnable | None = None) -> Runnable:
-    """语法检查链：ChatPromptTemplate | 基座模型（结构化输出 + nostream）。
 
-    - prompt 走模板组装（系统规则 + 单条待检文本），调用方只传 {"raw_text": ...}，
-      不再手拼 [SystemMessage, HumanMessage] 消息列表
-    - 基座默认团队统一的 deepseek_model（惰性导入，与 get_coach_model 同款，
-      导入本模块不强依赖 DeepSeek 配置）；换基座传 base_model 参数即可
-    - with_structured_output(GrammarVerdict)：强制按 Schema 返回
-    - TAG_NOSTREAM：结构化输出底层是 function calling，其 tool_call chunks 若流入
-      stream_mode="messages" 会在前端渲染成幽灵 "Used Tool" 消息且跨轮合并，必须排除
-    """
-    checker_prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", GRAMMAR_CHECK_PROMPT),
-            ("human", "{raw_text}"),
-        ]
-    )
-    if base_model is None:
-        # 惰性导入默认基座：导入本模块不再强依赖 DeepSeek 配置
-        from src.llm_models.deepseek_model import model as deepseek_model
-
-        base_model = deepseek_model
-    return get_model(
-        checker_prompt,
-        base_model.with_structured_output(GrammarVerdict).with_config(tags=[TAG_NOSTREAM]),
-    )
 
 
 # ========== 子图封装类（检查逻辑聚合对象） ==========
