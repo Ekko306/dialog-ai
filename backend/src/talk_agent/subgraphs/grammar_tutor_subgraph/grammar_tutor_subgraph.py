@@ -3,12 +3,17 @@
 职责边界（与上游 grammar_check 的契约）：
 - grammar_check 负责发现问题：check_results（LLM 解析 XML 的结构化清单：语法+发音）、issues（兼容旧字段）
 - 本子图负责把问题讲清楚：tutor_reply（给人看的讲解）+ corrections（给前端用的结构化修正）
-  + raw_audio（用户原句美式发音 MP3，供前端对照播放）+ tutor_audio（正确句美式发音 MP3，供前端示范跟读；
-  TTS 失败置空对应字段，不阻塞讲解）
+- 音频懒加载：主链不再每次回复都合成 TTS（用户未必点击发音），raw_audio / tutor_audio
+  由本图 tts_node 旁路按需合成（公共属性，polisher 可复用）：前端点发音按钮时 invoke 本图
+  并带 tts_request=True，入口条件边 route_entry 将其直达 tts_node；讲解调用不带该字段走主链
 - 是否进入本子图由父图条件边（my_route）决定，进入即代表 has_issue=True
 
 图：document/grammar_tutor_subgraph.drawio
-纠错准则：skills/grammar-error-precision/SKILL.md（加载式注入提示词，进程内缓存）
+纠错准则：src/llm_models/prompts/skills/grammar-error-precision/SKILL.md（加载式注入提示词，进程内缓存）
+
+纯工具函数（容错提取/回显/Skill 加载）已拆至 src/talk_agent/tutor_utils.py，
+回归测试在 backend/tests/（unit_tests 测工具函数，integration_tests 跑 5 场景子图回归）。
+本文件专注 LangGraph 子图构建：节点、条件边、图编译、LLM 与结构化输出 schema。
 """
 
 import json
@@ -18,7 +23,7 @@ from typing import Literal
 
 # 兼容直接运行本文件：把 backend 目录加入 sys.path，使 src.* 绝对导入可用；
 # langgraph dev / uv run 下 backend 本就在 sys.path，无副作用
-_BACKEND_DIR = Path(__file__).resolve().parents[3]  # subgraphs 比 graph.py 深一层
+_BACKEND_DIR = Path(__file__).resolve().parents[4]  # 子图在 subgraphs/grammar_tutor_subgraph/ 下，比 graph.py 深两层
 if str(_BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(_BACKEND_DIR))
 
@@ -29,6 +34,13 @@ from langgraph.graph import END, START, StateGraph  # noqa: E402
 from langgraph.constants import TAG_NOSTREAM  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
+from src.talk_agent.subgraphs.grammar_check_subgraph.tutor_utils import (  # noqa: E402
+    extract_corrections,
+    extract_pronunciation_issues,
+    format_issue,
+    load_tutor_skill,
+    verify_corrections,
+)
 from src.tools.audio_tool.xfyun_tts.xfyun_tts_tool import xfyun_tts_tool_by_text  # noqa: E402
 
 load_dotenv(override=True)
@@ -40,9 +52,12 @@ class TutorState(SubgraphState, total=False):
 
     tutor_prompt 仅在 build_prompt → llm_call 之间流转，出了本子图无人读取，
     因此不放共享的 state.py（契约文件只放跨图字段）。
+    tts_request 同理：只服务本子图入口分流，父图 schema 无此 key，
+    对话主链的状态合并不可能带上它——只有前端直接 invoke 本图才能触发发音旁路。
     """
 
     tutor_prompt: str  # build_prompt → llm_call 的内部提示词
+    tts_request: bool  # 发音专用入口标记：前端点发音按钮 invoke 本图时传 True → route_entry 直达 tts_node
 
 
 # ---------------- 结构化输出 schema（with_structured_output 强约束 LLM 一次产出 reply + corrections） ----------------
@@ -100,75 +115,16 @@ TUTOR_SYSTEM_PROMPT = (
     "1. 语法问题逐条讲解，每条先给出「错误 → 正确」的修改，再用一两句通俗的话解释原因；"
     "2. 先肯定说对的部分，语气鼓励友好；"
     "3. 用中文讲解，例句保留英文；"
-    "4. 发音问题单独成段（明确说明这不属于语法错误）：逐个单词讲解，指出读错的词、"
-    "用户实际读音（清单有标注时）、正确读法（用中文谐音或自然拼读通俗描述），"
-    "并提示重音或易错音素，最后建议学生跟读正确句示范音频；"
+    "4. 发音问题单独成段（明确说明这不属于语法错误）：发音讲解只能依据上游清单给出的读音信息转述，"
+    "禁止自行编造清单中没有的中文谐音或拼读描述；清单未标注读音的单词，只指出「该词发音需改进」，"
+    "并引导用户听示范音频跟读；"
     "5. 上游清单的修正经你核对合理时，corrections 必须收录该条目（correct 给修正后的完整句子）；"
     "中式英语、表达不地道等建议整句改写的问题同样收录（type 标注实际类型），"
     "仅当原句确实无问题时 corrections 才为空列表；"
-    "6. 总长不超过 250 字。"
+    "6. corrections 的 wrong 必须是学生原句中逐字存在的片段（可截取子串），"
+    "禁止改写、缩写、概括原句后当作 wrong；"
+    "7. 总长不超过 250 字。"
 )
-
-
-# ---------------- 纠错准则 Skill（加载式接入，参考 Agent Skills 的 SKILL.md 规范） ----------------
-# 路径：src/llm_models/prompts/skills/grammar-error-precision/SKILL.md
-# 模块级缓存：进程内只读一次磁盘，避免每次请求 IO；开发期改动 SKILL.md 后重启进程生效
-_SKILL_CACHE: dict[str, str] = {}
-
-
-def load_tutor_skill() -> str:
-    """读取纠错准则正文（剥离 YAML frontmatter 元数据）；文件缺失或不可读时返回空串，不阻塞流程。"""
-    if "text" in _SKILL_CACHE:
-        return _SKILL_CACHE["text"]
-    skill_path = Path(__file__).resolve().parents[3] / "llm_models" / "prompts" / "skills" / "grammar-error-precision" / "SKILL.md"
-    try:
-        text = skill_path.read_text(encoding="utf-8")
-        if text.startswith("---"):  # --- 之间是 name/description 元数据，不进提示词
-            blocks = text.split("---", 2)
-            if len(blocks) == 3:
-                text = blocks[2]
-        text = text.strip()
-    except OSError:
-        text = ""
-    _SKILL_CACHE["text"] = text
-    return text
-
-
-def _extract_corrections(check_results) -> list:
-    """从上游 check_results 容错提取前端可用的修正结构 [{wrong, correct, type}]。
-
-    check_results 是 check 队友 LLM 解析 XML 的 json，具体字段名以最终对齐为准；
-    这里做常见字段名的容错映射，取不到就返回空列表（前端不渲染修正卡片，不影响主流程）。
-    """
-    if isinstance(check_results, dict):
-        items = check_results.get("issues") or check_results.get("errors") or check_results.get("grammar") or []
-    elif isinstance(check_results, list):
-        items = check_results
-    else:
-        return []
-    corrections = []
-    for item in items if isinstance(items, list) else []:
-        if not isinstance(item, dict):
-            continue
-        wrong = item.get("wrong") or item.get("error") or item.get("original") or ""
-        correct = item.get("correct") or item.get("right") or item.get("suggestion") or ""
-        if wrong or correct:
-            corrections.append({"wrong": wrong, "correct": correct, "type": item.get("type", "grammar")})
-    return corrections
-
-
-def _extract_pronunciation_issues(check_results) -> list:
-    """从 check_results 提取发音问题条目（容错映射常见字段名），供讲解与兜底回显。
-
-    发音问题不属于语法错误，不进 corrections（前端修正卡片），只在讲解文本中单独说明。
-    """
-    if isinstance(check_results, dict):
-        items = check_results.get("pronunciation") or []
-    elif isinstance(check_results, list):
-        items = [i for i in check_results if isinstance(i, dict) and i.get("type") == "pronunciation"]
-    else:
-        return []
-    return [i for i in items if isinstance(i, dict)]
 
 
 # ---------------- 节点 ----------------
@@ -197,8 +153,11 @@ def build_prompt_node(state: TutorState) -> TutorState:
         )
         feed_label = "check_results"
     elif issues:
-        issue_lines = "\n".join(f"{idx}. {item}" for idx, item in enumerate(issues, start=1))
-        user_part = f"学生原句：{raw_text}\n语法检查发现的错误：\n{issue_lines}\n请逐条讲解。"
+        issue_lines = "\n".join(f"{idx}. {format_issue(item)}" for idx, item in enumerate(issues, start=1))
+        user_part = (
+            f"学生原句：{raw_text}\n语法检查发现的错误（只标记了错误位置和原因，未给正确答案）：\n{issue_lines}\n"
+            f"请逐条讲解，正确说法由你给出（corrections 的 correct 必须是修正后的完整句子）。"
+        )
         feed_label = "issues"
     else:
         # 上游 grammar_check 尚未输出清单（占位阶段），降级为整句讲解，不阻塞流程
@@ -223,10 +182,15 @@ def llm_call_node(state: TutorState) -> TutorState:
 
     include_raw=True 时返回 {raw, parsed, parsing_error}，解析失败 parsed 为 None，
     交给 parse_validate 路由 fallback；任何异常同样置空输出走兜底。
+
+    输出后处理内联在本节点末尾（不设独立 verify 节点，避免拓扑膨胀）：
+    调用 verify_corrections 做防幻觉程序化校验——corrections[].wrong 逐字锚定学生原句，
+    编造/无效条目直接丢弃（纯函数实现在 tutor_utils，单测覆盖校验规则）。
     """
     model = _get_model()
     if model is None:
         return {"tutor_reply": "", "logger": ["llm_call: LLM 不可用，交由 fallback"]}
+    reply, corrections, dropped = "", [], []
     try:
         result = model.with_structured_output(TutorOutput, include_raw=True).with_config(
             tags=[TAG_NOSTREAM]  # 内部结构化调用不进 messages 流（前端幽灵 tool call 根因）
@@ -240,13 +204,20 @@ def llm_call_node(state: TutorState) -> TutorState:
                 "logger": [f"llm_call: 结构化解析失败，交由 fallback（{result.get('parsing_error')}）"],
             }
         reply = parsed.reply.strip()
-        corrections = [c.model_dump() for c in parsed.corrections]
+        corrections, dropped = verify_corrections(
+            [c.model_dump() for c in parsed.corrections], state.get("raw_text", "")
+        )
     except Exception:
         reply, corrections = "", []
+    logs = [f"llm_call: 结构化输出 {'成功' if reply else '失败'}，corrections {len(corrections)} 条"]
+    if dropped:
+        logs.append(
+            f"verify: 拦截编造/无效条目 {len(dropped)} 条，wrong={[d.get('wrong') for d in dropped]}"
+        )
     return {
         "tutor_reply": reply,
         "corrections": corrections,
-        "logger": [f"llm_call: 结构化输出 {'成功' if reply else '失败'}，corrections {len(corrections)} 条"],
+        "logger": logs,
     }
 
 
@@ -254,18 +225,19 @@ def fallback_node(state: SubgraphState) -> SubgraphState:
     """模板兜底：按 issues 逐条回显；发音条目单独提示；corrections 从 check_results 提取，前端数据不断供。"""
     issues = state.get("issues", [])
     if issues:
-        lines = "\n".join(f"· {item}" for item in issues)
+        lines = "\n".join(f"· {format_issue(item)}" for item in issues)
         reply = f"【语法小课堂】这几处可以再改一改：\n{lines}\n多练几次就顺手了，继续加油！"
     else:
         reply = "【语法小课堂】这句话的时态和主谓一致可以再检查一下，试着说一遍正确版本吧！"
-    pron_issues = _extract_pronunciation_issues(state.get("check_results"))
+    pron_issues = extract_pronunciation_issues(state.get("check_results"))
     if pron_issues:
         pron_lines = "\n".join(
             f"· {p.get('word') or p.get('wrong') or '?'}：{p.get('correct') or p.get('suggestion') or '发音不够标准，请跟读示范音频'}"
             for p in pron_issues
         )
         reply += f"\n\n【发音提示】（以下不属于语法错误）\n{pron_lines}"
-    corrections = _extract_corrections(state.get("check_results"))
+    # check_results 提取不到时再从 issues 提取（fragment 对准；correct 缺省为空，正确句归 LLM 路径产出）
+    corrections = extract_corrections(state.get("check_results")) or extract_corrections(issues)
     return {
         "tutor_reply": reply,
         "corrections": corrections,
@@ -281,7 +253,7 @@ def write_state_node(state: SubgraphState) -> SubgraphState:
     """
     corrections = state.get("corrections")
     if corrections is None:
-        corrections = _extract_corrections(state.get("check_results"))
+        corrections = extract_corrections(state.get("check_results"))
     return {
         "corrections": corrections,
         "logger": [f"write_state: tutor_reply 已写回；corrections {len(corrections)} 条"],
@@ -298,7 +270,7 @@ def tts_node(state: SubgraphState) -> SubgraphState:
     raw_text = state.get("raw_text", "")
     corrections = state.get("corrections")
     if corrections is None:
-        corrections = _extract_corrections(state.get("check_results"))
+        corrections = extract_corrections(state.get("check_results"))
     correct_text = corrections[0]["correct"] if corrections and corrections[0].get("correct") else ""
 
     raw_audio = b""
@@ -328,14 +300,25 @@ def tts_node(state: SubgraphState) -> SubgraphState:
 
 
 # ---------------- 条件边（函数，非节点） ----------------
+def route_entry(state: TutorState) -> Literal["tts_node", "load_input_node"]:
+    """入口分流：带 tts_request 的发音请求直达 tts_node 旁路，其余走讲解主链。
+
+    tts_request 只在 TutorState（本子图局部 schema）声明，父图契约无此 key，
+    正常对话链进本子图时永远不会带该字段，主链行为不受影响。
+    """
+    return "tts_node" if state.get("tts_request") else "load_input_node"
+
+
 def parse_validate(state: SubgraphState) -> Literal["write_state_node", "fallback_node"]:
-    """校验 LLM 输出是否可展示：非空即通过，否则走 fallback。"""
+    """校验 LLM 输出是否可展示：非空直接落状态（事实校验已内联在 llm_call_node），空/解析失败走 fallback。"""
     if state.get("tutor_reply", "").strip():
         return "write_state_node"
     return "fallback_node"
 
 
-# ---------------- 构建子图 ----------------
+# ---------------- 构建子图（单图双入口：讲解走主链，发音请求经 route_entry 直达 tts_node） ----------------
+# 发音旁路契约：前端点发音按钮时 invoke 本图 {tts_request: True, raw_text, corrections?/check_results?}
+# → 出参 {raw_audio, tutor_audio}；合成失败置空，不报错。
 builder = StateGraph(state_schema=TutorState)
 builder.add_node("load_input_node", load_input_node)
 builder.add_node("build_prompt_node", build_prompt_node)
@@ -344,7 +327,11 @@ builder.add_node("fallback_node", fallback_node)
 builder.add_node("write_state_node", write_state_node)
 builder.add_node("tts_node", tts_node)
 
-builder.add_edge(START, "load_input_node")
+builder.add_conditional_edges(
+    START,
+    route_entry,
+    {"tts_node": "tts_node", "load_input_node": "load_input_node"},
+)
 builder.add_edge("load_input_node", "build_prompt_node")
 builder.add_edge("build_prompt_node", "llm_call_node")
 builder.add_conditional_edges(
@@ -353,75 +340,13 @@ builder.add_conditional_edges(
     {"write_state_node": "write_state_node", "fallback_node": "fallback_node"},
 )
 builder.add_edge("fallback_node", "write_state_node")
-builder.add_edge("write_state_node", "tts_node")
-builder.add_edge("tts_node", END)
+builder.add_edge("write_state_node", END)
+builder.add_edge("tts_node", END)  # 发音旁路到 tts_node 即结束，不进讲解链节点
 
 grammer_tutor_subgraph = builder.compile()
 
-if __name__ == "__main__":
-    import os
-    import tempfile
 
-    def play_audio(res: dict, tag: str, autoplay: bool = False) -> None:
-        """把 raw_audio / tutor_audio 落地临时 MP3；autoplay 时仅自动播正确句（避免多窗口连播）。"""
-        for field, name in (("raw_audio", "原句"), ("tutor_audio", "正确句")):
-            audio = res.get(field) or b""
-            if audio:
-                out = Path(tempfile.gettempdir()) / f"{field}_{tag}.mp3"
-                out.write_bytes(audio)
-                print(f"[{tag}] {name}发音已保存: {out}（{len(audio)} 字节）")
-                if autoplay and field == "tutor_audio":
-                    os.startfile(str(out))
-            else:
-                print(f"[{tag}] 无{name}发音（TTS 失败或无朗读文本）")
-
-    # 场景1：上游给了 issues（grammar_check 升级后的正常路径）
-    print("[场景1] 开始...")
-    res = grammer_tutor_subgraph.invoke(
-        {
-            "raw_text": "She go to school yesterday.",
-            "issues": ["go → went：一般过去时要用动词过去式"],
-        }
-    )
-    print(res.get("tutor_reply"))
-    play_audio(res, "场景1")  # 无 corrections → 降级朗读原句
-    print("[场景1] 完成\n")
-    # 场景2：上游没给 issues（当前占位阶段），自动降级为整句讲解
-    print("[场景2] 开始...")
-    res2 = grammer_tutor_subgraph.invoke({"raw_text": "He don't like apples."})
-    print(res2.get("tutor_reply"))
-    play_audio(res2, "场景2")
-    print("[场景2] 完成\n")
-    # 场景3：上游误判（I like apples 本来正确），验证纠错准则 Skill：
-    # 准则要求 tutor 独立核对，不得顺着误判编造解释，应温和指出「这一点其实是正确的」
-    print("[场景3] 开始...")
-    res3 = grammer_tutor_subgraph.invoke(
-        {
-            "raw_text": "I like apples.",
-            "issues": ["like → likes：主谓一致错误"],
-        }
-    )
-    print(res3.get("logger"))
-    print(res3.get("tutor_reply"))
-    play_audio(res3, "场景3")
-    # 场景4：上游升级版输入——check_results（语法+发音清单），验证发音讲解与 corrections 输出
-    res4 = grammer_tutor_subgraph.invoke(
-        {
-            "raw_text": "Good good study, day day up.",
-            "check_results": {
-                "grammar": [
-                    {"wrong": "Good good study, day day up", "correct": "Study hard and make progress every day", "type": "chinese-style"}
-                ],
-                "pronunciation": [
-                    {"word": "study", "score": 62, "note": "/ˈstʌdi/ 重音在首音节"}
-                ],
-            },
-        }
-    )
-    print(res4.get("logger"))
-    print(res4.get("tutor_reply"))
-    print("corrections:", res4.get("corrections"))
-    play_audio(res4, "场景4", autoplay=True)  # 有 corrections → 朗读改正后的句子（主路径，自动播放）
-    print("[场景4] 完成，全部测试结束")
-    # SDK 的 TTS websocket 线程收完音频后滞留几十秒才退出，测试结束强制退出进程避免假死
-    os._exit(0)
+# 回归测试已迁至 backend/tests/：
+# - unit_tests/test_tutor_utils.py：工具函数单测（无需 API key）
+# - integration_tests/test_grammer_tutor_subgraph.py：5 场景子图回归（需 DEEPSEEK_API_KEY + 讯飞 TTS）
+#   运行：uv run pytest tests/integration_tests/test_grammer_tutor_subgraph.py -s
