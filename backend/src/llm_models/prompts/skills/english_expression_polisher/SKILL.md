@@ -305,7 +305,54 @@ If the benefit of a proposed change is uncertain, prefer retaining the original 
 
 Do not make speculative changes simply to demonstrate activity.
 
-## 9. Quality and Safety Checks
+## 9. Semantic Preservation and Self-Verification
+
+### 9.1 Preserve Meaning-Sensitive Information
+
+Before revising the text, identify meaning-sensitive information, including:
+
+- Negation, such as "not", "never", and "don't".
+- Time references, such as "yesterday", "tomorrow", and "already".
+- Modality and uncertainty, such as "might", "could", "probably", and "I think".
+- Degree and intensity, such as "slightly", "very", and "extremely".
+- Quantities, names, factual details, and cause-and-effect relationships.
+- Emotional tone, politeness, and the speaker's intended attitude.
+
+Do not change these elements unless the original wording itself prevents the intended meaning from being expressed clearly.
+
+### 9.2 Verify Every Proposed Revision
+
+Before returning the result, compare the original text with the polished text.
+
+Check the following:
+
+1. Does the revised text preserve the original meaning?
+2. Has any fact, intention, or detail been added or removed?
+3. Has the degree of certainty, emphasis, or emotion changed?
+4. Does each wording change provide a meaningful improvement in naturalness, fluency, clarity, or conversational appropriateness?
+5. Does the Chinese explanation accurately describe the changes that actually occurred?
+
+If a change is unnecessary, revert it.
+
+If the revision may change the intended meaning and the context does not justify that change, preserve the original wording.
+
+### 9.3 Do Not Treat Self-Verification as Proof of Correctness
+
+Self-verification is a reasoning step, not a guarantee that the result is correct.
+
+Do not claim that the text has been independently verified or that semantic equivalence is guaranteed merely because these checks have been performed.
+
+When uncertainty remains, prefer the least invasive revision.
+
+### 9.4 Preserve the Original Text in the Application
+
+The application should preserve the original input independently of the model-generated result.
+
+The original_text field should be populated from the original input received by the application, rather than relying on the model to reproduce the original text exactly.
+
+This ensures that learners can compare the original expression with the polished version.
+
+## 10. Quality and Safety Checks
 
 Before finalizing the output, confirm:
 
@@ -319,7 +366,7 @@ Before finalizing the output, confirm:
 - Optional stylistic differences are not presented as mandatory corrections.
 - The task has not expanded into independent grammar checking, pronunciation evaluation, or scoring.
 
-## 10. Guiding Principle
+## 11. Guiding Principle
 
 Improve expression when there is a real benefit.
 

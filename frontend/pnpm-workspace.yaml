@@ -1,2 +1,5 @@
 allowBuilds:
   esbuild: false
+# Windows 下 pnpm 默认 isolated 布局创建符号链接易被拒绝访问（os error 5），
+# 改用 hoisted 扁平布局绕开（项目经验：pnpm v12 只从本文件读取该配置）
+nodeLinker: hoisted

@@ -1,5 +1,9 @@
 import { Camera, MessageCircleMore, SlidersHorizontal, Volume2 } from "lucide-react";
+import { useState } from "react";
 import { InterruptPrompt } from "@/components/interrupt-prompt";
+import { SceneSelectPopup } from "@/components/scene-select/scene-select-popup";
+import { SceneApplier } from "@/components/scene-select/scene-applier";
+import { SceneApplyToast } from "@/components/scene-select/scene-apply-toast";
 import { Thread } from "@/components/thread.aui";
 import { AutoContinue, NewDialogButton } from "@/components/talk-flow";
 
@@ -13,9 +17,12 @@ import { AutoContinue, NewDialogButton } from "@/components/talk-flow";
  * - 底部常驻区域 absolute 定位，等效原 ViewportFooter sticky bottom-0 的吸附位置；
  *   max-w 与 thread.aui.tsx Root 的 --thread-max-width 保持一致（44rem）；
  *   "新会话 / 选场景"按钮区按原型图置于输入条上方（NewDialogButton 视觉整合，
- *   "选场景"按 FR-010 静态展示）
+ *   "选场景"按钮唤起底部弹窗，002 FR-001）
+ * - SceneApplier / SceneApplyToast：场景指令发送与失败提示（002 FR-006/FR-013）
  */
 export function MainChatPage() {
+  const [scenePopupOpen, setScenePopupOpen] = useState(false);
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <header className="grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b bg-background px-4">
@@ -40,19 +47,24 @@ export function MainChatPage() {
           <div className="pointer-events-auto mx-auto flex w-full max-w-[44rem] flex-col gap-3">
             <div className="flex items-center justify-center gap-3">
               <NewDialogButton />
-              <span
-                className="bg-background text-foreground flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm"
-                aria-label="选场景（暂未开放）"
+              <button
+                type="button"
+                onClick={() => setScenePopupOpen(true)}
+                aria-label="选场景"
+                className="bg-background text-foreground flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent"
               >
                 <Camera className="size-4" aria-hidden />
                 选场景
-              </span>
+              </button>
             </div>
             <InterruptPrompt />
             <AutoContinue />
           </div>
         </div>
+        <SceneSelectPopup open={scenePopupOpen} onOpenChange={setScenePopupOpen} />
       </div>
+      <SceneApplier />
+      <SceneApplyToast />
     </div>
   );
 }

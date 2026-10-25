@@ -51,15 +51,36 @@ def HITL_node(state: OverAllState) -> OverAllState:
     # LangGraph 官方 HITL 范式：resume 值作为用户回合写入 messages。
     # 前端 useStreamRuntime 以图状态 messages 为唯一渲染源，
     # 不写入则用户输入永远不出现在对话流里，轮次之间也就没有分隔边界。
-    # _new_context_/_test_coach_ 是内部指令（与 HITL_route 同一判定约定），不入对话记录。
+    # _new_context_/_test_coach_/_set_context_ 是内部指令（与 HITL_route 同一判定约定），不入对话记录。
+    # _set_context_：前端场景弹窗的"指定场景"指令（_set_context_::<role>::<scenario>），002 契约
     update: OverAllState = {"user_input": user_input}
-    if "_new_context_" not in user_input and "_test_coach_" not in user_input:
+    if (
+        "_new_context_" not in user_input
+        and "_test_coach_" not in user_input
+        and "_set_context_" not in user_input
+    ):
         update["messages"] = [HumanMessage(content=user_input)]
     return update
 
 
-def HITL_route(state: OverAllState) -> Literal["new_context", "audio_check", "__end__"]:
+def audio_choice_node(state: OverAllState) -> OverAllState:
+    """进入润色子图前的 HITL：让用户决定是否生成语音。"""
+    choice = interrupt({
+        "prompt": "是否将润色结果合成为语音？(yes/no)",
+        "options": ["yes", "no"],
+    })
+    enable = str(choice).strip().lower() in {"yes", "y", "true", "1"}
+    return {
+        "enable_tts": enable,
+        "logger": [*state.get("logger", []), f"audio_choice_node: 用户选择 enable_tts={enable}"],
+    }
+
+
+def HITL_route(state: OverAllState) -> Literal["set_context", "new_context", "audio_check", "__end__"]:
     user_input = state.get("user_input", "")
+    # _set_context_（弹窗指定场景）优先判定：命令串含 "::" 段，需在 audio_check 前分流
+    if "_set_context_" in user_input:
+        return "set_context"
     if "_new_context_" in user_input:
         return "new_context"
     if "_test_coach_" in user_input:
@@ -89,6 +110,29 @@ def new_context_node(state: OverAllState, runtime: Runtime[CoachContext]) -> Sub
         "scenario": next_context.scenario or DEFAULT_SCENARIO,
         "new_dialog": True
     }
+
+# set_context分支：前端场景弹窗指定场景（002 契约 contracts/scene-apply-command.md §3.3）。
+# 解析 _set_context_::<role>::<scenario> → 复用既有 save_context 落 Store；
+# 与 _new_context_（轮换下一个）并存，后写者生效。不调 LLM、不写 messages。
+# 自定义入口扩展：role/scenario 接受任意字符串（含前端自定义表单），仅做
+# 截断防御（24 字符，与前端 sanitizeSceneInput 对齐）；段缺失/空白回退默认值，不抛错
+def set_context_node(state: OverAllState, runtime: Runtime[CoachContext]) -> OverAllState:
+    user_input = state.get("user_input", "")
+    parts = user_input.split("::")
+    role = parts[1].strip()[:24] if len(parts) > 1 and parts[1].strip() else DEFAULT_ROLE
+    scenario = parts[2].strip()[:24] if len(parts) > 2 and parts[2].strip() else DEFAULT_SCENARIO
+    save_context(runtime.store, role, scenario)
+    return {
+        "role": role,
+        "scenario": scenario,
+        # 关键：显式置回 True。首轮 new_dialog_node 会把该 key 写成 False，
+        # 若不重置，续跑 coach 子图会误入 continue_dialog_node（其 raw_text 为 None
+        # → HumanMessage(None) 崩溃 → run 异常 → 教练无回复）。
+        # True = 切换场景后出全新话题，与 new_context_node 契约一致
+        "new_dialog": True,
+        "logger": [*state.get("logger", []), f"set_context_node: 场景切换为 {role}/{scenario}（立即生效）"],
+    }
+
 
 # 定义自定义路由：三分支——检查成功按 has_issue 走纠错/润色；
 # 检查未完成一律 check_failed，绝不能把"没检查成"当成"没有语法问题"
@@ -155,9 +199,10 @@ def polisher_reply_message_node(state: OverAllState) -> OverAllState:
     - SystemMessage("")：空系统消息分隔符，理由同 tutor_reply_message_node——
       本反馈与下一轮 coach 话题 AIMessage 相邻会被 assistant-ui 合并成一个气泡。
     """
-    original_text = (state.get("original_text") or "").strip()
-    polished_text = (state.get("polished_text") or "").strip()
-    explanation = (state.get("explanation") or "").strip()
+    polisher = state.get("polisher") or {}
+    original_text = (polisher.get("original_text") or "").strip()
+    polished_text = (polisher.get("polished_text") or "").strip()
+    explanation = (polisher.get("explanation") or "").strip()
 
     parts = ["当前语句没有错误，没有tutor_reply。"]
     if polished_text and polished_text != original_text:
@@ -177,10 +222,12 @@ parent_builder = StateGraph(state_schema=OverAllState, context_schema=CoachConte
 parent_builder.add_node("store_resolve_node", store_resolve_node)  # store数据转state
 parent_builder.add_node("coach_reply_subgraph",coach_reply_subgraph)
 parent_builder.add_node("new_context_node", new_context_node) # 更新state数据到store
+parent_builder.add_node("set_context_node", set_context_node) # 弹窗指定场景落store（002）
 parent_builder.add_node("HITL_node", HITL_node)
 parent_builder.add_node("grammar_check_subgraph",grammar_check_subgraph)
 parent_builder.add_node("grammar_check_fallback_node",grammar_check_fallback_node)
 parent_builder.add_node("grammer_tutor_subgraph",grammer_tutor_subgraph)
+parent_builder.add_node("audio_choice_node", audio_choice_node)
 parent_builder.add_node("tutor_reply_message_node",tutor_reply_message_node)
 parent_builder.add_node("polisher_subgraph",polisher_subgraph)
 parent_builder.add_node("polisher_reply_message_node",polisher_reply_message_node)
@@ -191,6 +238,7 @@ parent_builder.add_edge(START,"store_resolve_node")
 parent_builder.add_edge("store_resolve_node","coach_reply_subgraph")
 parent_builder.add_edge("coach_reply_subgraph","HITL_node")
 parent_builder.add_conditional_edges("HITL_node", HITL_route, path_map={
+    "set_context": "set_context_node",
     "new_context": "new_context_node",
     "audio_check": "grammar_check_subgraph",
     "__end__": END,  # 路由返回的每个值都必须在 path_map 里，END 分支也要登记
@@ -199,19 +247,26 @@ parent_builder.add_conditional_edges("HITL_node", HITL_route, path_map={
 # new_context分支
 parent_builder.add_edge("new_context_node",END)
 
+# set_context分支：落 Store 后不结束，同 run 内直接续跑 coach 子图——教练立即用新场景出下一话题。
+# 原设计（END + 前端 AutoContinue 续跑）存在时序竞态，run 结束后教练无可见回复；
+# 改为续跑后 run 停在下一轮 HITL，AutoContinue 看到未结束不会插手。
+# coach_reply_subgraph 入口按 new_dialog 路由：缺省走 new_dialog_node 全新话题（set_context 不写该 key，恰好命中）
+parent_builder.add_edge("set_context_node","coach_reply_subgraph")
+
 
 
 # audio_check分支：ita_tool_node 是 grammar_check_subgraph 的入口节点，
 # 上方 HITL_route 的 "audio_check" → "grammar_check_subgraph" 即进入 语音转写→语法检查 链路
 parent_builder.add_conditional_edges("grammar_check_subgraph", has_issue_route, path_map={
     "has_issue": "grammer_tutor_subgraph",
-    "has_no_issue": "polisher_subgraph",
+    "has_no_issue": "audio_choice_node",
     "check_failed": "grammar_check_fallback_node",
 })
 # has_issue分支：tutor 输出先落成对话消息（tutor_reply → AI 消息），再结束
 parent_builder.add_edge("grammer_tutor_subgraph", "tutor_reply_message_node")
 parent_builder.add_edge("tutor_reply_message_node", END)
-# has_no_issue分支：语法正确也要有可见反馈（polisher 结果 → 反馈消息），再结束
+# has_no_issue分支：先弹 HITL 询问是否生成语音，再进润色子图，结果落成反馈消息
+parent_builder.add_edge("audio_choice_node", "polisher_subgraph")
 parent_builder.add_edge("polisher_subgraph", "polisher_reply_message_node")
 parent_builder.add_edge("polisher_reply_message_node", END)
 # check_failed分支

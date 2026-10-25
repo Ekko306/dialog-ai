@@ -1,12 +1,26 @@
 
 from typing import Annotated, TypedDict
 
-from operator import add
-
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
+from operator import add
 
-from langgraph.graph import MessagesState, StateGraph, START, END
+
+class PolisherOutput(TypedDict, total=False):
+    """英语表达润色子图的输出结果（单节点一次性全部写入）。
+
+    注意：LangGraph state 更新是字段级整体替换而非深合并，
+    所以 polisher_node 每次必须返回包含全部 7 个字段的完整字典。
+    """
+
+    original_text: str          # 润色前的原文
+    polished_text: str          # 润色后的英文；失败时可能是原文降级结果
+    explanation: str              # 中文润色说明
+    polish_comment: str          # 兼容原有模块的润色说明字段
+    polished_audio: bytes          # 润色结果对应的音频字节
+    polish_status: str          # success / fallback / failed / skipped
+    tts_status: str          # success / skipped / failed
+
 
 from src.talk_agent.subgraphs.grammar_check_subgraph.check_conatants import GrammarCheckStatus  # noqa: E402
 
@@ -23,9 +37,10 @@ class CorrectionItem(TypedDict, total=False):
 
 
 class OverAllState(TypedDict, total=False):
-    # messages 显式声明在 total=False 类内：全部 key 可省略，
-    # 节点返回部分更新（如只有 logger）时类型检查才可通过。
-    # （MessagesState = 只有 messages 字段的 TypedDict，等价展开而非继承）
+    """整个口语训练系统的全局状态。"""
+
+    # ==================== 消息类状态 ====================
+
     messages: Annotated[list[AnyMessage], add_messages]
 
     # 语音链路（IAT/ISE）
@@ -37,23 +52,39 @@ class OverAllState(TypedDict, total=False):
     ise_xml_info: str  # ISE 原始评测 XML（带详细发音错误）
     ise_grade: float | None  # 评测总分（XML total_score 直取；is_rejected/解析失败时为 None）
     ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[{word,score,comment}], "advice": str}
+    # ==================== 语音链路（IAT / ISE） ====================
 
-    # 逻辑类
-    raw_text: str  # 未清洗的文本
-    audio: bytes
+    iat_status: str# ok / no_speech / unavailable
+    audio_data: bytes# 麦克风录音 PCM
+    audio_file_path: str# ISE 音频文件路径，仅 mock/dev 调试使用
+    ref_text: str# ISE 标准参考句
+    ise_lang: str# cn / en，缺省 en
+    ise_status: str# ok / no_audio / no_ref / unavailable
+    ise_xml_info: str# ISE 原始评测 XML
+    ise_grade: float | None# 评测总分，无法评测时为 None
+    ise_check_results: dict# 发音评测结果及建议
 
-    # context 快照（子图 hydrate 后经共享 key 回流到父图，父图分支也可直接读）
-    role: str
-    scenario: str
+    # ==================== 文本与音频输入 ====================
 
-    # 走分支类状态 （#todo ，改成Command?）
-    # 英语表达润色状态
-    original_text: str  # 润色前的原文
-    polished_text: str  # 润色后的英文
-    explanation: str  # 中文润色说明
-    polish_comment: str  # 兼容项目原有模块的润色说明字段
+    raw_text: str# 未清洗的文本
+    audio: bytes# 音频数据，保留项目现有字段
 
-    # 走分支类状态（#todo，后续可考虑改成 Command）
+    # ==================== 对话上下文 ====================
+
+    role: str# 当前对话角色
+    scenario: str# 当前对话场景
+
+    # ==================== 英语表达润色 ====================
+
+    polisher: PolisherOutput
+    # 打包输出：original_text / polished_text / explanation / polish_comment
+    # polished_audio / polish_status / tts_status
+
+    enable_tts: bool
+    # TTS 开关：True 合成语音，False 跳过；调用方控制（父图 audio_choice_node 写入）
+
+    # ==================== 流程控制 ====================
+
     user_input: str
     has_issue: bool
     new_dialog: bool
@@ -70,48 +101,55 @@ class OverAllState(TypedDict, total=False):
     issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
     feedback: str  # 错误简短概述（不含正确答案）；无错误为空字符串
     grammar_check_status: GrammarCheckStatus  # 取值域枚举定义在 grammar_check_contracts.py
+    # ==================== 语法辅导 ====================
 
-    # 日志类
-    talk_ids: Annotated[list[str], add]  # 对话 ID，某次图执行
-    cur_talk_id: str  # 当前对话 ID
+    issues: list[dict]# 每处语法错误：fragment / error_type / description
+    tutor_reply: str# 语法辅导节点输出的纠错讲解
+    check_results: dict# 语法及发音问题的结构化结果
+    corrections: list# 修正句或示范词结构化结果
+    tutor_audio: bytes# 正确句的示范朗读音频
+    raw_audio: bytes# 用户原句的朗读音频
+    feedback: str# 错误简短概述；无错误时为空字符串
+    grammar_check_status: str# ok / empty_input / invalid_input / unavailable
 
-    # LastValue：值由子图输出整体接管（子图内部用 add 累积后整表输出）。
-    # 注意：父图层面不要直接写 logger，LastValue 语义下会覆盖而非追加。
-    logger: list[str]
-    # LastValue：同 logger——子图内 add 累积，父图整表接管（父图节点追加日志需手动 list+append）
-    grammar_check_logs: list[str]
+    # ==================== 日志与对话 ID ====================
+
+    talk_ids: Annotated[list[str], add]# 对话 ID 列表，使用 add reducer 追加
+    cur_talk_id: str# 当前对话 ID
+    logger: list[str]# 父图使用普通 list，接收完整日志列表
+    grammar_check_logs: list[str]# 语法检查日志，沿用父图 LastValue 设计
 
 
 class SubgraphState(TypedDict, total=False):
-    """子图 schema：logger 挂 add reducer，在子图内部累积。
+    """子图状态。
 
-    机制：子图作为节点挂载时，父图把共享 key 的当前值喂给子图，
-    子图按自己的 reducer 跑完后，把最终 channel 值整体输出，
-    父图再用父图的 reducer 合并。
-
-    因此两边各持一种语义，避免子图和父图重复追加日志：
-    - 子图 logger 带 add：输入日志 + 本次新增日志 → 输出累积列表
-    - 父图 logger 使用 LastValue：直接接管子图输出的累积列表
+    logger 使用 add reducer：
+    子图内部将原有日志与本次新增日志合并。
+    父图 logger 使用普通 list：
+    父图接收子图输出的完整日志列表。
     """
+
+    # ==================== 消息类状态 ====================
 
     messages: Annotated[list[AnyMessage], add_messages]
 
-    # 文本类状态
-    raw_text: str  # 未清洗的文本
-    audio: bytes
+    # ==================== 文本与音频输入 ====================
 
-    # context 快照：入口节点从 runtime.context/Store 解析一次后写入，
-    # 下游节点直接读 state，无需各自调 resolve_context
+    raw_text: str# 未清洗的文本
+    audio: bytes# 音频数据
+
+    # ==================== 对话上下文 ====================
+
     role: str
     scenario: str
 
-    # 英语表达润色状态
-    original_text: str  # 润色前的原文
-    polished_text: str  # 润色后的英文
-    explanation: str  # 中文润色说明
-    polish_comment: str  # 兼容项目原有模块的润色说明字段
+    # ==================== 英语表达润色 ====================
 
-    # 逻辑类
+    polisher: PolisherOutput# 打包输出（同 OverAllState 共享 key）
+    enable_tts: bool# TTS 开关（同 OverAllState 共享 key）
+
+    # ==================== 流程控制 ====================
+
     has_issue: bool
 
     # 语法辅导（grammar_check → grammer_tutor → coach_reply 的契约字段，与 OverAllState 一致）
@@ -130,6 +168,8 @@ class SubgraphState(TypedDict, total=False):
     logger: Annotated[list[str], add]
 
     new_dialog: bool # 默认值None
+    user_input: str
+    new_dialog: bool
     user_input: str
 
 
