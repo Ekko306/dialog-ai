@@ -34,7 +34,7 @@ from langgraph.graph import END, START, StateGraph  # noqa: E402
 from langgraph.constants import TAG_NOSTREAM  # noqa: E402
 
 from src.talk_agent.state import SubgraphState  # noqa: E402
-from src.talk_agent.tutor_utils import (  # noqa: E402
+from src.talk_agent.subgraphs.grammar_check_subgraph.tutor_utils import (  # noqa: E402
     extract_corrections,
     extract_pronunciation_issues,
     format_issue,

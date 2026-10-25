@@ -1,6 +1,6 @@
 """tutor_utils 工具函数单测：纯函数，无需 API key / 网络 / TTS。"""
 
-from src.talk_agent.tutor_utils import (
+from backend.src.talk_agent.subgraphs.grammar_check_subgraph.tutor_utils import (
     extract_corrections,
     extract_pronunciation_issues,
     format_issue,
