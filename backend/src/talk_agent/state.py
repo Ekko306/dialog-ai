@@ -52,17 +52,6 @@ class OverAllState(TypedDict, total=False):
     ise_xml_info: str  # ISE 原始评测 XML（带详细发音错误）
     ise_grade: float | None  # 评测总分（XML total_score 直取；is_rejected/解析失败时为 None）
     ise_check_results: dict  # ise_analyze_node 输出：{"pronunciation":[{word,score,comment}], "advice": str}
-    # ==================== 语音链路（IAT / ISE） ====================
-
-    iat_status: str# ok / no_speech / unavailable
-    audio_data: bytes# 麦克风录音 PCM
-    audio_file_path: str# ISE 音频文件路径，仅 mock/dev 调试使用
-    ref_text: str# ISE 标准参考句
-    ise_lang: str# cn / en，缺省 en
-    ise_status: str# ok / no_audio / no_ref / unavailable
-    ise_xml_info: str# ISE 原始评测 XML
-    ise_grade: float | None# 评测总分，无法评测时为 None
-    ise_check_results: dict# 发音评测结果及建议
 
     # ==================== 文本与音频输入 ====================
 
@@ -100,17 +89,7 @@ class OverAllState(TypedDict, total=False):
     # grammar_check 子图输出契约（子图 key 必须在父图 schema 声明，否则状态合并失败）
     issues: list[dict]  # 每处语法错误 {fragment, error_type, description}（只标记不纠错，纠错归 tutor）
     feedback: str  # 错误简短概述（不含正确答案）；无错误为空字符串
-    grammar_check_status: GrammarCheckStatus  # 取值域枚举定义在 grammar_check_contracts.py
-    # ==================== 语法辅导 ====================
-
-    issues: list[dict]# 每处语法错误：fragment / error_type / description
-    tutor_reply: str# 语法辅导节点输出的纠错讲解
-    check_results: dict# 语法及发音问题的结构化结果
-    corrections: list# 修正句或示范词结构化结果
-    tutor_audio: bytes# 正确句的示范朗读音频
-    raw_audio: bytes# 用户原句的朗读音频
-    feedback: str# 错误简短概述；无错误时为空字符串
-    grammar_check_status: str# ok / empty_input / invalid_input / unavailable
+    grammar_check_status: GrammarCheckStatus  # 取值域枚举定义在 check_conatants.py
 
     # ==================== 日志与对话 ID ====================
 
@@ -167,9 +146,7 @@ class SubgraphState(TypedDict, total=False):
     # 日志类（add：累积之前的日志 + 本次新增，输出完整列表）
     logger: Annotated[list[str], add]
 
-    new_dialog: bool # 默认值None
-    user_input: str
-    new_dialog: bool
+    new_dialog: bool  # 默认值None
     user_input: str
 
 
@@ -200,7 +177,7 @@ class GrammarCheckState(TypedDict, total=False):
     issues: list[dict]  # 每处错误 {fragment, error_type, description}
     feedback: str  # 错误简短概述（不含正确答案，纠错归下游 tutor）
 
-    # 运行状态取值域见 GrammarCheckStatus（grammar_check_contracts.py）
+    # 运行状态取值域见 GrammarCheckStatus（check_conatants.py）
     grammar_check_status: GrammarCheckStatus
 
     # 日志：add 累积；字段名独立于父图 logger，避免父子 reducer 冲突

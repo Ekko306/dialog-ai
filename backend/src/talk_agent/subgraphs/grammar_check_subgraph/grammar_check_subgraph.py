@@ -16,13 +16,10 @@
 
 结构组织（PR 评审意见落地）：
 - 状态契约 GrammarCheckState 统一定义在 src/talk_agent/state.py（与 OverAllState 同处）
-- LLM 输出契约 GrammarIssue/GrammarVerdict 单独定义在 grammar_check_contracts.py
-- 瞬态错误判定 is_transient / 音频前置校验 validate_audio_file 提炼为公共函数
-  （src/talk_agent/utils.py），各节点可复用
-- 检查逻辑聚合为 GrammarCheckSubgraph 类：LLM 链工厂、节点实现、图构建全收进对象；
+- LLM 输出契约 GrammarIssue/GrammarVerdict 单独定义在 check_conatants.py
+- 瞬态错误判定 is_transient 提炼为公共函数（src/talk_agent/utils.py），各节点可复用
+- 检查逻辑聚合为 GrammarCheckSubgraph 类：LLM 客户端、节点实现、图构建全收进对象；
   LangGraph 原生支持把编译后的图（Runnable）直接作为节点挂载父图
-- user_input 双模式（main 分支前端集成）：音频文件路径走文件转写/评测测试通道，
-  已转写文本直通语法链（不调 IAT 不开麦），语义自适应判定见 _is_audio_path
 - 模块级导出名 grammar_check_subgraph 保持不变，父图 / langgraph.json 零改动
 """
 
@@ -45,8 +42,11 @@ from langgraph.constants import TAG_NOSTREAM  # nostream 标签：把内部 LLM 
 
 from src.llm_models.get_model import get_model  # noqa: E402  团队统一模型工厂（PR 评审：模仿 get_coach_model 接入）
 from src.talk_agent.state import GrammarCheckState  # noqa: E402  状态契约统一在 state.py
-from src.talk_agent.utils import is_transient, validate_audio_file  # noqa: E402  公共函数（PR 评审：提炼复用）
-
+from src.talk_agent.utils import is_transient  # noqa: E402  公共瞬态判定（PR 评审：提炼为公共函数）
+from src.talk_agent.subgraphs.grammar_check_subgraph.check_conatants import (  # noqa: E402
+    GrammarIssue,  # noqa: F401  re-export：保持原导入路径可用
+    GrammarVerdict,
+)
 from src.talk_agent.subgraphs.grammar_check_subgraph.ise_analyze_node import ise_analyze_node, parse_ise_xml  # noqa: E402
 from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
     xfyun_iat_tool_by_mic,
@@ -57,7 +57,6 @@ from src.tools.audio_tool.xfyun_ise.xfyun_ise_tool import (  # noqa: E402
     xfyun_ise_tool_by_audio_data,
     xfyun_ise_tool_by_audio_file,
 )
-from src.llm_models.get_model import get_checker_model
 
 # 复用 backend/.env（backend/src/talk_agent/subgraphs/grammar_check_subgraph → parents[4] = backend）
 load_dotenv(_BACKEND_DIR / ".env")
@@ -77,31 +76,47 @@ _RETRY_POLICY = RetryPolicy(
 
 MAX_TEXT_LENGTH = 500  # 输入长度上限：超过视为无效输入
 
-
-
-
-# ========== user_input 双模式判定（main 分支前端集成） ==========
-
-_AUDIO_SUFFIXES = {".pcm", ".wav", ".mp3", ".m4a"}
-
-
-def _is_audio_path(candidate: str) -> bool:
-    """判定 user_input 是否为音频文件路径：音频后缀且文件真实存在.
-
-    双条件防误判——前端语音输入的 user_input 是讯飞转写文本而非路径，
-    只有同时满足音频后缀与 os.path.isfile 才走旧的文件转写/评测测试通道。
-    """
-    if not candidate:
-        return False
-    if Path(candidate).suffix.lower() not in _AUDIO_SUFFIXES:
-        return False
-    return os.path.isfile(candidate)
+# 语法检查规则（模块级常量：LLM 链工厂与节点共用）
+GRAMMAR_CHECK_PROMPT = (
+    "你是英语语法检查助手，只负责检测和标记用户句子中的语法错误，不要纠错。规则：\n"
+    "1. 只判定语法错误：时态、主谓一致、单复数、词性误用等。\n"
+    "2. 语法正确但表达不自然的句子不算语法错误，例如 'I agree with you.' 没有语法错误。\n"
+    "3. 每处错误标记三要素：fragment=出错的原文片段、error_type=错误类型、description=中文简述错在哪。\n"
+    "4. 严禁给出正确答案或修改后的句子（哪怕一个词）——纠错由下游 grammar_tutor 节点负责。\n"
+    "5. feedback 只用一句话概述错误类型，同样不含任何正确写法。\n"
+    "6. 无语法错误时：has_issue=False，issues 为空列表，feedback 为空字符串。"
+)
 
 
 # ========== LLM 链工厂（模仿 get_coach_model 的 LCEL 写法，PR 评审意见落地） ==========
 
 
+def get_checker_model(base_model: Runnable | None = None) -> Runnable:
+    """语法检查链：ChatPromptTemplate | 基座模型（结构化输出 + nostream）。
 
+    - prompt 走模板组装（系统规则 + 单条待检文本），调用方只传 {"raw_text": ...}，
+      不再手拼 [SystemMessage, HumanMessage] 消息列表
+    - 基座默认团队统一的 deepseek_model（惰性导入，与 get_coach_model 同款，
+      导入本模块不强依赖 DeepSeek 配置）；换基座传 base_model 参数即可
+    - with_structured_output(GrammarVerdict)：强制按 Schema 返回
+    - TAG_NOSTREAM：结构化输出底层是 function calling，其 tool_call chunks 若流入
+      stream_mode="messages" 会在前端渲染成幽灵 "Used Tool" 消息且跨轮合并，必须排除
+    """
+    checker_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", GRAMMAR_CHECK_PROMPT),
+            ("human", "{raw_text}"),
+        ]
+    )
+    if base_model is None:
+        # 惰性导入默认基座：导入本模块不再强依赖 DeepSeek 配置
+        from src.llm_models.deepseek_model import model as deepseek_model
+
+        base_model = deepseek_model
+    return get_model(
+        checker_prompt,
+        base_model.with_structured_output(GrammarVerdict).with_config(tags=[TAG_NOSTREAM]),
+    )
 
 
 # ========== 子图封装类（检查逻辑聚合对象） ==========
@@ -145,42 +160,29 @@ class GrammarCheckSubgraph:
     # ---- 节点实现（原模块级函数收进类；ise_analyze_node 留在独立模块） ----
 
     def xfyun_ita_tool_node(self, state: GrammarCheckState) -> GrammarCheckState:
-        """IAT 语音转写节点（加固 + 双模式输入）：讯飞听写 → raw_text + 音频字节存 State。
+        """IAT 语音转写节点（加固版）：讯飞听写 → raw_text + 音频字节存 State。
 
-        - 输入优先级：audio_data（上游复用）> user_input 为音频文件路径（mock/dev/Studio
-          测试通道，validate_audio_file 前置拦截无效文件）> user_input 已转写文本直通
-          （前端语音输入，不调 IAT 不开麦）> 麦克风（生产路径）
+        - 输入优先级：audio_data（上游复用）> audio_file_path（mock/dev/Studio 测试素材）
+          > 麦克风（生产路径）；有音频就转写它，不开麦、不卡 input()
         - 麦克风录音只发生一次：文本走语法链，PCM 存 State 喂 ISE（一次录音两份产出）
         - 瞬态异常上抛 → RetryPolicy；非瞬态（401/无麦克风/EOF/KeyError）→ unavailable 降级
         - 空识别结果（没说话/纯噪声/英文音频走中文引擎转不出）→ no_speech，raw_text=""
           （下游 empty_input → fallback 兜底，不会炸图）
         """
         audio_bytes = state.get("audio_data")
-        candidate = (state.get("user_input") or "").strip()
-        # user_input 语义自适应：音频文件路径 → 测试通道；否则视为前端语音转写文本直通
-        audio_file = candidate if _is_audio_path(candidate) else ""
-        text_input = candidate if candidate and not audio_file else ""
 
-        # 参数前置校验：仅对真实存在的路径生效（0 字节等），原因写进日志便于排查
-        if audio_file and (reason := validate_audio_file(audio_file)):
-            return {
-                "iat_status": "unavailable",
-                "raw_text": "",
-                "grammar_check_logs": [f"xfyun_ita_tool_node：音频文件无效（{reason}）→ unavailable"],
-            }
+        # audio_file = (state.get("audio_file_path") or "").strip()
+        audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
+        print(f"test_audio_file:{audio_file}")
 
         try:
-            if audio_bytes:
-                # 上游复用音频 → 直接转写它（一次录音两份产出）
-                text = xfyun_iat_tool_by_audio_data(audio_bytes)
-                audio = audio_bytes
-            elif audio_file:
-                # 音频文件路径（mock/dev/Studio 测试通道保留）
-                text = xfyun_iat_tool_by_audio_file(audio_file)
-                audio = b""
-            elif text_input:
-                # 前端语音输入：user_input 已是讯飞转写文本，直通语法链（不调 IAT、不开麦）
-                return {"iat_status": "ok", "raw_text": text_input}
+            if audio_bytes or audio_file:
+                # 已有音频 → 直接转写它（测试素材/上游复用路径）
+                if audio_bytes:
+                    text = xfyun_iat_tool_by_audio_data(audio_bytes)
+                else:
+                    text = xfyun_iat_tool_by_audio_file(audio_file)
+                audio = audio_bytes or b""
             else:
                 text, audio = xfyun_iat_tool_by_mic()  # 生产路径：真实麦克风录音
         except Exception as e:
@@ -205,8 +207,7 @@ class GrammarCheckSubgraph:
         """ISE 发音评测节点：同一次录音的 PCM + 预设参考句 → 评测 XML 存进 State。
 
         - 输入优先级：audio_data（生产主路径，来自 ita 存的录音 PCM）
-                      > user_input 为音频文件路径（mock/dev 调试通道保留，validate 前置拦截）
-                      > 没音频（含 user_input 为转写文本时）→ no_audio 短路
+                      > audio_file_path（mock/dev 调试用）> 没音频 → no_audio 短路
         - ref_text 优先用教练预设句；未传时自动回退用 IAT 转写文本
           （"跟读自己"单输入模式：无需预设答案，识别到什么就评什么；
           代价：ASR 自动纠错会让参考句失真，is_rejected 校验形同虚设）；
@@ -219,13 +220,9 @@ class GrammarCheckSubgraph:
         ref = (state.get("ref_text") or "").strip()
         audio_bytes = state.get("audio_data")
 
-        candidate = (state.get("user_input") or "").strip()
-        # 同 ita 节点：user_input 仅在为音频文件路径时走文件评测；转写文本无音频 → no_audio 短路
-        audio_file = candidate if _is_audio_path(candidate) else ""
-
-        # 参数前置校验：与 ita 节点同款，无效文件直接降级
-        if audio_file and (reason := validate_audio_file(audio_file)):
-            return {"ise_status": "unavailable", "ise_xml_info": ""}
+        # audio_file = (state.get("audio_file_path") or "").strip()
+        audio_file = (state.get("user_input") or "").strip()  # todo 优化逻辑， 现在是输入文件路径，以后会是前端传入直接音频文件到接口
+        print(f"test_audio_file:{audio_file}")
 
         if not audio_bytes and not audio_file:
             return {"ise_status": "no_audio", "ise_xml_info": ""}
