@@ -1,2 +1,7 @@
 packages:
   - "frontend"
+
+# Windows 下 pnpm 默认 isolated 布局创建符号链接易被拒绝访问（os error 5），
+# 改用 hoisted 扁平布局绕开。pnpm v12 只从根目录 pnpm-workspace.yaml 读取此配置，
+# 子项目 frontend/pnpm-workspace.yaml 中的同名配置不生效（已实测验证）。
+nodeLinker: hoisted

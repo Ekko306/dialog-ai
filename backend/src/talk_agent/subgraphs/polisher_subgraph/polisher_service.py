@@ -13,45 +13,16 @@ _BACKEND_DIR = Path(__file__).resolve().parents[4]
 # 先加载 backend/.env：本模块在导入时会构建模型链，密钥必须先就绪。
 load_dotenv(_BACKEND_DIR / ".env", override=True)
 
-from langgraph.constants import TAG_NOSTREAM  # noqa: E402
-
 from src.llm_models.get_model import get_polisher_model  # noqa: E402
 
 
 python_logger = logging.getLogger(__name__)
 
-SKILL_PATH = (
-    _BACKEND_DIR
-    / "src"
-    / "llm_models"
-    / "prompts"
-    / "skills"
-    / "english_expression_polisher"
-    / "SKILL.md"
-)
-
 MAX_POLISH_ATTEMPTS = 2
 
 # 模块加载时构建一次模型链，避免每次调用重复构建。
-# TAG_NOSTREAM：结构化输出底层是 function calling，其 tool_call chunks 若流入
-# stream_mode="messages" 会在前端渲染成幽灵 "Used Tool" 消息且跨轮合并，必须排除
-polisher_chain = get_polisher_model().with_config(tags=[TAG_NOSTREAM])
-
-
-def load_skill_content() -> str:
-    """加载润色规则文件。"""
-
-    if not SKILL_PATH.is_file():
-        raise FileNotFoundError(
-            f"没有找到英语润色 Skill：{SKILL_PATH}"
-        )
-
-    content = SKILL_PATH.read_text(encoding="utf-8").strip()
-
-    if not content:
-        raise ValueError("英语润色 Skill 内容为空")
-
-    return content
+# TAG_NOSTREAM 已在模型工厂 get_polisher_model 内固化，调用方无需重复配置。
+polisher_chain = get_polisher_model()
 
 
 def polish_text(text: str) -> dict:
@@ -65,15 +36,12 @@ def polish_text(text: str) -> dict:
     if not isinstance(text, str) or not text.strip():
         raise ValueError("输入文本不能为空")
 
-    skill_content = load_skill_content()
     last_error = None
 
     for attempt in range(MAX_POLISH_ATTEMPTS):
         try:
-            result = polisher_chain.invoke({
-                "text": text,
-                "skill_content": skill_content,
-            })
+            # skill_content 已由模型工厂 partial 固化，这里只传业务输入。
+            result = polisher_chain.invoke({"text": text})
 
             # 兼容 Pydantic 模型和字典。
             if isinstance(result, dict):

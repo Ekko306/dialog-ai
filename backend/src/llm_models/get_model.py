@@ -6,6 +6,8 @@
 - 换基座模型传 base_model 参数即可（如 GLM），模板内容改 prompts.py
 """
 
+from pathlib import Path
+
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import Runnable
 from langgraph.constants import TAG_NOSTREAM  # nostream 标签：把内部 LLM 调用排除出 messages 流
@@ -73,15 +75,43 @@ def get_checker_model(base_model: Runnable | None = None) -> Runnable:
         base_model.with_structured_output(GrammarVerdict).with_config(tags=[TAG_NOSTREAM]),
     )
 
+# ==================== 英语表达润色模型 ====================
+
+# Skill 规则文件：与 polisher_schema 同目录，工厂期一次性加载并 partial 固化。
+_POLISHER_SKILL_PATH = (
+    Path(__file__).parent
+    / "prompts"
+    / "skills"
+    / "english_expression_polisher"
+    / "SKILL.md"
+)
+
+
+def _load_polisher_skill() -> str:
+    """加载润色 Skill 规则文件内容。"""
+
+    if not _POLISHER_SKILL_PATH.is_file():
+        raise FileNotFoundError(f"没有找到英语润色 Skill：{_POLISHER_SKILL_PATH}")
+
+    content = _POLISHER_SKILL_PATH.read_text(encoding="utf-8").strip()
+
+    if not content:
+        raise ValueError("英语润色 Skill 内容为空")
+
+    return content
+
+
 def get_polisher_model(
     base_model: Runnable | None = None,
 ) -> Runnable:
     """
     构建英语表达润色模型链。
 
+    与 get_coach_model 同一模式：本地写好模板，工厂期 partial 固化运行期常量
+    （skill_content），调用方只传业务输入（text）。
+
     输入：
         text: 用户原始英文。
-        skill_content: SKILL.md 的完整内容。
 
     输出：
         PolishResult 结构化对象。
@@ -119,13 +149,21 @@ def get_polisher_model(
         ]
     )
 
+    # partial 固化 Skill 规则，调用方无需再传 skill_content。
+    polisher_prompt = polisher_prompt.partial(skill_content=_load_polisher_skill())
+
     if base_model is None:
         from src.llm_models.deepseek_model import model as deepseek_model
 
         base_model = deepseek_model
 
     # 要求模型按照 PolishResult 的字段结构返回结果。
-    structured_model = base_model.with_structured_output(PolishResult)
+    # TAG_NOSTREAM：结构化输出底层是 function calling，其 tool_call chunks 若流入
+    # stream_mode="messages" 会在前端渲染成幽灵 "Used Tool" 消息且跨轮合并，必须排除
+    # （与 get_checker_model 同款，在工厂内固化，调用方无需重复配置）
+    structured_model = base_model.with_structured_output(PolishResult).with_config(
+        tags=[TAG_NOSTREAM]
+    )
 
     # 复用已有的模型链构建函数。
     return get_model(

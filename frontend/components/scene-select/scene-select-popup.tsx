@@ -107,8 +107,16 @@ function SceneSelectContent({ onClose }: { onClose: () => void }) {
         </DialogPrimitive.Close>
       </div>
 
-      {/* 分类胶囊栏：横向滑动，默认"热门"（FR-003） */}
-      <div className="shrink-0 overflow-x-auto px-5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* 分类胶囊栏：横向滑动，默认"热门"（FR-003）；下方全宽细分隔线（原型图）；
+          onWheel：桌面鼠标滚轮只产生垂直滚动量（deltaY），浏览器不会自动映射到横向滚动，
+          导致滚轮悬停在分类栏上"没反应"——手动把 deltaY 转为横向滚动（触摸板双指横滑
+          走原生 deltaX 路径，不受影响） */}
+      <div
+        className="shrink-0 overflow-x-auto border-b border-black/5 px-5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        onWheel={(e) => {
+          if (e.deltaY !== 0) e.currentTarget.scrollLeft += e.deltaY;
+        }}
+      >
         <div className="flex w-max gap-2">
           {[...SCENE_CATEGORIES]
             .sort((a, b) => a.order - b.order)
@@ -130,8 +138,9 @@ function SceneSelectContent({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      {/* 双列话题卡片网格：纵向滚动，空态兜底（FR-004/FR-005）；底部留白避开悬浮按钮 */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-24">
+      {/* 双列话题卡片网格：纵向滚动，空态兜底（FR-004/FR-005）；底部留白避开悬浮按钮；
+          滚动条隐藏（原型图无可见滚动条，滚轮/触摸仍可滚动） */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {entries.length === 0 ? (
           <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
             该分类暂无场景，敬请期待
@@ -278,10 +287,12 @@ function SceneCard({
         selected && "ring-2 ring-(--icon-brand-green)",
       )}
     >
-      {/* 大图标区：原型图为大号原生 emoji（无明显底色），占卡片上半部 */}
+      {/* 大图标区：原型图为大号 emoji 置于浅灰圆形底上，占卡片上半部 */}
       <div className="flex h-28 w-full items-center justify-center">
         {entry.emoji ? (
-          <span className="text-5xl leading-none">{entry.emoji}</span>
+          <span className="bg-muted flex size-24 items-center justify-center rounded-full">
+            <span className="text-5xl leading-none">{entry.emoji}</span>
+          </span>
         ) : (
           // 缺图标降级：占位圆形（spec 边界用例）
           <span className="bg-muted size-16 rounded-full" />
