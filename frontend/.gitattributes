@@ -1,0 +1,2 @@
+# oxfmt 默认 endOfLine=lf：统一 checkout 出 LF，避免 autocrlf 的 CRLF 触发 lint 假红
+* text=auto eol=lf

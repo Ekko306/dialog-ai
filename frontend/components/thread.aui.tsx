@@ -74,6 +74,8 @@ export type ThreadGroupPart = MessagePrimitive.GroupedParts.GroupPart;
 export type ThreadComponents = {
   AssistantMessage?: ComponentType | undefined;
   Welcome?: ComponentType | undefined;
+  /** 渲染在最后一条 assistant 消息气泡下方（仅最后一条；003 US3 推荐回复插槽）。 */
+  AssistantSuggestions?: ComponentType | undefined;
   ToolFallback?: ToolCallMessagePartComponent | undefined;
   ToolGroup?: ComponentType<PropsWithChildren<{ group: ThreadGroupPart }>> | undefined;
   ReasoningGroup?: ComponentType<PropsWithChildren<{ group: ThreadGroupPart }>> | undefined;
@@ -185,7 +187,11 @@ const ThreadRoot: FC<{ isEmpty: boolean }> = ({ isEmpty }) => {
             <ThreadHistorySkeleton />
           </AuiIf>
 
-          <div data-slot="aui_message-group" style={{"marginBottom": '140px'}} className="mb-14 flex flex-col gap-y-6 empty:hidden">
+          <div
+            data-slot="aui_message-group"
+            style={{ marginBottom: "140px" }}
+            className="mb-14 flex flex-col gap-y-6 empty:hidden"
+          >
             <ThreadPrimitive.Messages>{() => <ThreadMessage />}</ThreadPrimitive.Messages>
           </div>
 
@@ -398,8 +404,12 @@ const AssistantMessage: FC = () => {
     ToolGroup,
     ReasoningGroup,
     TaskGroup: TaskGroupComponent,
+    AssistantSuggestions: AssistantSuggestionsSlot,
   } = useContext(ThreadComponentsContext);
   const groupBy = TaskGroupComponent ? taskAwareGroupBy : messageGroupBy;
+  // 003 US3：推荐回复仅跟随最后一条 assistant 消息（线程空闲的隐藏由插槽内部
+  // RecommendedReplies 的 isLoading/interrupt 判定承担）。
+  const isLastMessage = useAuiState((s) => s.message.index === s.thread.messages.length - 1);
 
   const ACTION_BAR_PT = "pt-1.5";
   // Keep the action bar inside the contained root's paint box, then cancel its reserved space in flow.
@@ -494,6 +504,12 @@ const AssistantMessage: FC = () => {
         <BranchPicker />
         <AssistantActionBar />
       </div>
+
+      {AssistantSuggestionsSlot && isLastMessage && (
+        <div data-slot="aui_assistant-suggestions" className="ms-2 mt-1">
+          <AssistantSuggestionsSlot />
+        </div>
+      )}
     </MessagePrimitive.Root>
   );
 };

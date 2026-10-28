@@ -60,3 +60,7 @@ env/
 !.vscode/extensions.json
 !.vscode/settings.json
 Thumbs.db
+
+# Local caches / non-feature dirs (2026-10-28)
+.pnpm-store/
+docs_f/

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLangChainInterruptState, useLangChainRespond } from "@assistant-ui/react-langchain";
 
 import { useSceneStore } from "@/lib/scene-store";
+import { useRoleThreadStore } from "@/lib/role-thread-store";
 
 /**
  * 场景应用发送器（FR-006/FR-013，契约：specs/002-scene-select-popup/contracts/scene-apply-command.md §2）：
@@ -39,6 +40,12 @@ export function SceneApplier() {
     setSending(true);
     respond(command)
       .then(() => {
+        // 记录主对话最近生效人设（角色页挂载会覆盖后端全局人设 Store，
+        // 主对话页挂载时靠此记录还原——见 backend-persona.ts 文件头）
+        useRoleThreadStore.getState().setLastMainPersona({
+          role: pendingScene.role,
+          scenario: pendingScene.scenario,
+        });
         clearPending();
       })
       .catch(() => {

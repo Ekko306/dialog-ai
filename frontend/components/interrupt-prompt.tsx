@@ -39,6 +39,11 @@ export function InterruptPrompt() {
   // 仅在图暂停（有 interrupt）且不在发送中时允许发送
   const canSend = !!interrupt && !sending;
 
+  // 重试要用最新一轮渲染的 respond（其内部捕获当前 interrupt id）：
+  // SDK 的 interrupt 对象不会被成功 run 清除（滞留），重放旧 id 会被服务端拒绝
+  const respondRef = useRef(respond);
+  respondRef.current = respond;
+
   const showToast = (message: string) => {
     setToast(message);
     if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
@@ -82,12 +87,30 @@ export function InterruptPrompt() {
     if (!value.trim() || !canSend) return;
     setSending(true);
     setError(null);
+    // 过期中断判定：服务端拒绝重放（旧 interrupt_id 已被消费/不存在）
+    const stale = /already-consumed|Unknown|No pending/i;
     try {
       // interrupt() 的 resume 值 = 裸字符串
       await respond(value.trim());
       setText("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!stale.test(msg)) {
+        setError(msg);
+      } else {
+        // 过期中断自愈：上一轮 interrupt 对象在 SDK 中滞留，回复结束后新状态
+        // 需数百 ms 才同步到客户端——等一拍用最新渲染的 respond 重试一次
+        setError("中断已过期，正在自动恢复…");
+        await new Promise((r) => setTimeout(r, 1000));
+        try {
+          await respondRef.current(value.trim());
+          setText("");
+          setError(null);
+        } catch (e2) {
+          const msg2 = e2 instanceof Error ? e2.message : String(e2);
+          setError(stale.test(msg2) ? "恢复失败：会话状态过期，请刷新页面（F5）后重试" : msg2);
+        }
+      }
     } finally {
       setSending(false);
     }
