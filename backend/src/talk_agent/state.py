@@ -10,14 +10,15 @@ class PolisherOutput(TypedDict, total=False):
     """英语表达润色子图的输出结果（单节点一次性全部写入）。
 
     注意：LangGraph state 更新是字段级整体替换而非深合并，
-    所以 polisher_node 每次必须返回包含全部 7 个字段的完整字典。
+    所以 polisher_node 每次必须返回包含全部 6 个字段的完整字典。
+    润色音频不在本字典内：统一写顶层公共字段 tutor_audio（与 tutor
+    分支同名字段，PR 评审契约——前端不区分分支读音频）。
     """
 
     original_text: str          # 润色前的原文
     polished_text: str          # 润色后的英文；失败时可能是原文降级结果
     explanation: str              # 中文润色说明
     polish_comment: str          # 兼容原有模块的润色说明字段
-    polished_audio: bytes          # 润色结果对应的音频字节
     polish_status: str          # success / fallback / failed / skipped
     tts_status: str          # success / skipped / failed
 
@@ -78,7 +79,7 @@ class OverAllState(TypedDict, total=False):
 
     polisher: PolisherOutput
     # 打包输出：original_text / polished_text / explanation / polish_comment
-    # polished_audio / polish_status / tts_status
+    # polish_status / tts_status（润色音频走顶层 tutor_audio，不在字典内）
 
     enable_tts: bool
     # TTS 开关：True 合成语音，False 跳过；调用方控制（父图 audio_choice_node 写入）

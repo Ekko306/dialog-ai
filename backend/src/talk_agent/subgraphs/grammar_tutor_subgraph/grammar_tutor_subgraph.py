@@ -6,6 +6,8 @@
 - 音频懒加载：主链不再每次回复都合成 TTS（用户未必点击发音），raw_audio / tutor_audio
   由本图 tts_node 旁路按需合成（公共属性，polisher 可复用）：前端点发音按钮时 invoke 本图
   并带 tts_request=True，入口条件边 route_entry 将其直达 tts_node；讲解调用不带该字段走主链
+- 翻译懒加载（004）：原句中文译文由本图 translate_node 旁路按需产出，前端点「文A」时
+  invoke 本图并带 translate_request=True 直达 translate_node（单次 LLM 纯文本调用）
 - 是否进入本子图由父图条件边（my_route）决定，进入即代表 has_issue=True
 
 图：document/grammar_tutor_subgraph.drawio
@@ -58,6 +60,8 @@ class TutorState(SubgraphState, total=False):
 
     tutor_prompt: str  # build_prompt → llm_call 的内部提示词
     tts_request: bool  # 发音专用入口标记：前端点发音按钮 invoke 本图时传 True → route_entry 直达 tts_node
+    translate_request: bool  # 翻译专用入口标记（004）：前端点「文A」invoke 本图时传 True → route_entry 直达 translate_node
+    translation: str  # translate_node 产出：原句中文译文；空串 = 失败/空输入（仅旁路响应，父图链路不产生）
 
 
 # ---------------- 结构化输出 schema（with_structured_output 强约束 LLM 一次产出 reply + corrections） ----------------
@@ -299,14 +303,67 @@ def tts_node(state: SubgraphState) -> SubgraphState:
     }
 
 
-# ---------------- 条件边（函数，非节点） ----------------
-def route_entry(state: TutorState) -> Literal["tts_node", "load_input_node"]:
-    """入口分流：带 tts_request 的发音请求直达 tts_node 旁路，其余走讲解主链。
+# ---------------- 翻译旁路（004-correction-translation：文A 按需翻译，与 TTS 旁路同构） ----------------
+TRANSLATE_SYSTEM_PROMPT = (
+    "你是英译中翻译引擎。把用户给出的英文句子翻译成自然的中文口语。要求："
+    "1. 以中文完整语义为主，准确传达原句意思，译文符合中文表达习惯；"
+    "2. 中英混杂的原句，译文以中文完整语义为主，仅在必要时保留原英文词；"
+    "3. 只输出译文本身：不要解释、不要引号、不要任何前缀或后缀；"
+    "4. 简短自然，一句话能说清就不拆成多句。"
+)
 
-    tts_request 只在 TutorState（本子图局部 schema）声明，父图契约无此 key，
-    正常对话链进本子图时永远不会带该字段，主链行为不受影响。
+
+def translate_node(state: SubgraphState) -> SubgraphState:
+    """按需翻译旁路（004）：前端点「文A」时 invoke 本图带 translate_request=True 直达本节点。
+
+    单次 ChatDeepSeek 纯文本调用（不用 structured_output：单字符串字段无解析收益、徒增失败面）；
+    空/纯空白输入不调 LLM；LLM 不可用或任何异常返回空串（同 tts_node 兜底风格，不抛错不阻塞）。
+    译文写子图局部 translation 字段，仅经 /runs/wait 终态 values 供前端读取。
     """
-    return "tts_node" if state.get("tts_request") else "load_input_node"
+    raw_text = state.get("raw_text", "")
+    if not raw_text.strip():
+        return {
+            "translation": "",
+            "logger": ["translate: raw_text 为空，跳过 LLM 调用直接返回空译文"],
+        }
+    model = _get_model()
+    if model is None:
+        return {
+            "translation": "",
+            "logger": ["translate: LLM 不可用（未配置 DEEPSEEK_API_KEY 或依赖缺失），返回空译文"],
+        }
+    try:
+        reply = model.invoke(
+            [
+                {"role": "system", "content": TRANSLATE_SYSTEM_PROMPT},
+                {"role": "user", "content": raw_text},
+            ]
+        )
+        # AIMessage.content 理论上可能为分块列表，非字符串一律视为失败置空
+        translation = reply.content.strip() if isinstance(reply.content, str) else ""
+    except Exception:
+        translation = ""
+    return {
+        "translation": translation,
+        "logger": [
+            f"translate: 「{raw_text}」→「{translation[:50]}」（{'成功' if translation else '失败/空'}）"
+        ],
+    }
+
+
+# ---------------- 条件边（函数，非节点） ----------------
+def route_entry(state: TutorState) -> Literal["tts_node", "translate_node", "load_input_node"]:
+    """入口分流（三分支）：translate_request 直达翻译旁路，tts_request 直达发音旁路，其余走讲解主链。
+
+    translate_request / tts_request 只在 TutorState（本子图局部 schema）声明，父图契约无此 key，
+    正常对话链进本子图时永远不会带这些字段，主链行为不受影响。
+    两者同时携带时翻译优先（前端契约规定互斥携带，此优先级仅为防御性兜底）。
+    """
+    if state.get("translate_request"):
+        return "translate_node"
+    if state.get("tts_request"):
+        return "tts_node"
+    return "load_input_node"
 
 
 def parse_validate(state: SubgraphState) -> Literal["write_state_node", "fallback_node"]:
@@ -316,9 +373,11 @@ def parse_validate(state: SubgraphState) -> Literal["write_state_node", "fallbac
     return "fallback_node"
 
 
-# ---------------- 构建子图（单图双入口：讲解走主链，发音请求经 route_entry 直达 tts_node） ----------------
+# ---------------- 构建子图（单图三入口：讲解走主链，翻译/发音请求经 route_entry 直达各自旁路） ----------------
 # 发音旁路契约：前端点发音按钮时 invoke 本图 {tts_request: True, raw_text, corrections?/check_results?}
 # → 出参 {raw_audio, tutor_audio}；合成失败置空，不报错。
+# 翻译旁路契约（004）：前端点「文A」时 invoke 本图 {translate_request: True, raw_text}
+# → 出参 {translation}；失败/空输入置空串，不报错。
 builder = StateGraph(state_schema=TutorState)
 builder.add_node("load_input_node", load_input_node)
 builder.add_node("build_prompt_node", build_prompt_node)
@@ -326,11 +385,16 @@ builder.add_node("llm_call_node", llm_call_node)
 builder.add_node("fallback_node", fallback_node)
 builder.add_node("write_state_node", write_state_node)
 builder.add_node("tts_node", tts_node)
+builder.add_node("translate_node", translate_node)
 
 builder.add_conditional_edges(
     START,
     route_entry,
-    {"tts_node": "tts_node", "load_input_node": "load_input_node"},
+    {
+        "tts_node": "tts_node",
+        "translate_node": "translate_node",
+        "load_input_node": "load_input_node",
+    },
 )
 builder.add_edge("load_input_node", "build_prompt_node")
 builder.add_edge("build_prompt_node", "llm_call_node")
@@ -342,6 +406,7 @@ builder.add_conditional_edges(
 builder.add_edge("fallback_node", "write_state_node")
 builder.add_edge("write_state_node", END)
 builder.add_edge("tts_node", END)  # 发音旁路到 tts_node 即结束，不进讲解链节点
+builder.add_edge("translate_node", END)  # 翻译旁路到 translate_node 即结束，不进讲解链节点
 
 grammer_tutor_subgraph = builder.compile()
 

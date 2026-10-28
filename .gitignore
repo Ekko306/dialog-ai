@@ -60,3 +60,5 @@ env/
 !.vscode/extensions.json
 !.vscode/settings.json
 Thumbs.db
+.pnpm-store/
+frontend/run1.json

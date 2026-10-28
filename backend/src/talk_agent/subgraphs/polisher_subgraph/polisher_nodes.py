@@ -25,12 +25,12 @@ def polisher_node(state: SubgraphState) -> dict:
     logger = ["polisher_node: 开始执行"]
 
     # 初始化完整输出，确保失败时也有明确状态。
+    # 音频不在本字典内：合成结果写顶层公共字段 tutor_audio（与 tutor 分支同名字段，PR 评审契约）
     polisher_out = {
         "original_text": original_text,
         "polished_text": original_text,
         "explanation": "",
         "polish_comment": "",
-        "polished_audio": b"",
         "polish_status": "fallback",
         "tts_status": "skipped",
     }
@@ -79,42 +79,41 @@ def polisher_node(state: SubgraphState) -> dict:
 
 
 def tts_node(state: SubgraphState) -> dict:
-    """TTS 节点：独立合成润色后的英语语音。"""
+    """TTS 节点：独立合成润色后的英语语音。
+
+    音频写顶层公共字段 tutor_audio（与 tutor 分支同名字段，PR 评审契约：
+    前端统一读 tutor_audio，不再区分分支挖嵌套字典）。tutor / polisher
+    在同一轮互斥执行（父图 has_issue_route 二选一），同名覆盖不会串音；
+    tts_status 仍留在 polisher 字典里记录合成状态。
+    """
 
     polisher_out = dict(state.get("polisher", {}))
     logger = ["tts_node: 开始执行"]
 
     if not state.get("enable_tts", False):
         polisher_out["tts_status"] = "skipped"
-        polisher_out["polished_audio"] = b""
         logger.append("tts_node: 已关闭 TTS")
-        return {"polisher": polisher_out, "logger": logger}
+        return {"tutor_audio": b"", "polisher": polisher_out, "logger": logger}
 
     polished_text = polisher_out.get("polished_text", "")
 
     if not isinstance(polished_text, str) or not polished_text.strip():
         polisher_out["tts_status"] = "skipped"
-        polisher_out["polished_audio"] = b""
         logger.append("tts_node: 没有可合成的文本")
-        return {"polisher": polisher_out, "logger": logger}
+        return {"tutor_audio": b"", "polisher": polisher_out, "logger": logger}
 
     try:
         # 具体调用和返回值检查交给 TTS 业务层。
         audio_bytes = synthesize_speech(polished_text)
 
-        polisher_out["polished_audio"] = audio_bytes
         polisher_out["tts_status"] = "success"
         logger.append("tts_node: 语音合成成功")
+        return {"tutor_audio": audio_bytes, "polisher": polisher_out, "logger": logger}
 
     except Exception:
         python_logger.exception("TTS 节点执行失败")
 
         # 只记录 TTS 失败，不覆盖已经生成的润色文本。
-        polisher_out["polished_audio"] = b""
         polisher_out["tts_status"] = "failed"
         logger.append("tts_node: 合成失败，保留润色文本")
-
-    return {
-        "polisher": polisher_out,
-        "logger": logger,
-    }
+        return {"tutor_audio": b"", "polisher": polisher_out, "logger": logger}

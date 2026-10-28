@@ -1,7 +1,9 @@
 """LangGraph Server 自定义 HTTP 路由（langgraph.json `http.app` 挂载）.
 
-当前仅提供语音转写端点 `POST /audio/transcribe`，服务 US3 前端语音输入
-（契约：frontend/specs/001-main-tab-shell/contracts/audio-transcribe.md）。
+提供两个音频旁路端点：
+- `POST /audio/transcribe` 语音转写（001，契约：specs/001-main-tab-shell/contracts/audio-transcribe.md）
+- `POST /audio/evaluate` 发音评测（007，契约：specs/007-pronunciation-analysis/contracts/evaluate-endpoint-contract.md）
+
 不引入鉴权与重试；不改任何 graph 与工具函数实现。
 """
 
@@ -18,8 +20,14 @@ import anyio  # noqa: E402
 from fastapi import FastAPI, Request  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 
+from src.talk_agent.subgraphs.grammar_check_subgraph.ise_analyze_node import (  # noqa: E402
+    parse_ise_xml,
+)
 from src.tools.audio_tool.xfyun_ita.xfyun_iat_tool import (  # noqa: E402
     xfyun_iat_tool_by_audio_data,
+)
+from src.tools.audio_tool.xfyun_ise.xfyun_ise_tool import (  # noqa: E402
+    xfyun_ise_tool_by_audio_data,
 )
 
 app = FastAPI()
@@ -49,3 +57,34 @@ async def transcribe(request: Request) -> JSONResponse:
             status_code=500, content={"detail": f"transcription failed: {exc}"}
         )
     return JSONResponse(content={"text": text})
+
+
+@app.post("/audio/evaluate")
+async def evaluate(request: Request) -> JSONResponse:
+    """评测 raw PCM 音频（16kHz/16bit/单声道/小端）对照 ref_text 的发音（讯飞 ISE）."""
+    content_type = request.headers.get("content-type", "").split(";")[0].strip()
+    if content_type != "application/octet-stream":
+        return JSONResponse(
+            status_code=415, content={"detail": "unsupported content-type"}
+        )
+    audio_data: bytes = await request.body()
+    if len(audio_data) < _MIN_AUDIO_BYTES:
+        return JSONResponse(status_code=400, content={"detail": "empty audio"})
+    ref_text = request.query_params.get("ref_text", "").strip()
+    if not ref_text:
+        return JSONResponse(status_code=422, content={"detail": "missing ref_text"})
+    try:
+        # 讯飞 ISE 同步 SDK 放线程池（同 transcribe）；英文引擎 5 分制 → parse 换算百分制
+        xml_str: str = await anyio.to_thread.run_sync(
+            xfyun_ise_tool_by_audio_data, audio_data, ref_text
+        )
+        result = parse_ise_xml(xml_str, max_score=5.0)
+    except Exception as exc:  # 统一错误形态（契约第 2 节）
+        return JSONResponse(
+            status_code=500, content={"detail": f"evaluation failed: {exc}"}
+        )
+    if result is None:  # XML 解析不出 rec_paper（parse_ise_xml 契约）
+        return JSONResponse(
+            status_code=500, content={"detail": "evaluation failed: unparsable xml"}
+        )
+    return JSONResponse(content=result)

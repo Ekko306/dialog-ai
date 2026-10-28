@@ -33,7 +33,8 @@ def main():
     print("执行日志：", result.get("logger", []))
 
     # 需要测试音频时，再把 enable_tts 改为 True。
-    audio_bytes = polisher.get("polished_audio", b"")
+    # 音频在顶层公共字段 tutor_audio（与 tutor 分支同名字段，PR 评审契约）
+    audio_bytes = result.get("tutor_audio", b"")
 
     if audio_bytes:
         output_dir = (

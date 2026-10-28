@@ -1,6 +1,9 @@
 import { Camera, MessageCircleMore, SlidersHorizontal, Volume2 } from "lucide-react";
 import { useState } from "react";
+import { CorrectionAwareAssistantMessage } from "@/components/correction-bubble/correction-bubble";
+import { FollowAlongPanel } from "@/components/follow-along-panel/follow-along-panel";
 import { InterruptPrompt } from "@/components/interrupt-prompt";
+import { PolisherTtsAutoResponder } from "@/components/polisher-tts-auto-responder";
 import { SceneSelectPopup } from "@/components/scene-select/scene-select-popup";
 import { SceneApplier } from "@/components/scene-select/scene-applier";
 import { SceneApplyToast } from "@/components/scene-select/scene-apply-toast";
@@ -42,7 +45,9 @@ export function MainChatPage() {
         </div>
       </header>
       <div className="relative min-h-0 flex-1">
-        <Thread />
+        {/* 003 T009：AI 消息渲染经官方 AssistantMessage 扩展点分流——
+            含 correction_data 的消息渲染纠错气泡，其余走原分支零回归 */}
+        <Thread components={{ AssistantMessage: CorrectionAwareAssistantMessage }} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-4 px-4 pb-4 md:pb-6">
           <div className="pointer-events-auto mx-auto flex w-full max-w-[44rem] flex-col gap-3">
             <div className="flex items-center justify-center gap-3">
@@ -63,7 +68,11 @@ export function MainChatPage() {
         </div>
         <SceneSelectPopup open={scenePopupOpen} onOpenChange={setScenePopupOpen} />
       </div>
+      {/* 003 US4：循环跟读面板（页面级底部滑入，经 zustand store 由操作栏唤起） */}
+      <FollowAlongPanel />
       <SceneApplier />
+      {/* 润色语音询问自动应答（无错句子跳过 yes/no 询问，直接合成语音） */}
+      <PolisherTtsAutoResponder />
       <SceneApplyToast />
     </div>
   );

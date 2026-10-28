@@ -2,7 +2,8 @@
 
 场景1-4 走 grammer_tutor_subgraph 主链（纯文本讲解，需 DEEPSEEK_API_KEY）；
 场景5 带 tts_request=True 复用同一张图，经 route_entry 直达 tts_node 旁路验证懒加载 TTS
-（需讯飞配置，主链不再每次合成语音）。
+（需讯飞配置，主链不再每次合成语音）；
+场景6（004）带 translate_request=True 直达 translate_node 旁路验证懒加载翻译（需 DEEPSEEK_API_KEY）。
 运行：uv run pytest tests/integration_tests/test_grammer_tutor_subgraph.py -s -v
 """
 
@@ -113,6 +114,20 @@ def test_scenario_5_tts_on_demand():
     print("[场景5] 正确句音频字节:", len(res.get("tutor_audio") or b""))
     assert res.get("tutor_audio"), "懒加载 TTS 应产出正确句示范音频"
     play_audio(res, "场景5")  # 落地临时 MP3 供手动试听，不自动播放
+
+
+def test_scenario_6_translate_on_demand():
+    """场景6（懒加载翻译，004）：前端点「文A」时带 translate_request=True 复用本图，直达 translate_node 产出中文译文。
+
+    与场景5（TTS 旁路）同构：只走翻译旁路，不产讲解文本、不产音频（route_entry 三分支互不干扰）。
+    """
+    res = grammer_tutor_subgraph.invoke(
+        {"translate_request": True, "raw_text": "Good good study, day day up."}
+    )
+    print("\n[场景6] 译文:", res.get("translation"))
+    assert res.get("translation"), "翻译旁路应产出非空中文译文"
+    assert res.get("tutor_reply") in (None, ""), "翻译旁路不应产出讲解文本"
+    assert res.get("raw_audio") in (None, b""), "翻译旁路不应产出音频"
 
 
 @pytest.fixture(scope="module", autouse=True)

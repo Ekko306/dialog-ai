@@ -180,9 +180,25 @@ def tutor_reply_message_node(state: OverAllState) -> OverAllState:
     tutor_reply = state.get("tutor_reply") or ""
     if not tutor_reply.strip():
         return {}
+    # 003 契约透传（唯一后端改动，见 frontend/specs/003 plan.md 留档）：
+    # 纠错结构化数据随这条 AIMessage 走，前端据此识别纠错气泡并渲染双态。
+    # 键名必须是 additional_kwargs["metadata"]：前端 @assistant-ui/react-langchain
+    # convertMessages 只把 additional_kwargs.metadata 透传为 assistant-ui 消息的
+    # metadata.custom（getCustomMetadata），写其他顶层键前端读不到。
+    # feedback 为预留字段（analyze F2）：本期前端评分条用固定文案，不消费。
+    msg = AIMessage(content=tutor_reply)
+    msg.additional_kwargs["metadata"] = {
+        "correction_data": {
+            "raw_text": state.get("raw_text") or "",
+            "tutor_reply": tutor_reply,
+            "corrections": state.get("corrections") or [],
+            "ise_grade": state.get("ise_grade"),
+            "feedback": None,  # 预留：未来接 tutor 讲解摘要
+        }
+    }
     return {
         "messages": [
-            AIMessage(content=tutor_reply),
+            msg,
             SystemMessage(content=""),
         ]
     }
@@ -204,14 +220,30 @@ def polisher_reply_message_node(state: OverAllState) -> OverAllState:
     polished_text = (polisher.get("polished_text") or "").strip()
     explanation = (polisher.get("explanation") or "").strip()
 
-    parts = ["当前语句没有错误，没有tutor_reply。"]
+    parts = ["当前语句没有错误，表达很棒！"]
     if polished_text and polished_text != original_text:
         parts.append(f"润色建议：{polished_text}")
         if explanation:
             parts.append(explanation)
+    # 005 契约透传（唯一后端改动，见 frontend/specs/005-polisher-bubble plan.md 留档）：
+    # 润色结构化数据随这条 AIMessage 走，前端据此识别润色气泡并渲染。
+    # 键名必须是 additional_kwargs["metadata"]（同 003 correction_data）：
+    # 前端 @assistant-ui/react-langchain convertMessages 只把 additional_kwargs.metadata
+    # 透传为 assistant-ui 消息的 metadata.custom，写其他顶层键前端读不到。
+    # 无条件挂载（含 fallback/skipped）：降级判断由前端 shouldRenderPolisher 守卫执行，
+    # 后端不掺渲染决策；正文文案保持不变（research R6）。
+    msg = AIMessage(content="\n".join(parts))
+    msg.additional_kwargs["metadata"] = {
+        "polisher_data": {
+            "raw_text": original_text,
+            "polished_text": polished_text,
+            "explanation": explanation,
+            "polish_status": polisher.get("polish_status", ""),
+        }
+    }
     return {
         "messages": [
-            AIMessage(content="\n".join(parts)),
+            msg,
             SystemMessage(content=""),
         ]
     }
