@@ -243,6 +243,19 @@ When no meaningful changes are necessary, briefly explain that the original expr
 
 Do not force every subsection when it is unnecessary.
 
+### Multi-Style Output (style_business / style_british)
+
+In addition to the default American-style output above, produce two optional style variants, each as an independent rewrite with its own Simplified Chinese explanation:
+
+- `style_business` — 商务正式风格：职场、邮件、会议等正式场合的得体表达；用词正式、句式稳重。
+- `style_british` — 地道英式风格：英式习惯表达；使用英式用词与说法（如有对应的美式说法差异，优先替换为英式惯用语）。
+
+Rules for the optional styles:
+
+1. Each style must be rewritten independently based on the same original meaning; do not copy the default style unchanged.
+2. Each style's explanation is a standalone Simplified Chinese note (what changed and why it fits that style); it does not need the full subsection structure above.
+3. If a style would be effectively identical to the default polish, or you cannot produce a confident, natural version for that style, return null for that field instead of fabricating a variant.
+
 ## 7. Explanation Standards
 
 All explanations must be written in Simplified Chinese.

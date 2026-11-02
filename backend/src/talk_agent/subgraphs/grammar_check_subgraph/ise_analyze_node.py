@@ -111,12 +111,39 @@ def parse_ise_xml(xml_str: str, max_score: float = 100.0) -> dict | None:
                     "flags": flags,
                 }
             )
+
+        # 语速推导（003 评分区，research.md R3；2026-11-02 真实样本核对：
+        # 英文引擎 rec_paper 子节点无 time_len，时长由 beg_pos/end_pos 帧位差
+        # 推出（讯飞 ISE 帧移 10ms/帧，992 帧 ≈ 9.92s 与实际音频吻合）；
+        # 词数优先 word_count 属性（words 数组含 sil 静音标记不可靠）。
+        # time_len 保留为兼容路径（部分引擎样本存在）；任一要素缺失/非法 →
+        # None（前端仪表盘空态，不虚构）
+        speed_wpm = None
+        try:
+            raw_time_len = paper.get("time_len")
+            if raw_time_len not in (None, ""):
+                duration_ms = int(raw_time_len)
+            else:
+                beg_pos = int(paper.get("beg_pos", "") or 0)
+                end_pos = int(paper.get("end_pos", "") or 0)
+                duration_ms = (end_pos - beg_pos) * 10
+            # 词数：优先 word_count 属性；缺失时回退非静音逐词数（words 含 sil）
+            raw_word_count = paper.get("word_count")
+            word_count = int(raw_word_count) if raw_word_count not in (None, "") else sum(
+                1 for w in words if w["word"].strip().lower() not in ("sil", "sp", "pause")
+            )
+            if duration_ms > 0 and word_count > 0:
+                speed_wpm = round(word_count / (duration_ms / 60000), 1)
+        except (TypeError, ValueError):
+            speed_wpm = None
+
         return {
             "total": _pct(paper.get("total_score"), max_score),
             "accuracy": _pct(paper.get("accuracy_score"), max_score),
             "fluency": _pct(paper.get("fluency_score"), max_score),
             "integrity": _pct(paper.get("integrity_score"), max_score),
             "is_rejected": (paper.get("is_rejected", "false") or "false").lower() == "true",
+            "speed_wpm": speed_wpm,
             "words": words,
         }
     except ET.ParseError:
@@ -205,6 +232,15 @@ def ise_analyze_node(state: OverAllState) -> OverAllState:
         "ise_check_results": {
             "pronunciation": [item.model_dump() for item in res.check_pronunciation],
             "advice": res.scoring_advice,
+            # 003 评分区（Constitution II 字段透出）：parse_ise_xml 既有产物原样透出，
+            # 零新计算；降级路径 _degraded 不带这些字段（缺省 = 前端空态）
+            "scores": {
+                "total": info["total"],
+                "accuracy": info["accuracy"],
+                "fluency": info["fluency"],
+                "integrity": info["integrity"],
+            },
+            "speed_wpm": info.get("speed_wpm"),
         }
     }
 
@@ -219,6 +255,30 @@ if __name__ == "__main__":
     assert parse_ise_xml(fake_rejected)["is_rejected"] is True
     assert parse_ise_xml("<bad>xml") is None
     print("解析单测：rejected 拦截 + 坏 XML 防御  通过")
+
+    # 003 语速透出冒烟（2026-11-02 真实样本核对后）：time_len 兼容路径
+    # 2 词/60000ms → 2.0 词/分；帧位差路径（真实英文引擎结构，帧移 10ms）
+    # 19 词/992 帧 ≈ 114.9 词/分；要素缺失 → None
+    fake_timed = (
+        '<xml_result><read_sentence><rec_paper>'
+        '<read_syllable total_score="4" accuracy_score="4" fluency_score="4" integrity_score="4" time_len="60000">'
+        '<word content="hello" total_score="4"><syll><phone perr_msg="0"/></syll></word>'
+        '<word content="world" total_score="4.5"><syll><phone perr_msg="0"/></syll></word>'
+        "</read_syllable></rec_paper></read_sentence></xml_result>"
+    )
+    timed = parse_ise_xml(fake_timed, max_score=5.0)
+    assert timed["speed_wpm"] == 2.0, timed["speed_wpm"]
+    fake_frames = (
+        '<xml_result><read_sentence><rec_paper>'
+        '<read_chapter total_score="4.8" accuracy_score="4.7" fluency_score="5" '
+        'integrity_score="5" beg_pos="0" end_pos="992" word_count="19">'
+        '<word content="last" total_score="4.27"><syll dp_message="0"><phone perr_msg="0"/></syll></word>'
+        "</read_chapter></rec_paper></read_sentence></xml_result>"
+    )
+    framed = parse_ise_xml(fake_frames, max_score=5.0)
+    assert framed["speed_wpm"] == 114.9, framed["speed_wpm"]
+    assert parse_ise_xml(fake_rejected)["speed_wpm"] is None
+    print("解析单测：speed_wpm（time_len 兼容 + 帧位差真实结构 + 缺失空态）  通过")
 
     out = ise_analyze_node({"ise_status": "no_audio", "ise_xml_info": ""})
     assert out["ise_check_results"]["pronunciation"] == []

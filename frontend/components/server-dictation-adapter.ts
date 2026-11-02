@@ -207,6 +207,9 @@ export class ServerDictationAdapter implements DictationAdapter {
           offset += frame.length;
         }
 
+        // 暂存最近一轮录音（003 弹窗"我的"回放，R4）：本轮有效采集即覆盖上一轮
+        lastRecording = pcm;
+
         abortController = new AbortController();
         try {
           const response = await fetch("/api/audio/transcribe", {
@@ -258,6 +261,40 @@ export class ServerDictationAdapter implements DictationAdapter {
       },
     };
   }
+}
+
+// ========== 最近一轮录音内存槽（003 发音弹窗"我的"回放用，research.md R4） ==========
+// 只保留最近一轮有效采集的 PCM：新录音覆盖，页面刷新清空；后端零改动。
+
+let lastRecording: Int16Array | null = null;
+
+/** 最近一轮用户录音（16kHz/单声道/Int16 PCM）；无录音返回 null */
+export function getLastRecording(): Int16Array | null {
+  return lastRecording;
+}
+
+/** Int16 PCM → WAV Blob（16kHz/单声道/16bit）；objectURL 由消费方懒创建并负责 revoke */
+export function pcmToWavBlob(pcm: Int16Array, sampleRate: number = TARGET_SAMPLE_RATE): Blob {
+  const header = new ArrayBuffer(44);
+  const view = new DataView(header);
+  const writeString = (offset: number, text: string) => {
+    for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i));
+  };
+  writeString(0, "RIFF");
+  view.setUint32(4, 36 + pcm.length * 2, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true); // fmt chunk 长度
+  view.setUint16(20, 1, true); // PCM 格式
+  view.setUint16(22, 1, true); // 单声道
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // 字节率 = 采样率 × 2 bytes
+  view.setUint16(32, 2, true); // 块对齐
+  view.setUint16(34, 16, true); // 位深
+  writeString(36, "data");
+  view.setUint32(40, pcm.length * 2, true);
+  // pcm 由 new Int16Array(len) 创建，backing store 必为普通 ArrayBuffer
+  return new Blob([header, pcm.buffer as ArrayBuffer], { type: "audio/wav" });
 }
 
 // 模块级单例：runtime 注入（assistant.tsx）与 InterruptPrompt 语音按钮共用

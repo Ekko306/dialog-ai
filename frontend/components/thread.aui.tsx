@@ -49,12 +49,19 @@ import {
   PencilIcon,
   PhoneIcon,
   RefreshCwIcon,
+  SparklesIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
+  Volume2Icon,
 } from "lucide-react";
+import {
+  PronunciationPopup,
+  type PopupSection,
+} from "@/components/pronunciation-popup/pronunciation-popup";
 import {
   createContext,
   useContext,
+  useState,
   type ComponentType,
   type FC,
   type PropsWithChildren,
@@ -185,7 +192,11 @@ const ThreadRoot: FC<{ isEmpty: boolean }> = ({ isEmpty }) => {
             <ThreadHistorySkeleton />
           </AuiIf>
 
-          <div data-slot="aui_message-group" style={{"marginBottom": '140px'}} className="mb-14 flex flex-col gap-y-6 empty:hidden">
+          <div
+            data-slot="aui_message-group"
+            style={{ marginBottom: "140px" }}
+            className="mb-14 flex flex-col gap-y-6 empty:hidden"
+          >
             <ThreadPrimitive.Messages>{() => <ThreadMessage />}</ThreadPrimitive.Messages>
           </div>
 
@@ -298,9 +309,62 @@ const SpokenMessage: FC = () => {
         </div>
         <SpokenActionBar />
       </div>
+
+      {/* 003 发音弹窗入口（语音用户消息，role===user；发音/地道，原型图按钮行）。
+          注：全仓库当前无代码写入 metadata.modality="voice"，本分支不可达；
+          可达入口挂 UserMessage（文本用户消息）。本处保留是为了未来 voice
+          元数据接通后语音气泡也有入口——两分支互斥，不会双渲染 */}
+      {role === "user" && <PronunciationEntry />}
     </MessagePrimitive.Root>
   );
 };
+
+/** 发音逐词分析弹窗入口按钮行（发音 → 逐词分析锚点；地道 → 语境润色锚点） */
+const PronunciationEntry: FC = () => {
+  const [open, setOpen] = useState(false);
+  const [section, setSection] = useState<PopupSection>("analysis");
+
+  return (
+    <>
+      <div data-slot="aui_pronunciation-entry-row" className="mt-1.5 flex items-center gap-2">
+        <EntryButton
+          label="发音"
+          onClick={() => {
+            setSection("analysis");
+            setOpen(true);
+          }}
+        >
+          <Volume2Icon className="size-3" aria-hidden />
+        </EntryButton>
+        <EntryButton
+          label="地道"
+          onClick={() => {
+            setSection("polish");
+            setOpen(true);
+          }}
+        >
+          <SparklesIcon className="size-3" aria-hidden />
+        </EntryButton>
+      </div>
+      <PronunciationPopup open={open} initialSection={section} onOpenChange={setOpen} />
+    </>
+  );
+};
+
+const EntryButton: FC<PropsWithChildren<{ label: string; onClick: () => void }>> = ({
+  label,
+  onClick,
+  children,
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="bg-background text-foreground/70 shadow-sm hover:text-foreground flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-colors"
+  >
+    {children}
+    {label}
+  </button>
+);
 
 const SpokenActionBar: FC = () => {
   return (
@@ -598,6 +662,14 @@ const UserMessage: FC = () => {
         data-slot="aui_user-branch-picker"
         className="col-span-full col-start-1 -me-1 justify-end"
       />
+
+      {/* 003 发音弹窗入口（发音/地道，原型图按钮行）。
+          注：理想挂载点是"语音用户气泡"（SpokenMessage 分支也挂了同一组件），
+          但全仓库无任何代码写入 metadata.modality="voice"（语音轮次经 IAT 转写
+          后与文字轮次同样以纯文本消息呈现），SpokenMessage 分支实际不可达；
+          因此入口同时挂文本用户消息（本处），保证功能可达——无评测数据的轮次
+          由弹窗空态兜底（FR-015），符合 spec"缺失数据不虚构"约定 */}
+      <PronunciationEntry />
     </MessagePrimitive.Root>
   );
 };

@@ -10,7 +10,7 @@ class PolisherOutput(TypedDict, total=False):
     """英语表达润色子图的输出结果（单节点一次性全部写入）。
 
     注意：LangGraph state 更新是字段级整体替换而非深合并，
-    所以 polisher_node 每次必须返回包含全部 7 个字段的完整字典。
+    所以 polisher_node 每次必须返回包含全部字段的完整字典。
     """
 
     original_text: str          # 润色前的原文
@@ -20,6 +20,9 @@ class PolisherOutput(TypedDict, total=False):
     polished_audio: bytes          # 润色结果对应的音频字节
     polish_status: str          # success / fallback / failed / skipped
     tts_status: str          # success / skipped / failed
+    # 003 三风格扩展（Q1 决策 A）：单风格块 {polished_text, explanation}，无法生成时为 None
+    style_business: dict | None   # 商务正式风格
+    style_british: dict | None    # 地道英式风格
 
 
 from src.talk_agent.subgraphs.grammar_check_subgraph.check_conatants import GrammarCheckStatus  # noqa: E402

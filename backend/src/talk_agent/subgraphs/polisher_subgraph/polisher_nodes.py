@@ -33,6 +33,10 @@ def polisher_node(state: SubgraphState) -> dict:
         "polished_audio": b"",
         "polish_status": "fallback",
         "tts_status": "skipped",
+        # 003 三风格（Q1 决策 A）：默认 None，成功分支透传（analyze I1 裁决，
+        # Constitution II 最小数据管道改动，理由留档 plan.md）
+        "style_business": None,
+        "style_british": None,
     }
 
     if not original_text.strip():
@@ -56,6 +60,9 @@ def polisher_node(state: SubgraphState) -> dict:
             "explanation": result["explanation"],
             "polish_comment": result["explanation"],
             "polish_status": "success",
+            # 003 三风格透传（仅字段搬运，无判定/日志/图结构改动）
+            "style_business": result.get("style_business"),
+            "style_british": result.get("style_british"),
         })
         logger.append("polisher_node: 润色成功")
 

@@ -22,8 +22,11 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(override=True)
 
 
-def xfyun_tts_tool_by_text(text: str, speed: int = 45) -> bytes:
+def xfyun_tts_tool_by_text(text: str, speed: int = 45, vcn: str | None = None) -> bytes:
     """文本 → 英语语音（MP3 字节）。speed 取值 0~100，默认 45 略慢便于跟读。
+
+    vcn：发音人；None 时保持既有行为（os.getenv("TTS_VCN", "vixy") 兜底），
+    传值时透传 SDK（003 发音弹窗按口音切换发音人用），既有调用方零感知。
 
     失败时抛异常，由调用方决定降级策略（如跳过播放只给文本）。
     """
@@ -33,7 +36,7 @@ def xfyun_tts_tool_by_text(text: str, speed: int = 45) -> bytes:
         app_id=os.getenv("XF_APP_ID", ""),
         api_key=os.getenv("XF_API_KEY", ""),
         api_secret=os.getenv("XF_API_SECRET", ""),
-        vcn=os.getenv("TTS_VCN", "vixy"),
+        vcn=vcn or os.getenv("TTS_VCN", "vixy"),
         aue="lame",  # 输出 MP3
         sfl=1,
         speed=speed,

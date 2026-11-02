@@ -442,7 +442,14 @@ function ToolFallbackApproval({
     confirmingId != null ? declaredOptions?.find((o) => o.id === confirmingId) : undefined;
 
   const question = isQuestion(approval);
-  const dismissible = question && respondToApproval != null && approval?.dismissible === true;
+  // dismissible：宿主（LangGraph interrupt）运行时会下发该字段，但 @assistant-ui/core
+  // 的 approval 内联类型尚未声明——用 in 收窄读取，无 cast、对缺失字段安全
+  const dismissible =
+    question &&
+    respondToApproval != null &&
+    approval != null &&
+    "dismissible" in approval &&
+    approval.dismissible === true;
 
   const dismissButton = dismissible ? (
     <Button size="sm" variant="outline" className={pressable} onClick={dismiss} disabled={locked}>

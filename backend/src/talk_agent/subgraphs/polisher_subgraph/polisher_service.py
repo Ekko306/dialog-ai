@@ -25,6 +25,67 @@ MAX_POLISH_ATTEMPTS = 2
 polisher_chain = get_polisher_model()
 
 
+def _validate_polished_text(text: str, polished_text: str) -> str:
+    """对单个润色结果执行三条确定性校验（不额外调 LLM），通过返回 strip 后文本。
+
+    Raises:
+        ValueError: 任一规则不通过（主风格失败走重试；风格块失败由调用方降级 None）。
+    """
+    polished_text = polished_text.strip()
+
+    # 规则 1：长度异常——润色结果不能比原文短 50%（丢核心内容）或长 300%（加无关内容）
+    original_len = len(text)
+    polished_len = len(polished_text)
+    if polished_len < original_len * 0.5:
+        raise ValueError(
+            f"润色结果过短，可能丢失核心内容"
+            f"（原文 {original_len} 字符，润色后 {polished_len} 字符）"
+        )
+    if polished_len > original_len * 3:
+        raise ValueError(
+            f"润色结果过长，可能引入无关内容"
+            f"（原文 {original_len} 字符，润色后 {polished_len} 字符）"
+        )
+
+    # 规则 2：无有效英文字母——模型可能输出了全标点、全中文或乱码
+    english_letters = re.findall(r"[a-zA-Z]", polished_text)
+    if len(english_letters) < 3:
+        raise ValueError(
+            f"润色结果英文字母过少，可能是无效输出"
+            f"：{polished_text[:50]!r}"
+        )
+
+    # 规则 3：非英文混入过多中文——polished_text 应主要是英文
+    chinese_chars = re.findall(r"[\u4e00-\u9fff]", polished_text)
+    if chinese_chars and len(chinese_chars) > len(english_letters) * 0.2:
+        raise ValueError(
+            f"润色结果混入过多中文字符，可能是格式化错误"
+        )
+
+    return polished_text
+
+
+def _validated_style(text: str, style) -> dict | None:
+    """校验单个风格块（003 三风格）：取到才校验，失败置 None，不重试不抛错。"""
+    if style is None:
+        return None
+    if isinstance(style, dict):
+        polished_text = style.get("polished_text")
+        explanation = style.get("explanation")
+    else:
+        polished_text = getattr(style, "polished_text", None)
+        explanation = getattr(style, "explanation", None)
+    if not isinstance(polished_text, str) or not polished_text.strip():
+        return None
+    if not isinstance(explanation, str) or not explanation.strip():
+        return None
+    try:
+        polished_text = _validate_polished_text(text, polished_text)
+    except ValueError:
+        return None
+    return {"polished_text": polished_text, "explanation": explanation.strip()}
+
+
 def polish_text(text: str) -> dict:
     """调用模型润色文本，并返回经过基础校验的结果。
 
@@ -47,9 +108,13 @@ def polish_text(text: str) -> dict:
             if isinstance(result, dict):
                 polished_text = result.get("polished_text", "")
                 explanation = result.get("explanation", "")
+                style_business = result.get("style_business")
+                style_british = result.get("style_british")
             else:
                 polished_text = getattr(result, "polished_text", "")
                 explanation = getattr(result, "explanation", "")
+                style_business = getattr(result, "style_business", None)
+                style_british = getattr(result, "style_british", None)
 
             if not isinstance(polished_text, str):
                 raise ValueError("polished_text 必须是字符串")
@@ -66,41 +131,17 @@ def polish_text(text: str) -> dict:
             if not explanation:
                 raise ValueError("模型返回的中文解释为空")
 
-            # ---- 轻量自我校验（确定性规则，不额外调 LLM）----
-            original_len = len(text)
-            polished_len = len(polished_text)
-
-            # 规则 1：长度异常——润色结果不能比原文短 50%（丢核心内容）或长 300%（加无关内容）
-            if polished_len < original_len * 0.5:
-                raise ValueError(
-                    f"润色结果过短，可能丢失核心内容"
-                    f"（原文 {original_len} 字符，润色后 {polished_len} 字符）"
-                )
-            if polished_len > original_len * 3:
-                raise ValueError(
-                    f"润色结果过长，可能引入无关内容"
-                    f"（原文 {original_len} 字符，润色后 {polished_len} 字符）"
-                )
-
-            # 规则 2：无有效英文字母——模型可能输出了全标点、全中文或乱码
-            english_letters = re.findall(r"[a-zA-Z]", polished_text)
-            if len(english_letters) < 3:
-                raise ValueError(
-                    f"润色结果英文字母过少，可能是无效输出"
-                    f"：{polished_text[:50]!r}"
-                )
-
-            # 规则 3：非英文混入过多中文——polished_text 应主要是英文
-            chinese_chars = re.findall(r"[\u4e00-\u9fff]", polished_text)
-            if chinese_chars and len(chinese_chars) > len(english_letters) * 0.2:
-                raise ValueError(
-                    f"润色结果混入过多中文字符，可能是格式化错误"
-                )
+            # ---- 轻量自我校验（确定性规则，不额外调 LLM；失败触发重试）----
+            polished_text = _validate_polished_text(text, polished_text)
 
             # 基础校验 + 自我校验均通过，返回业务结果。
+            # 003 三风格（Q1 决策 A）：主风格流程不变；风格块取到才校验、
+            # 失败置 None 不重试不抛错（research.md R6.4/R6.5）
             return {
                 "polished_text": polished_text,
                 "explanation": explanation,
+                "style_business": _validated_style(text, style_business),
+                "style_british": _validated_style(text, style_british),
             }
 
         except Exception as exc:
