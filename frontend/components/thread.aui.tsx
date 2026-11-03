@@ -44,6 +44,7 @@ import {
   ChevronRightIcon,
   CopyIcon,
   DownloadIcon,
+  LoaderCircleIcon,
   MicIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -58,6 +59,8 @@ import {
   PronunciationPopup,
   type PopupSection,
 } from "@/components/pronunciation-popup/pronunciation-popup";
+import { ttsSourceKey, usePopupAudio } from "@/components/pronunciation-popup/use-popup-audio";
+import { getSettings } from "@/lib/profile-settings";
 import {
   createContext,
   useContext,
@@ -168,7 +171,7 @@ const ThreadRoot: FC<{ isEmpty: boolean }> = ({ isEmpty }) => {
     <ThreadPrimitive.Root
       className="aui-root aui-thread-root bg-secondary @container flex h-full flex-col"
       style={{
-        ["--thread-max-width" as string]: "44rem",
+        ["--thread-max-width" as string]: "52rem",
         ["--composer-bg" as string]: "var(--color-background)",
         ["--composer-radius" as string]: "1rem",
         ["--composer-padding" as string]: "8px",
@@ -553,12 +556,49 @@ const AssistantMessage: FC = () => {
 
       <div
         data-slot="aui_assistant-message-footer"
-        className={cn("ms-2 flex items-center", ACTION_BAR_HEIGHT)}
+        className={cn("ms-2 flex items-center gap-1", ACTION_BAR_HEIGHT)}
       >
         <BranchPicker />
+        <SpeakMessageButton />
         <AssistantActionBar />
       </div>
     </MessagePrimitive.Root>
+  );
+};
+
+/** AI 英文消息固定播放按钮（需求：气泡下方常驻、点击即播对应英文 TTS）。
+    复用发音弹窗的模块级 TTS 单例引擎（按 (text, accent) 缓存 objectURL，重复
+    点击零二次合成延迟）；口音跟随"我的"设置；播放中图标绿色高亮，再点停止。
+    纯中文/无文本消息（工具调用轮）不渲染；播放不跟随 loopDefault（恒单次）。 */
+const SpeakMessageButton: FC = () => {
+  const audio = usePopupAudio();
+  const text = useAuiState((s) =>
+    s.message.content
+      .map((part) => (part.type === "text" ? part.text : ""))
+      .join("\n")
+      .trim(),
+  );
+
+  // 英文判定：拉丁字母 ≥3 且多于 CJK 字符（教练英文回复显示，纯中文回复不显示）
+  const latinCount = (text.match(/[A-Za-z]/g) ?? []).length;
+  const cjkCount = (text.match(/[\u4e00-\u9fff]/g) ?? []).length;
+  if (!text || latinCount < 3 || latinCount <= cjkCount) return null;
+
+  const accent = getSettings().accent;
+  const key = ttsSourceKey(accent, text);
+  const busy = audio.activeKey === key && audio.status !== "idle";
+  const loading = audio.activeKey === key && audio.status === "loading";
+
+  return (
+    <TooltipIconButton
+      tooltip={busy ? "停止播放" : "播放语音"}
+      onClick={() =>
+        busy ? audio.stop() : audio.play({ kind: "tts", text, accent }, { loop: false })
+      }
+      className={cn(busy && "text-(--icon-brand-green)")}
+    >
+      {loading ? <LoaderCircleIcon className="animate-spin" /> : <Volume2Icon />}
+    </TooltipIconButton>
   );
 };
 

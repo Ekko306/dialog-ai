@@ -2,6 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
+import { getSettings } from "@/lib/profile-settings";
+
 import { getLastRecording, pcmToWavBlob } from "@/components/server-dictation-adapter";
 
 /**
@@ -33,7 +35,8 @@ export interface PopupAudioApi {
   readonly error: string | null;
   readonly loop: boolean;
   setLoop: (value: boolean) => void;
-  play: (source: PlaySource) => void;
+  /** opts.loop 可按次覆盖循环设置（如消息播放按钮恒为单次播放，不走 loopDefault） */
+  play: (source: PlaySource, opts?: { loop?: boolean }) => void;
   stop: () => void;
   /** ↻重读：重放最近一次成功合成的示范音频（优先缓存）；本会话无记录时
    * 用 fallback 源先合成再播（契约 §4），两者皆缺 → 提示 */
@@ -49,7 +52,13 @@ interface EngineState {
   loop: boolean;
 }
 
-const INITIAL_STATE: EngineState = { status: "idle", activeKey: null, error: null, loop: false };
+// loop 初值读设置默认（004 R5：模块初始化读取一次，弹窗内切换不回写设置）
+const INITIAL_STATE: EngineState = {
+  status: "idle",
+  activeKey: null,
+  error: null,
+  loop: getSettings().loopDefault,
+};
 
 let state: EngineState = INITIAL_STATE;
 const listeners = new Set<() => void>();
@@ -135,7 +144,7 @@ const resolveUrl = async (source: PlaySource): Promise<string> => {
   return url;
 };
 
-const play = (source: PlaySource) => {
+const play = (source: PlaySource, opts?: { loop?: boolean }) => {
   const key = sourceKeyOf(source);
   const seq = ++playSeq;
 
@@ -147,7 +156,7 @@ const play = (source: PlaySource) => {
       if (seq !== playSeq) return; // 已被新播放/停止/清理取代
       const audio = ensureAudio();
       if (source.kind === "tts") lastDemoSource = source;
-      audio.loop = state.loop;
+      audio.loop = opts?.loop ?? state.loop;
       audio.src = url;
       await audio.play();
       if (seq !== playSeq) return;

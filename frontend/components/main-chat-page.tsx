@@ -15,7 +15,7 @@ import { AutoContinue, NewDialogButton } from "@/components/talk-flow";
  * - NewDialogButton / AutoContinue / InterruptPrompt（US2 迁入，行为不改；
  *   research R7：interrupt 恢复必须走 respond 路径）
  * - 底部常驻区域 absolute 定位，等效原 ViewportFooter sticky bottom-0 的吸附位置；
- *   max-w 与 thread.aui.tsx Root 的 --thread-max-width 保持一致（44rem）；
+ *   max-w 与 thread.aui.tsx Root 的 --thread-max-width 保持一致（52rem）；
  *   "新会话 / 选场景"按钮区按原型图置于输入条上方（NewDialogButton 视觉整合，
  *   "选场景"按钮唤起底部弹窗，002 FR-001）
  * - SceneApplier / SceneApplyToast：场景指令发送与失败提示（002 FR-006/FR-013）
@@ -44,7 +44,7 @@ export function MainChatPage() {
       <div className="relative min-h-0 flex-1">
         <Thread />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-4 px-4 pb-4 md:pb-6">
-          <div className="pointer-events-auto mx-auto flex w-full max-w-[44rem] flex-col gap-3">
+          <div className="pointer-events-auto mx-auto flex w-full max-w-[52rem] flex-col gap-3">
             <div className="flex items-center justify-center gap-3">
               <NewDialogButton />
               <button
