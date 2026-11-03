@@ -44,15 +44,15 @@ export function extrasOf(comment: string | null | undefined): WordExtra[] {
   return extras;
 }
 
-/** 词干归一化：剥离标点/空格，不区分大小写（对齐用） */
-const normalizeWord = (word: string): string => word.replace(/[^a-zA-Z']/g, "").toLowerCase();
+/** 词干归一化：剥离标点/空格，不区分大小写（对齐用）；profile-aggregate 错词本去重键复用（R8 禁止复制） */
+export const normalizeWord = (word: string): string => word.replace(/[^a-zA-Z']/g, "").toLowerCase();
 
 /**
  * 静音/停顿标记过滤（2026-11-02 真实样本核对）：讯飞 ISE 的 word 序列会插入
  * "sil"（静音段）等非朗读 token（本例 19 词出现 2 个 sil，S6 比对发现），
  * 原型图逐词区只显示真实朗读词，故派生前滤除。
  */
-const SILENCE_TOKENS = new Set(["sil", "sp", "pause"]);
+export const SILENCE_TOKENS = new Set(["sil", "sp", "pause"]);
 
 /**
  * 逐词标注主入口：ise_check_results.pronunciation → WordMark[]。

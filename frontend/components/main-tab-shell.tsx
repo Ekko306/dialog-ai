@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { EmptyTab } from "@/components/empty-tab";
 import { MainChatPage } from "@/components/main-chat-page";
+import { MyProfilePage } from "@/components/my-profile/my-profile-page";
 import { TabBar, type TabId } from "@/components/tab-bar";
 
 /**
@@ -15,7 +16,15 @@ export function MainTabShell() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <div className="min-h-0 flex-1">{activeTab === "chat" ? <MainChatPage /> : <EmptyTab />}</div>
+      <div className="min-h-0 flex-1">
+        {activeTab === "chat" ? (
+          <MainChatPage />
+        ) : activeTab === "tab3" ? (
+          <MyProfilePage />
+        ) : (
+          <EmptyTab />
+        )}
+      </div>
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );

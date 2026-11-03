@@ -5,6 +5,7 @@ import { useLangChainInterruptState, useLangChainRespond } from "@assistant-ui/r
 import { LoaderCircleIcon, MicIcon, SquareIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { serverDictationAdapter } from "@/components/server-dictation-adapter";
+import { getSettings } from "@/lib/profile-settings";
 
 type DictationPhase = "idle" | "recording" | "transcribing";
 
@@ -78,6 +79,23 @@ export function InterruptPrompt() {
       : String(interrupt.value ?? "等待输入")
     : "等待教练的下一条指示…";
 
+  // 004 S4.3（FR-015，research R6）：TTS 语音输出开关关闭时，audio_choice_node 的
+  // 语音合成询问（纯文本 interrupt，prompt 前缀识别）自动应答 "no"，且以中性提示
+  // 替代问题文案；开关开启时维持现有人工询问。ref 防重复应答，interrupt 清除后复位。
+  const ttsAutoNoRef = useRef(false);
+  const ttsAutoNo = !getSettings().ttsEnabled && prompt.startsWith("是否将润色结果合成为语音");
+
+  useEffect(() => {
+    if (!interrupt) {
+      ttsAutoNoRef.current = false;
+      return;
+    }
+    if (!ttsAutoNo || !canSend || ttsAutoNoRef.current) return;
+    ttsAutoNoRef.current = true;
+    void resume("no");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resume 随渲染更新，ref 已防重
+  }, [interrupt, ttsAutoNo, canSend]);
+
   const resume = async (value: string) => {
     if (!value.trim() || !canSend) return;
     setSending(true);
@@ -146,7 +164,9 @@ export function InterruptPrompt() {
 
   return (
     <div className="bg-background border-ring/30 mx-auto w-full max-w-(--thread-max-width) rounded-2xl border p-3 shadow-sm">
-      <p className="text-muted-foreground mb-2 text-sm">{prompt}</p>
+      <p className="text-muted-foreground mb-2 text-sm">
+        {ttsAutoNo ? "语音输出已关闭，已自动跳过语音合成…" : prompt}
+      </p>
       <div className="relative flex gap-2">
         {toast && (
           <div

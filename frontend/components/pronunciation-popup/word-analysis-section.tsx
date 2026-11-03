@@ -3,6 +3,7 @@
 import { RotateCw, Volume2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { getSettings } from "@/lib/profile-settings";
 
 import { getLastRecording } from "@/components/server-dictation-adapter";
 import type { PopupSnapshot } from "./popup-store";
@@ -122,7 +123,8 @@ export function WordAnalysisSection({ snapshot, audio }: WordAnalysisSectionProp
           type="button"
           onClick={() =>
             audio.replayLastDemo(
-              demoTextOk ? { kind: "tts", text: demoText, accent: "american" } : undefined,
+              // ↻重读 fallback accent 跟随设置默认口音（004 R4①，原硬编码 "american"）
+              demoTextOk ? { kind: "tts", text: demoText, accent: getSettings().accent } : undefined,
             )
           }
           className="text-(--icon-brand-green) ms-auto flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-80"

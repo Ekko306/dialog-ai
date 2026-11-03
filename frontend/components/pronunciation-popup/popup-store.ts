@@ -5,7 +5,9 @@
  *
  * - 数据快照类型：contracts/state-data.md（全部字段可缺省，前端 ?. + 空态分支，
  *   任何字段缺失不得抛错、不得白屏——FR-015）
- * - 收藏集：会话内存 Set（键 = polishedText），刷新清空，不做持久化（spec Assumptions）
+ * - 收藏：自 004-my-profile 起由 favorites-store.ts（localStorage 持久化 +
+ *   useSyncExternalStore 订阅）承担，与"我的"页面双向同步；本文件仅保留快照类型
+ *   （contracts/local-storage.md §1 迁移说明）
  */
 
 // ========== 数据快照类型（LangGraph state → 弹窗，只读派生） ==========
@@ -61,22 +63,4 @@ export interface PopupSnapshot {
   raw_text?: string;
   polisher?: PolisherSnapshot | null;
   ise_status?: string;
-}
-
-// ========== 收藏内存态（会话级，不持久化） ==========
-
-const favorites = new Set<string>();
-
-export function isFavorite(key: string): boolean {
-  return favorites.has(key);
-}
-
-/** 切换收藏态，返回切换后的状态（true=已收藏） */
-export function toggleFavorite(key: string): boolean {
-  if (favorites.has(key)) {
-    favorites.delete(key);
-    return false;
-  }
-  favorites.add(key);
-  return true;
 }
