@@ -164,6 +164,10 @@ export const Thread: FC<ThreadProps> = ({ components = EMPTY_COMPONENTS }) => {
   );
 };
 
+/** 主对话列最大宽度：AI/用户气泡与底部输入区共用（main-chat-page max-w 同步保持一致），
+    气泡过窄会导致长文本换行局促（曾出现竖排观感），52rem 为加宽后的协调值 */
+export const THREAD_MAX_WIDTH = "52rem";
+
 const ThreadRoot: FC<{ isEmpty: boolean }> = ({ isEmpty }) => {
   const { Welcome = ThreadWelcome } = useContext(ThreadComponentsContext);
 
@@ -171,7 +175,7 @@ const ThreadRoot: FC<{ isEmpty: boolean }> = ({ isEmpty }) => {
     <ThreadPrimitive.Root
       className="aui-root aui-thread-root bg-secondary @container flex h-full flex-col"
       style={{
-        ["--thread-max-width" as string]: "52rem",
+        ["--thread-max-width" as string]: THREAD_MAX_WIDTH,
         ["--composer-bg" as string]: "var(--color-background)",
         ["--composer-radius" as string]: "1rem",
         ["--composer-padding" as string]: "8px",
@@ -566,11 +570,19 @@ const AssistantMessage: FC = () => {
   );
 };
 
+/** 英文判定：拉丁字母 ≥3 且多于 CJK 字符（教练英文回复显示播放按钮，纯中文回复不显示） */
+export const isMostlyEnglish = (text: string): boolean => {
+  if (!text) return false;
+  const latinCount = (text.match(/[A-Za-z]/g) ?? []).length;
+  const cjkCount = (text.match(/[\u4e00-\u9fff]/g) ?? []).length;
+  return latinCount >= 3 && latinCount > cjkCount;
+};
+
 /** AI 英文消息固定播放按钮（需求：气泡下方常驻、点击即播对应英文 TTS）。
     复用发音弹窗的模块级 TTS 单例引擎（按 (text, accent) 缓存 objectURL，重复
     点击零二次合成延迟）；口音跟随"我的"设置；播放中图标绿色高亮，再点停止。
     纯中文/无文本消息（工具调用轮）不渲染；播放不跟随 loopDefault（恒单次）。 */
-const SpeakMessageButton: FC = () => {
+export const SpeakMessageButton: FC = () => {
   const audio = usePopupAudio();
   const text = useAuiState((s) =>
     s.message.content
@@ -579,10 +591,7 @@ const SpeakMessageButton: FC = () => {
       .trim(),
   );
 
-  // 英文判定：拉丁字母 ≥3 且多于 CJK 字符（教练英文回复显示，纯中文回复不显示）
-  const latinCount = (text.match(/[A-Za-z]/g) ?? []).length;
-  const cjkCount = (text.match(/[\u4e00-\u9fff]/g) ?? []).length;
-  if (!text || latinCount < 3 || latinCount <= cjkCount) return null;
+  if (!isMostlyEnglish(text)) return null;
 
   const accent = getSettings().accent;
   const key = ttsSourceKey(accent, text);

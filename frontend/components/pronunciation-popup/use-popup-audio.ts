@@ -167,11 +167,10 @@ const play = (source: PlaySource, opts?: { loop?: boolean }) => {
       setState({
         status: "idle",
         activeKey: null,
-        // 无录音 / 后端 detail（如 british 口音未配置）优先透出；其余用通用文案
-        error:
-          message.includes("暂无") || message.includes("tts failed") || message.includes("failed:")
-            ? message
-            : "语音合成失败，请稍后重试",
+        // 有 message 即透出：无录音提示 / 后端 detail（如 british 口音未配置，中文也
+        // 要原样外显，FR-015 不静默失败）；真正的未知异常（message 为空）用通用文案。
+        // seq 守卫已过滤用户主动 stop 导致的 play() 中断噪音。
+        error: message || "语音合成失败，请稍后重试",
       });
     }
   })();
@@ -236,3 +235,6 @@ export function usePopupAudio(): PopupAudioApi {
   useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   return api;
 }
+
+/** 非渲染场景（单测/外部脚本）访问同一单例：与 usePopupAudio 返回同一 api 对象 */
+export const popupAudioApi: PopupAudioApi = api;
