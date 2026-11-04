@@ -72,7 +72,7 @@ export function PolishSection({
         {statusOk ? (
           <>
             {/* 三风格 Tab 行：选中态绿色下划线高亮（原型图） */}
-            <div className="flex gap-5 border-b border-black/5" role="tablist">
+            <div className="flex gap-5 border-b border-border" role="tablist">
               {STYLE_TABS.map(({ key, label }) => (
                 <button
                   key={key}

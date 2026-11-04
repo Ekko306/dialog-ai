@@ -65,7 +65,7 @@ export function FavoritesSection() {
               audio.activeKey === ttsSourceKey(accent, item.en) && audio.status !== "idle";
             const copied = copiedKey === item.key;
             return (
-              <div key={item.key} className="rounded-xl border border-black/5 px-4 py-3">
+              <div key={item.key} className="rounded-xl border border-border px-4 py-3">
                 <span className="bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-[11px]">
                   {STYLE_LABELS[item.style] ?? item.style}
                 </span>
@@ -78,7 +78,7 @@ export function FavoritesSection() {
                     type="button"
                     onClick={() => handleCopy(item)}
                     className={cn(
-                      "flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 transition-colors hover:border-primary hover:text-primary",
+                      "flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 transition-colors hover:border-primary hover:text-primary",
                       copied && "border-primary text-primary",
                     )}
                   >
@@ -93,7 +93,7 @@ export function FavoritesSection() {
                     type="button"
                     onClick={() => audio.play({ kind: "tts", text: item.en, accent })}
                     className={cn(
-                      "flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 transition-colors hover:border-primary hover:text-primary",
+                      "flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 transition-colors hover:border-primary hover:text-primary",
                       active && "border-primary text-primary",
                     )}
                   >
@@ -102,7 +102,7 @@ export function FavoritesSection() {
                   <button
                     type="button"
                     onClick={() => removeFavorite(item.key)}
-                    className="text-muted-foreground flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 transition-colors hover:border-red-400 hover:text-red-500"
+                    className="text-muted-foreground flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 transition-colors hover:border-red-400 hover:text-red-500"
                   >
                     <StarIcon className="size-3.5" aria-hidden />
                     取消收藏

@@ -6,11 +6,18 @@ import { getSettings, subscribeSettings, updateSettings } from "@/lib/profile-se
 import { cn } from "@/lib/utils";
 
 /**
- * 设置区块（US4，原型图第四卡 .set-row 三行，FR-010/011/015）：
- * 默认口音分段控件（美音/英音）、循环跟读默认开启开关、TTS 语音输出开关；
+ * 设置区块（US4，原型图第四卡 .set-row，FR-010/011/015 + 亮暗模式扩展）：
+ * 外观模式三段控件（浅色/深色/跟随系统，html.dark 全局生效）、默认口音分段控件、
+ * 循环跟读默认开启开关、TTS 语音输出开关；
  * 读写 getSettings()/updateSettings()，useSyncExternalStore(subscribeSettings)
  * 保持选中态同步，改动即时生效（SC-005）。
  */
+
+const THEME_OPTIONS = [
+  { value: "light", label: "浅色" },
+  { value: "dark", label: "深色" },
+  { value: "system", label: "跟随系统" },
+] as const;
 
 export function SettingsSection() {
   const settings = useSyncExternalStore(subscribeSettings, getSettings, getSettings);
@@ -18,10 +25,31 @@ export function SettingsSection() {
   return (
     <section className="rounded-2xl bg-background p-5 shadow-sm" data-slot="profile-settings">
       <h2 className="text-sm font-semibold">设置</h2>
-      <div className="mt-1 divide-y divide-black/5">
+      <div className="mt-1 divide-y divide-border">
+        <div className="flex items-center justify-between py-3.5">
+          <span className="text-sm">外观模式</span>
+          <div className="inline-flex overflow-hidden rounded-lg border border-border">
+            {THEME_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={settings.theme === value}
+                onClick={() => updateSettings({ theme: value })}
+                className={cn(
+                  "px-3.5 py-1.5 text-[13px] transition-colors",
+                  settings.theme === value
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex items-center justify-between py-3.5">
           <span className="text-sm">默认口音</span>
-          <div className="inline-flex overflow-hidden rounded-lg border border-black/10">
+          <div className="inline-flex overflow-hidden rounded-lg border border-border">
             {(["american", "british"] as const).map((value) => (
               <button
                 key={value}

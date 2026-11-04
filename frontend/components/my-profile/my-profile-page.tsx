@@ -89,18 +89,18 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-5 pb-6" aria-busy="true" aria-label="加载中">
       <section className="rounded-2xl bg-background p-5 shadow-sm">
-        <div className="h-4 w-20 animate-pulse rounded bg-black/10" />
+        <div className="h-4 w-20 animate-pulse rounded bg-muted" />
         <div className="mt-4 grid grid-cols-3 gap-4">
-          <div className="h-20 animate-pulse rounded-xl bg-black/[0.04]" />
-          <div className="h-20 animate-pulse rounded-xl bg-black/[0.04]" />
-          <div className="h-20 animate-pulse rounded-xl bg-black/[0.04]" />
+          <div className="h-20 animate-pulse rounded-xl bg-muted" />
+          <div className="h-20 animate-pulse rounded-xl bg-muted" />
+          <div className="h-20 animate-pulse rounded-xl bg-muted" />
         </div>
-        <div className="mt-6 h-4 w-36 animate-pulse rounded bg-black/10" />
-        <div className="mt-3 h-28 animate-pulse rounded-xl bg-black/[0.04]" />
+        <div className="mt-6 h-4 w-36 animate-pulse rounded bg-muted" />
+        <div className="mt-3 h-28 animate-pulse rounded-xl bg-muted" />
       </section>
       <section className="rounded-2xl bg-background p-5 shadow-sm">
-        <div className="h-4 w-20 animate-pulse rounded bg-black/10" />
-        <div className="mt-4 h-24 animate-pulse rounded-xl bg-black/[0.04]" />
+        <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+        <div className="mt-4 h-24 animate-pulse rounded-xl bg-muted" />
       </section>
       <section className="h-32 animate-pulse rounded-2xl bg-background shadow-sm" />
       <section className="h-40 animate-pulse rounded-2xl bg-background shadow-sm" />

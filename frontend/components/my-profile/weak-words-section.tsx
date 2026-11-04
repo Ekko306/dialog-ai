@@ -59,7 +59,7 @@ export function WeakWordsSection({
           return (
             <li
               key={word.key}
-              className="flex items-center gap-3 border-b border-black/5 py-3 last:border-b-0"
+              className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
             >
               <span className="min-w-28 flex-1 text-[15px] font-semibold wrap-break-word">
                 {word.word}
@@ -82,7 +82,7 @@ export function WeakWordsSection({
                 type="button"
                 onClick={() => audio.play({ kind: "tts", text: word.word, accent })}
                 className={cn(
-                  "flex items-center gap-1 rounded-lg border border-black/10 px-3 py-1.5 text-[13px] transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40",
+                  "flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-[13px] transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40",
                   active && "border-primary text-primary",
                 )}
               >

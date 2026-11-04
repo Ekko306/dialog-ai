@@ -70,7 +70,7 @@ export function ScoreSection({ snapshot }: { snapshot: PopupSnapshot }) {
             </div>
 
             {adviceLines.length > 0 && (
-              <ul className="text-foreground/90 mt-4 space-y-1.5 border-t border-dashed border-black/10 pt-3 text-sm leading-relaxed">
+              <ul className="text-foreground/90 mt-4 space-y-1.5 border-t border-dashed border-border pt-3 text-sm leading-relaxed">
                 {adviceLines.map((line, index) => (
                   <li key={`${index}-${line.slice(0, 8)}`}>{line}</li>
                 ))}

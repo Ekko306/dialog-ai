@@ -112,7 +112,7 @@ function SceneSelectContent({ onClose }: { onClose: () => void }) {
           导致滚轮悬停在分类栏上"没反应"——手动把 deltaY 转为横向滚动（触摸板双指横滑
           走原生 deltaX 路径，不受影响） */}
       <div
-        className="shrink-0 overflow-x-auto border-b border-black/5 px-5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="shrink-0 overflow-x-auto border-b border-border px-5 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         onWheel={(e) => {
           if (e.deltaY !== 0) e.currentTarget.scrollLeft += e.deltaY;
         }}

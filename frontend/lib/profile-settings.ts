@@ -11,6 +11,9 @@
 
 import { safeReadJson, safeWriteJson } from "@/lib/safe-local-storage";
 
+/** 外观主题：浅色/深色/跟随系统（system 时监听 prefers-color-scheme 联动） */
+export type ThemeMode = "light" | "dark" | "system";
+
 export interface ProfileSettings {
   /** 默认口音，三处发声入口统一读取（research R4） */
   accent: "american" | "british";
@@ -18,12 +21,15 @@ export interface ProfileSettings {
   loopDefault: boolean;
   /** TTS 语音输出开关：false 时前端自动应答 audio_choice interrupt 为 no（R6） */
   ttsEnabled: boolean;
+  /** 亮暗模式：ThemeApplier 全局应用（html.dark），layout 内联脚本防首屏闪烁 */
+  theme: ThemeMode;
 }
 
 export const DEFAULT_SETTINGS: ProfileSettings = {
   accent: "american",
   loopDefault: false,
   ttsEnabled: true,
+  theme: "system",
 };
 
 const STORAGE_KEY = "dialog-ai:profile:settings";
@@ -37,13 +43,14 @@ const coerce = (raw: unknown): ProfileSettings => {
   const obj = raw as Record<string, unknown>;
   return {
     accent:
-      obj.accent === "british" || obj.accent === "american"
-        ? obj.accent
-        : DEFAULT_SETTINGS.accent,
+      obj.accent === "british" || obj.accent === "american" ? obj.accent : DEFAULT_SETTINGS.accent,
     loopDefault:
       typeof obj.loopDefault === "boolean" ? obj.loopDefault : DEFAULT_SETTINGS.loopDefault,
-    ttsEnabled:
-      typeof obj.ttsEnabled === "boolean" ? obj.ttsEnabled : DEFAULT_SETTINGS.ttsEnabled,
+    ttsEnabled: typeof obj.ttsEnabled === "boolean" ? obj.ttsEnabled : DEFAULT_SETTINGS.ttsEnabled,
+    theme:
+      obj.theme === "dark" || obj.theme === "light" || obj.theme === "system"
+        ? obj.theme
+        : DEFAULT_SETTINGS.theme,
   };
 };
 

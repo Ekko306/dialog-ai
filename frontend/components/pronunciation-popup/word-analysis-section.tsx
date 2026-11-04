@@ -100,7 +100,7 @@ export function WordAnalysisSection({ snapshot, audio }: WordAnalysisSectionProp
       {/* 播放行：三个播放源 + ↻重读（原型图：虚线分隔，重读靠右绿色）。
           空态下仍渲染——"我的"录音回放不依赖评测数据（FR-005/006 无条件可用），
           英音/美音按文本源、我的按录音有无分别置灰 */}
-      <div className="mt-4 flex items-center gap-5 border-t border-dashed border-black/10 pt-3">
+      <div className="mt-4 flex items-center gap-5 border-t border-dashed border-border pt-3">
         <PlayButton
           label="英音"
           disabled={!demoTextOk}
