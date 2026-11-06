@@ -3,7 +3,8 @@
 
 - 密钥复用 IAT/ISE 同一套 XF_APP_ID / XF_API_KEY / XF_API_SECRET
 - 输出 MP3（aue=lame），保存后可直接用系统播放器打开
-- 美式发音要求：vcn 默认 vixy（Catherine，美式口音英文女声）；勿改用 xiaoyan（中文发音人）。
+- 美式发音要求：vcn 默认 x4_EnUs_Laura_education（讯飞超拟人英文女声，自然度优于老版 vixy）；
+  勿改用 xiaoyan（中文发音人）。
   发音为 TTS 引擎词典标准音（与音标一致），重音自动处理，不支持 IPA 注入。
   若账号未开通该发音人报错，可用环境变量 TTS_VCN 切换其他英文发音人
 """
@@ -22,10 +23,10 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(override=True)
 
 
-def xfyun_tts_tool_by_text(text: str, speed: int = 45, vcn: str | None = None) -> bytes:
-    """文本 → 英语语音（MP3 字节）。speed 取值 0~100，默认 45 略慢便于跟读。
+def xfyun_tts_tool_by_text(text: str, speed: int = 50, vcn: str | None = None) -> bytes:
+    """文本 → 英语语音（MP3 字节）。speed 取值 0~100，默认 50（语速适中，45 偏慢会加重机械感）。
 
-    vcn：发音人；None 时保持既有行为（os.getenv("TTS_VCN", "vixy") 兜底），
+    vcn：发音人；None 时保持既有行为（os.getenv("TTS_VCN", "x4_EnUs_Laura_education") 兜底），
     传值时透传 SDK（003 发音弹窗按口音切换发音人用），既有调用方零感知。
 
     失败时抛异常，由调用方决定降级策略（如跳过播放只给文本）。
@@ -36,7 +37,7 @@ def xfyun_tts_tool_by_text(text: str, speed: int = 45, vcn: str | None = None) -
         app_id=os.getenv("XF_APP_ID", ""),
         api_key=os.getenv("XF_API_KEY", ""),
         api_secret=os.getenv("XF_API_SECRET", ""),
-        vcn=vcn or os.getenv("TTS_VCN", "vixy"),
+        vcn=vcn or os.getenv("TTS_VCN", "x4_EnUs_Laura_education"),
         aue="lame",  # 输出 MP3
         sfl=1,
         speed=speed,

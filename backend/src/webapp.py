@@ -36,11 +36,11 @@ app = FastAPI()
 _MIN_AUDIO_BYTES = 9600
 
 # 口音 → 讯飞发音人 vcn 映射（仅此一处；audio-tts.md 契约 §3）
-# american: vixy（Catherine，美式，代码内已验证默认值）
-# british: catherine（英文女声；2026-11-02 用户试听 backend/output/tmp_vcn_check 六段
-#          同句合成音频后选定，SDK 实测可合成）
+# american: x4_EnUs_Laura_education（超拟人英文女声；2026-11-06 试听
+#           backend/output/tmp_vcn_check 八段同句合成音频后选定，替换原 vixy）
+# british: catherine（英文女声；2026-11-02 用户试听同目录六段音频后选定，SDK 实测可合成）
 ACCENT_VCN: dict[str, str | None] = {
-    "american": "vixy",
+    "american": "x4_EnUs_Laura_education",
     "british": "catherine",
 }
 
@@ -106,7 +106,7 @@ async def tts(request: Request) -> Response:
     try:
         # 讯飞 TTS 同步 SDK 放线程池，避免阻塞事件循环（同 /audio/transcribe 模式）
         audio: bytes = await anyio.to_thread.run_sync(
-            partial(xfyun_tts_tool_by_text, text.strip(), 45, vcn)
+            partial(xfyun_tts_tool_by_text, text.strip(), 50, vcn)
         )
     except Exception as exc:
         return JSONResponse(
