@@ -164,3 +164,8 @@ cython_debug/
 
 # TTS 运行生成的音频产物
 output/
+
+# 精品课学习进度（运行时生成，随本机变化）
+src/course_agent/data/progress.json
+# 精品课错题本（运行时生成，随本机变化）
+src/course_agent/data/mistakes.json

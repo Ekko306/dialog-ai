@@ -1,54 +1,11 @@
-"""LangGraph single-node graph template.
+"""课程图入口（供 langgraph.json 注册：`./src/course_agent/course_graph.py:graph`）.
 
-Returns a predefined response. Replace logic and configuration as needed.
+真实实现见 `lesson_graph.py`；这里只做重导出，保持注册路径不变。
 """
 
-from __future__ import annotations
+from src.course_agent.lesson_graph import build_lesson_graph
 
-from dataclasses import dataclass
-from typing import Any, Dict
+# 平台自带持久化，注册给 LangGraph API/Studio 的图不挂自定义 checkpointer
+graph = build_lesson_graph(with_checkpointer=False)
 
-from langgraph.graph import StateGraph
-from langgraph.runtime import Runtime
-from typing_extensions import TypedDict
-
-
-class Context(TypedDict):
-    """Context parameters for the agent.
-
-    Set these when creating assistants OR when invoking the graph.
-    See: https://langchain-ai.github.io/langgraph/cloud/how-tos/configuration_cloud/
-    """
-
-    my_configurable_param: str
-
-
-@dataclass
-class State:
-    """Input state for the agent.
-
-    Defines the initial structure of incoming data.
-    See: https://langchain-ai.github.io/langgraph/concepts/low_level/#state
-    """
-
-    changeme: str = "example"
-    test: str = "ttt"
-
-
-async def call_model(state: State, runtime: Runtime[Context]) -> Dict[str, Any]:
-    """Process input and returns output.
-
-    Can use runtime context to alter behavior.
-    """
-    return {
-        "changeme": "output from call_model1222. "f"Configured with {(runtime.context or {}).get('my_configurable_param')}"
-    }
-
-
-# Define the graph
-graph = (
-    StateGraph(State, context_schema=Context)
-    .add_node(call_model)
-    .add_edge("__start__", "call_model")
-    .compile(name="New Graph")
-)
+__all__ = ["graph", "build_lesson_graph"]

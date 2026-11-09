@@ -1,0 +1,1895 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "daily",
+      "name": "日常交流",
+      "order": 1,
+      "courses": [
+        {
+          "id": "mood-today",
+          "name": "今天我心情特别好",
+          "description": "学会表达情绪与近况，掌握 3 个高频口语表达，能在日常寒暄中自然回应。",
+          "cover_color": "green",
+          "order": 1,
+          "chapters": [
+            {
+              "id": "mood-today-ch1",
+              "name": "第一章 · 表达情绪",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "mood-today-l1",
+                  "name": "1-1 说出我的好心情",
+                  "order": 1,
+                  "scene": "早上在咖啡店遇到同事 Lily，她问你今天怎么样。",
+                  "target_sentence": "I'm in a really good mood today.",
+                  "knowledge_points": [
+                    {
+                      "title": "in a good mood",
+                      "explanation": "表示心情好，比 I'm happy 更口语、更自然，日常寒暄常用。",
+                      "example": "I'm in a great mood this morning."
+                    },
+                    {
+                      "title": "really 的强调作用",
+                      "explanation": "放在形容词前加强语气，相当于「真的、特别」，比 very 更口语。",
+                      "example": "That sounds really nice."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "mood-today-l1-ex1",
+                      "question": "你想说「我今天心情特别好」，用刚学的表达怎么说？",
+                      "reference_answer": "I'm in a really good mood today.",
+                      "key_points": ["good mood"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "Lily（同事）",
+                    "setting": "早上在咖啡店，Lily 看你心情不错，主动搭话。",
+                    "opening_line": "Hey! You look happy today. What's going on?",
+                    "goal": "用至少 1 句话说明你的好心情",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "mood-today-ch2",
+              "name": "第二章 · 说明原因",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "mood-today-l2",
+                  "name": "2-1 说出让我开心的原因",
+                  "order": 1,
+                  "scene": "Lily 追问你为什么这么开心，你想告诉她你找到了新工作。",
+                  "target_sentence": "I just got a new job, so I'm really excited.",
+                  "knowledge_points": [
+                    {
+                      "title": "just + 过去式",
+                      "explanation": "表示「刚刚、才」，强调事情刚发生，常和过去式搭配。",
+                      "example": "I just finished my project."
+                    },
+                    {
+                      "title": "so 连接因果关系",
+                      "explanation": "so 引出结果，比 because 更轻快，口语里非常常见。",
+                      "example": "It was raining, so I stayed home."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "mood-today-l2-ex1",
+                      "question": "你想说「我刚找到新工作，所以特别兴奋」，用刚学的结构怎么说？",
+                      "reference_answer": "I just got a new job, so I'm really excited.",
+                      "key_points": ["just got", "so", "excited"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "Lily（同事）",
+                    "setting": "Lily 很感兴趣，继续追问细节。",
+                    "opening_line": "Wow, that's great news! What kind of job is it?",
+                    "goal": "介绍新工作的至少一个细节，并表达期待",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "mood-today-ch3",
+              "name": "第三章 · 自然回应",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "mood-today-l3",
+                  "name": "3-1 反问对方，让对话继续",
+                  "order": 1,
+                  "scene": "聊完自己的近况，你不想让对话冷场，想把话题抛回给 Lily。",
+                  "target_sentence": "Thanks for asking! How about you?",
+                  "knowledge_points": [
+                    {
+                      "title": "Thanks for asking",
+                      "explanation": "表达感谢对方关心，是英美人结束自我陈述时的礼貌过渡句。",
+                      "example": "Thanks for asking! I've been pretty busy."
+                    },
+                    {
+                      "title": "How about you?",
+                      "explanation": "把话题抛回对方，避免对话变成单向独白。",
+                      "example": "I'm doing well. How about you?"
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "mood-today-l3-ex1",
+                      "question": "说完自己的近况后，你想感谢对方并反问，怎么说？",
+                      "reference_answer": "Thanks for asking! How about you?",
+                      "key_points": ["thanks for asking", "how about you"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "Lily（同事）",
+                    "setting": "你想把话题交回给 Lily，练习自然收尾。",
+                    "opening_line": "It sounds like a big change for you. Anything else new?",
+                    "goal": "用感谢 + 反问结束自己部分，并让对方开始说",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "restaurant-ordering",
+          "name": "餐厅点餐实用英语",
+          "description": "从进店入座到点餐结账，掌握 3 个餐厅高频场景句型，出国吃饭不再尴尬。",
+          "cover_color": "green",
+          "order": 2,
+          "chapters": [
+            {
+              "id": "restaurant-ch1",
+              "name": "第一章 · 入座与点单",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "restaurant-l1",
+                  "name": "1-1 我想点一份牛排",
+                  "order": 1,
+                  "scene": "你在伦敦一家西餐厅，服务员递上菜单后询问你想点什么。",
+                  "target_sentence": "I'd like to order the steak, medium rare, please.",
+                  "knowledge_points": [
+                    {
+                      "title": "I'd like to order",
+                      "explanation": "「我想点…」，比 I want 更礼貌，是餐厅点单的标准句型。",
+                      "example": "I'd like to order the fish and chips."
+                    },
+                    {
+                      "title": "medium rare",
+                      "explanation": "牛排熟度：三分熟。常见还有 rare（一分）、medium（五分）、well done（全熟）。",
+                      "example": "I'll have the steak, medium, please."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "restaurant-l1-ex1",
+                      "question": "你想点一份五分熟的牛排，怎么说？",
+                      "reference_answer": "I'd like to order the steak, medium, please.",
+                      "key_points": ["order", "steak", "medium"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "服务员",
+                    "setting": "你拿着菜单，服务员走过来准备为你点单。",
+                    "opening_line": "Good evening! Are you ready to order?",
+                    "goal": "礼貌地点一份主菜，并说明熟度或偏好",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "restaurant-ch2",
+              "name": "第二章 · 特殊要求",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "restaurant-l2",
+                  "name": "2-1 我不吃辣",
+                  "order": 1,
+                  "scene": "你在曼谷一家餐厅，想点一道菜但不吃辣，需要向服务员说明。",
+                  "target_sentence": "Could you make it without chili, please? I'm not used to spicy food.",
+                  "knowledge_points": [
+                    {
+                      "title": "Could you make it without...",
+                      "explanation": "「能不能不放…」，委婉提出食材修改要求，比直接说 Don't put 更得体。",
+                      "example": "Could you make it without onions, please?"
+                    },
+                    {
+                      "title": "be not used to",
+                      "explanation": "「不习惯…」，解释自己的饮食习惯，让对方理解你的要求。",
+                      "example": "I'm not used to eating cold food in the morning."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "restaurant-l2-ex1",
+                      "question": "你想让厨师不放洋葱，并说自己不习惯吃洋葱，怎么说？",
+                      "reference_answer": "Could you make it without onions, please? I'm not used to onions.",
+                      "key_points": ["without", "not used to"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "服务员",
+                    "setting": "点单时服务员确认菜品，你需要提出特殊要求。",
+                    "opening_line": "So that's one green curry. Anything else?",
+                    "goal": "说明不吃辣/某种食材的要求，并确认对方理解",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "restaurant-ch3",
+              "name": "第三章 · 结账",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "restaurant-l3",
+                  "name": "3-1 请结账",
+                  "order": 1,
+                  "scene": "用餐结束，你想结账离开，需要叫服务员并说明支付方式。",
+                  "target_sentence": "Excuse me, could we have the check, please? I'll pay by card.",
+                  "knowledge_points": [
+                    {
+                      "title": "have the check / bill",
+                      "explanation": "「买单」。美式英语说 check，英式说 bill，两者都通用。",
+                      "example": "Could we get the check, please?"
+                    },
+                    {
+                      "title": "pay by card",
+                      "explanation": "「刷卡支付」。还可说 pay in cash（现金）、pay by phone（手机支付）。",
+                      "example": "I'd like to pay by card if that's possible."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "restaurant-l3-ex1",
+                      "question": "你想叫服务员结账并用现金支付，怎么说？",
+                      "reference_answer": "Excuse me, could we have the check, please? I'll pay in cash.",
+                      "key_points": ["check", "pay", "cash"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "服务员",
+                    "setting": "用餐接近尾声，你举手示意服务员。",
+                    "opening_line": "Was everything to your liking tonight?",
+                    "goal": "表达满意并请求结账，说明支付方式",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "travel-abroad",
+          "name": "出国旅行必备口语",
+          "description": "覆盖机场、酒店、问路三大旅行场景，掌握 3 个应急高频句型。",
+          "cover_color": "green",
+          "order": 3,
+          "chapters": [
+            {
+              "id": "travel-ch1",
+              "name": "第一章 · 机场入关",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "travel-l1",
+                  "name": "1-1 我来旅游的",
+                  "order": 1,
+                  "scene": "洛杉矶机场入关，海关官员问你来美国的目的。",
+                  "target_sentence": "I'm here for tourism. I'll be staying for two weeks.",
+                  "knowledge_points": [
+                    {
+                      "title": "I'm here for + 目的",
+                      "explanation": "「我来这儿是为了…」，入关回答目的的标准句型，后接 tourism / business / study。",
+                      "example": "I'm here for a business meeting."
+                    },
+                    {
+                      "title": "I'll be staying for + 时长",
+                      "explanation": "「我将停留…」，说明停留时长，入关高频回答。",
+                      "example": "I'll be staying for ten days."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "travel-l1-ex1",
+                      "question": "你来说出差，停留一周，怎么回答海关？",
+                      "reference_answer": "I'm here for business. I'll be staying for one week.",
+                      "key_points": ["here for", "staying"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "海关官员",
+                    "setting": "入关柜台，官员查看你的护照并提问。",
+                    "opening_line": "Good afternoon. What's the purpose of your visit?",
+                    "goal": "说明来访目的和停留时长，语气清晰简洁",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "travel-ch2",
+              "name": "第二章 · 酒店入住",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "travel-l2",
+                  "name": "2-1 我有预订",
+                  "order": 1,
+                  "scene": "你到达巴黎一家酒店前台，办理入住手续。",
+                  "target_sentence": "Hi, I have a reservation under the name Li Ming.",
+                  "knowledge_points": [
+                    {
+                      "title": "have a reservation",
+                      "explanation": "「有预订」，酒店入住第一句话，也可说 have a booking。",
+                      "example": "I have a reservation for three nights."
+                    },
+                    {
+                      "title": "under the name",
+                      "explanation": "「以…的名义」，说明预订时用的名字，前台查找订单的关键信息。",
+                      "example": "The reservation is under my wife's name."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "travel-l2-ex1",
+                      "question": "你以 Wang Wei 的名字预订了房间，怎么跟前台说？",
+                      "reference_answer": "Hi, I have a reservation under the name Wang Wei.",
+                      "key_points": ["reservation", "under the name"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "酒店前台",
+                    "setting": "你拖着行李走到前台，前台微笑示意。",
+                    "opening_line": "Welcome! How may I help you today?",
+                    "goal": "说明有预订并报出预订人姓名，配合办理入住",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "travel-ch3",
+              "name": "第三章 · 问路",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "travel-l3",
+                  "name": "3-1 请问地铁站在哪",
+                  "order": 1,
+                  "scene": "你在东京街头迷路，想找最近的地铁站，向路人求助。",
+                  "target_sentence": "Excuse me, could you tell me how to get to the nearest subway station?",
+                  "knowledge_points": [
+                    {
+                      "title": "Could you tell me how to get to...",
+                      "explanation": "「请问怎么去…」，问路最礼貌的万能句型，比 Where is 更自然。",
+                      "example": "Could you tell me how to get to the museum?"
+                    },
+                    {
+                      "title": "nearest",
+                      "explanation": "「最近的」，near 的最高级，问路时常加在地点前限定范围。",
+                      "example": "Where's the nearest bus stop?"
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "travel-l3-ex1",
+                      "question": "你想问最近的洗手间在哪，怎么说？",
+                      "reference_answer": "Excuse me, could you tell me how to get to the nearest restroom?",
+                      "key_points": ["how to get to", "nearest"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "路人",
+                    "setting": "你在街角拦住一位看起来友善的路人。",
+                    "opening_line": "Yes? Can I help you with something?",
+                    "goal": "礼貌地问路，并根据对方回答确认方向",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ielts",
+      "name": "雅思 IELTS",
+      "order": 2,
+      "courses": [
+        {
+          "id": "ielts-speaking-basics",
+          "name": "雅思口语 Part 1-3 核心表达",
+          "description": "覆盖雅思口语三部分：Part 1 开场问答、Part 2 话题卡展开、Part 3 深度讨论，掌握 3 个拿分句型。",
+          "cover_color": "blue",
+          "order": 1,
+          "chapters": [
+            {
+              "id": "ielts-ch1",
+              "name": "第一章 · Part 1 开场",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "ielts-l1",
+                  "name": "1-1 回答住址问题",
+                  "order": 1,
+                  "scene": "雅思口语考官开场问你住在哪，你想给出完整又自然的回答。",
+                  "target_sentence": "I live in a small apartment downtown with my family.",
+                  "knowledge_points": [
+                    {
+                      "title": "downtown",
+                      "explanation": "副词，指「在市中心」，放在地点后补充说明，比 in the city center 更地道。",
+                      "example": "She works downtown but lives in the suburbs."
+                    },
+                    {
+                      "title": "with + 人",
+                      "explanation": "说明同住关系，让回答从单句扩展成有细节的完整句，Part 1 加分项。",
+                      "example": "I moved here with my roommate last year."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-l1-ex1",
+                      "question": "考官问你住在哪，你想说「我和室友住在市中心的小公寓」，怎么说？",
+                      "reference_answer": "I live in a small apartment downtown with my roommate.",
+                      "key_points": ["apartment", "downtown", "with"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "雅思口语考官",
+                    "setting": "Part 1 开场，考官询问考生基本信息。",
+                    "opening_line": "Good morning. Can you tell me where you live?",
+                    "goal": "用完整句回答住址，并补充一个同住或周边环境的细节",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "ielts-ch2",
+              "name": "第二章 · Part 2 话题卡",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "ielts-l2",
+                  "name": "2-1 话题卡开头",
+                  "order": 1,
+                  "scene": "考官给你一张话题卡：「描述一件让你骄傲的事」，你需要在 1 分钟内开口。",
+                  "target_sentence": "One thing I'm really proud of is finishing my first marathon last year.",
+                  "knowledge_points": [
+                    {
+                      "title": "be proud of",
+                      "explanation": "「为…感到骄傲」，Part 2 描述成就类话题的高频词组，注意后接名词或动名词。",
+                      "example": "I'm proud of my brother for getting into medical school."
+                    },
+                    {
+                      "title": "One thing (that) ... is",
+                      "explanation": "Part 2 万能开头句型，把抽象话题落地成具体事件，避免开头卡壳。",
+                      "example": "One thing that really impressed me was the view from the top."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-l2-ex1",
+                      "question": "话题卡要求描述「一件让你骄傲的事」，你想说「让我最骄傲的事是去年跑完了第一个马拉松」，怎么说？",
+                      "reference_answer": "One thing I'm really proud of is finishing my first marathon last year.",
+                      "key_points": ["proud of", "one thing", "marathon"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "雅思口语考官",
+                    "setting": "Part 2，考官递上话题卡，考生有 1 分钟准备时间。",
+                    "opening_line": "Here is your topic. You have one minute to prepare, then speak for up to two minutes.",
+                    "goal": "用 One thing I'm proud of 开头，展开 2-3 句具体细节",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "ielts-ch3",
+              "name": "第三章 · Part 3 深度讨论",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "ielts-l3",
+                  "name": "3-1 表达观点与原因",
+                  "order": 1,
+                  "scene": "Part 3 考官追问：「为什么现代人更愿意花钱旅游？」你需要先给观点再解释原因。",
+                  "target_sentence": "I think it's mainly because people have more disposable income now.",
+                  "knowledge_points": [
+                    {
+                      "title": "mainly because",
+                      "explanation": "「主要是因为」，Part 3 给原因的标准开头，比 just because 更正式、更有论证感。",
+                      "example": "Prices are rising, mainly because of inflation."
+                    },
+                    {
+                      "title": "disposable income",
+                      "explanation": "「可支配收入」，Part 3 讨论消费、生活方式类话题的加分词汇。",
+                      "example": "Families have more disposable income to spend on leisure."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-l3-ex1",
+                      "question": "你想说「我觉得主要是因为现在人们的可支配收入更多了」，怎么说？",
+                      "reference_answer": "I think it's mainly because people have more disposable income now.",
+                      "key_points": ["mainly because", "disposable income"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "雅思口语考官",
+                    "setting": "Part 3，考官就 Part 2 话题延伸出抽象问题。",
+                    "opening_line": "Why do you think more people are choosing to travel abroad these days?",
+                    "goal": "先给明确观点，再用 mainly because 解释，给出一个具体论据",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ielts-writing",
+          "name": "雅思写作 Task 1 & 2 高分句型",
+          "description": "覆盖 Task 1 图表描述与 Task 2 议论文开头，掌握 3 个写作核心句型，让开头不再模板化。",
+          "cover_color": "blue",
+          "order": 2,
+          "chapters": [
+            {
+              "id": "ielts-w-ch1",
+              "name": "第一章 · Task 1 图表概述",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "ielts-w-l1",
+                  "name": "1-1 描述总体趋势",
+                  "order": 1,
+                  "scene": "Task 1 给你一张折线图，显示过去十年城市人口变化，你需要写一句概述。",
+                  "target_sentence": "Overall, the population of the city increased significantly over the period.",
+                  "knowledge_points": [
+                    {
+                      "title": "Overall",
+                      "explanation": "「总体来看」，Task 1 overview 段的标准开头词，考官一眼识别概述结构。",
+                      "example": "Overall, sales remained stable throughout the year."
+                    },
+                    {
+                      "title": "increased significantly",
+                      "explanation": "「显著增长」。significantly 比 greatly/quickly 更正式，写作加分副词。",
+                      "example": "The number of students increased significantly after 2015."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-w-l1-ex1",
+                      "question": "你想概述「总体来说，失业率在这段时间显著下降」，怎么写？",
+                      "reference_answer": "Overall, the unemployment rate decreased significantly over the period.",
+                      "key_points": ["overall", "decreased", "significantly"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师在批改你的 Task 1，问你概述句想写什么。",
+                    "opening_line": "Let's start with the overview. What's the main trend in this chart?",
+                    "goal": "用 Overall 开头，用一个副词描述趋势方向和幅度",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "ielts-w-ch2",
+              "name": "第二章 · Task 1 数据对比",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "ielts-w-l2",
+                  "name": "2-1 用 while 对比数据",
+                  "order": 1,
+                  "scene": "图表显示 A 国进口增长而 B 国进口下降，你需要用一句话对比。",
+                  "target_sentence": "While imports in Country A rose, those in Country B fell sharply.",
+                  "knowledge_points": [
+                    {
+                      "title": "While 引导对比",
+                      "explanation": "「而…」，连接两个相反趋势的分句，是 Task 1 对比数据的高分连接词。",
+                      "example": "While men preferred sports, women favored reading."
+                    },
+                    {
+                      "title": "those 替代复数名词",
+                      "explanation": "用 those 代替前面出现过的复数名词（imports），避免重复，体现衔接能力。",
+                      "example": "The prices in 2020 were higher than those in 2010."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-w-l2-ex1",
+                      "question": "你想写「城市 A 的房价上涨，而城市 B 的下跌」，怎么用 while 表达？",
+                      "reference_answer": "While house prices in City A rose, those in City B fell.",
+                      "key_points": ["while", "those", "rose", "fell"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师让你用一句话对比图中的两组数据。",
+                    "opening_line": "Now show me the contrast between the two groups in one sentence.",
+                    "goal": "用 while 连接两个相反趋势，并用 those 避免重复",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "ielts-w-ch3",
+              "name": "第三章 · Task 2 开头表态",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "ielts-w-l3",
+                  "name": "3-1 明确表达立场",
+                  "order": 1,
+                  "scene": "Task 2 题目：「政府是否应该资助艺术？」你需要在开头段明确表态。",
+                  "target_sentence": "In my opinion, governments should continue to fund the arts for several reasons.",
+                  "knowledge_points": [
+                    {
+                      "title": "In my opinion",
+                      "explanation": "「在我看来」，Task 2 开头表态的标准短语，比 I think 更正式。",
+                      "example": "In my opinion, this policy will benefit society."
+                    },
+                    {
+                      "title": "for several reasons",
+                      "explanation": "「出于几个原因」，放在开头段末尾预告下文结构，让考官知道你会展开论证。",
+                      "example": "I disagree with this view for several reasons."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-w-l3-ex1",
+                      "question": "你不同意「大学生必须住校」这个观点，想在开头表态，怎么写？",
+                      "reference_answer": "In my opinion, university students should not be required to live on campus for several reasons.",
+                      "key_points": ["in my opinion", "for several reasons"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师问你对这道作文题的立场是什么。",
+                    "opening_line": "What's your position on this topic? State it clearly in your thesis.",
+                    "goal": "用 In my opinion 明确表态，并用 for several reasons 预告结构",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ielts-listening",
+          "name": "雅思听力高频场景",
+          "description": "覆盖雅思听力 Section 1-2 高频场景：租房咨询、图书馆登记、活动报名，掌握 3 个抓取关键信息的句型。",
+          "cover_color": "blue",
+          "order": 3,
+          "chapters": [
+            {
+              "id": "ielts-lis-ch1",
+              "name": "第一章 · 租房咨询",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "ielts-lis-l1",
+                  "name": "1-1 询问租金与押金",
+                  "order": 1,
+                  "scene": "听力 Section 1：学生打电话给中介咨询一套公寓的租金。",
+                  "target_sentence": "Could you tell me how much the rent is, and whether a deposit is required?",
+                  "knowledge_points": [
+                    {
+                      "title": "how much the rent is",
+                      "explanation": "租金多少。注意宾语从句用陈述语序，Section 1 填空题常考 rent 数字。",
+                      "example": "Could you tell me how much the rent is per month?"
+                    },
+                    {
+                      "title": "whether a deposit is required",
+                      "explanation": "「是否需要押金」。whether 引导的宾语从句，比 if 更正式。",
+                      "example": "I'd like to know whether a deposit is required."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-lis-l1-ex1",
+                      "question": "你想问租金多少以及是否包含水电费，怎么说？",
+                      "reference_answer": "Could you tell me how much the rent is, and whether utilities are included?",
+                      "key_points": ["how much", "rent", "whether"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "房产中介",
+                    "setting": "学生在电话里咨询租房信息，中介逐一回答。",
+                    "opening_line": "Thanks for calling Sunshine Rentals. How can I help you?",
+                    "goal": "询问租金和押金，注意抓取数字信息",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "ielts-lis-ch2",
+              "name": "第二章 · 图书馆登记",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "ielts-lis-l2",
+                  "name": "2-1 办理借书证",
+                  "order": 1,
+                  "scene": "听力 Section 1：新生到图书馆办理借书证，工作人员询问个人信息。",
+                  "target_sentence": "I'd like to apply for a library card. What documents do I need to bring?",
+                  "knowledge_points": [
+                    {
+                      "title": "apply for",
+                      "explanation": "「申请…」，图书馆、签证、工作场景高频短语，注意 for 后接名词。",
+                      "example": "I want to apply for a student visa."
+                    },
+                    {
+                      "title": "documents",
+                      "explanation": "「文件、证件」的复数，比 papers 更正式，办理手续时常用。",
+                      "example": "Please bring two forms of identification documents."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-lis-l2-ex1",
+                      "question": "你想申请借书证并问需要带什么证件，怎么说？",
+                      "reference_answer": "I'd like to apply for a library card. What documents do I need to bring?",
+                      "key_points": ["apply for", "documents", "bring"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "图书馆工作人员",
+                    "setting": "新生走到图书馆服务台，说明来意。",
+                    "opening_line": "Hello, welcome to the library. What can I do for you?",
+                    "goal": "说明要办借书证，并询问所需证件",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "ielts-lis-ch3",
+              "name": "第三章 · 活动报名",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "ielts-lis-l3",
+                  "name": "3-1 确认时间与费用",
+                  "order": 1,
+                  "scene": "听力 Section 2：社区中心工作人员介绍瑜伽课，你打电话报名并确认细节。",
+                  "target_sentence": "I'd like to sign up for the yoga class. When does it start and how much does it cost?",
+                  "knowledge_points": [
+                    {
+                      "title": "sign up for",
+                      "explanation": "「报名参加…」，活动、课程、会员场景高频短语，Section 2 常考。",
+                      "example": "I want to sign up for the photography course."
+                    },
+                    {
+                      "title": "how much does it cost",
+                      "explanation": "「多少钱」，特殊疑问句语序，听力中常作为问句信号提示后面有数字答案。",
+                      "example": "How much does the membership cost per year?"
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "ielts-lis-l3-ex1",
+                      "question": "你想报名游泳课并问开始时间和费用，怎么说？",
+                      "reference_answer": "I'd like to sign up for the swimming class. When does it start and how much does it cost?",
+                      "key_points": ["sign up for", "when does it start", "how much"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "社区中心接待员",
+                    "setting": "你打电话到社区中心，想报名一门课程。",
+                    "opening_line": "Greenfield Community Center, how may I help you?",
+                    "goal": "说明要报名的课程，并确认时间和费用",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "toefl",
+      "name": "托福 TOEFL",
+      "order": 3,
+      "courses": [
+        {
+          "id": "toefl-listening-basics",
+          "name": "托福听力核心表达",
+          "description": "覆盖托福听力三大场景：校园对话、学术讲座、推断态度，掌握 3 个理解与复述关键句型。",
+          "cover_color": "orange",
+          "order": 1,
+          "chapters": [
+            {
+              "id": "toefl-ch1",
+              "name": "第一章 · 校园对话",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "toefl-l1",
+                  "name": "1-1 图书馆找书",
+                  "order": 1,
+                  "scene": "托福听力校园对话场景：学生去图书馆找一本有机化学教材却找不到。",
+                  "target_sentence": "I'm looking for a book on organic chemistry, but I can't find it anywhere.",
+                  "knowledge_points": [
+                    {
+                      "title": "look for",
+                      "explanation": "「寻找」，强调过程而非结果（find 强调结果），校园对话高频短语。",
+                      "example": "I've been looking for my notes all morning."
+                    },
+                    {
+                      "title": "on + 学科",
+                      "explanation": "表示「关于某学科的」，on 比 about 更正式，常用于书名、课程名前。",
+                      "example": "She's writing a paper on climate change."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-l1-ex1",
+                      "question": "你想跟图书管理员说「我在找一本关于有机化学的书，但哪儿都找不到」，怎么说？",
+                      "reference_answer": "I'm looking for a book on organic chemistry, but I can't find it anywhere.",
+                      "key_points": ["looking for", "on organic chemistry", "can't find"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "图书管理员",
+                    "setting": "学生在前台求助，管理员帮忙查询馆藏系统。",
+                    "opening_line": "Hi there, how can I help you today?",
+                    "goal": "说明要找的书和学科，并配合管理员的追问",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "toefl-ch2",
+              "name": "第二章 · 学术讲座",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "toefl-l2",
+                  "name": "2-1 教授定义术语",
+                  "order": 1,
+                  "scene": "托福听力学术讲座：生物学教授在课上定义「光合作用」。",
+                  "target_sentence": "What we call photosynthesis is the process by which plants convert sunlight into energy.",
+                  "knowledge_points": [
+                    {
+                      "title": "What we call X is",
+                      "explanation": "「我们所说的 X 就是…」，教授下定义的经典句型，托福讲座术语题必考信号。",
+                      "example": "What we call gravity is the force pulling objects toward the earth."
+                    },
+                    {
+                      "title": "convert A into B",
+                      "explanation": "「把 A 转化为 B」，物理、化学、生物讲座高频搭配。",
+                      "example": "The engine converts fuel into mechanical power."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-l2-ex1",
+                      "question": "教授想定义「光合作用」，想说「我们所说的光合作用就是植物把阳光转化为能量的过程」，怎么说？",
+                      "reference_answer": "What we call photosynthesis is the process by which plants convert sunlight into energy.",
+                      "key_points": ["what we call", "convert", "into energy"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "生物学教授",
+                    "setting": "课堂提问环节，学生请教授再解释一遍定义。",
+                    "opening_line": "So, let's make sure everyone understands this key term. What did I say photosynthesis is?",
+                    "goal": "用 What we call 句型复述定义，并解释 convert 的含义",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "toefl-ch3",
+              "name": "第三章 · 推断态度",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "toefl-l3",
+                  "name": "3-1 听懂隐含态度",
+                  "order": 1,
+                  "scene": "托福听力态度题：教授对某种研究方法保留意见，用委婉语气表达问题。",
+                  "target_sentence": "Now, this approach isn't without its problems, as you can imagine.",
+                  "knowledge_points": [
+                    {
+                      "title": "not without its problems",
+                      "explanation": "双重否定表「并非没有问题」，是教授委婉批评的典型表达，态度题必抓信号。",
+                      "example": "The theory isn't without its critics."
+                    },
+                    {
+                      "title": "as you can imagine",
+                      "explanation": "「你可以想象」，插入语，暗示接下来要说的是显而易见的问题，引导听众跟随。",
+                      "example": "The exam was very long, as you can imagine."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-l3-ex1",
+                      "question": "教授想委婉指出「这种方法并非没有问题」，怎么说？",
+                      "reference_answer": "Now, this approach isn't without its problems, as you can imagine.",
+                      "key_points": ["not without", "problems", "as you can imagine"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "教授",
+                    "setting": "教授在讲完一种研究方法后，引导学生讨论其局限性。",
+                    "opening_line": "So we've seen how this method works in theory. But in practice...?",
+                    "goal": "识别教授的保留态度，用 not without 句型复述其隐含批评",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "toefl-speaking",
+          "name": "托福口语 Task 1-4 答题框架",
+          "description": "覆盖托福口语独立题与综合题，掌握 3 个答题开头与展开句型，让回答结构清晰。",
+          "cover_color": "orange",
+          "order": 2,
+          "chapters": [
+            {
+              "id": "toefl-s-ch1",
+              "name": "第一章 · Task 1 独立题",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "toefl-s-l1",
+                  "name": "1-1 表达偏好并给理由",
+                  "order": 1,
+                  "scene": "Task 1 题目：「你喜欢住大城市还是小城镇？」你需要先表态再给理由。",
+                  "target_sentence": "I prefer living in a big city because there are more job opportunities there.",
+                  "knowledge_points": [
+                    {
+                      "title": "I prefer + 动名词",
+                      "explanation": "「我更喜欢…」，Task 1 表态首选句型，后接动名词（doing）。",
+                      "example": "I prefer studying in the morning."
+                    },
+                    {
+                      "title": "because there are more",
+                      "explanation": "「因为有更多…」，给出具体理由的开头，让回答不空泛。",
+                      "example": "I prefer online classes because there are more flexible schedules."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-s-l1-ex1",
+                      "question": "你更喜欢纸质书，理由是阅读体验更好，怎么回答？",
+                      "reference_answer": "I prefer reading paper books because they offer a better reading experience.",
+                      "key_points": ["I prefer", "because"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "托福口语考官",
+                    "setting": "Task 1 准备 15 秒后开始作答。",
+                    "opening_line": "Please speak now. Do you prefer living in a big city or a small town?",
+                    "goal": "用 I prefer 开头表态，并用 because 给出一个具体理由",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "toefl-s-ch2",
+              "name": "第二章 · Task 3 校园话题",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "toefl-s-l2",
+                  "name": "2-1 概括学生态度",
+                  "order": 1,
+                  "scene": "Task 3：阅读一篇学校通知，再听学生对话，你需要概括学生的态度。",
+                  "target_sentence": "The student disagrees with the new policy for two main reasons.",
+                  "knowledge_points": [
+                    {
+                      "title": "disagrees with",
+                      "explanation": "「不同意…」，Task 3 概括学生态度的标准动词，比 doesn't like 更正式。",
+                      "example": "The student disagrees with the university's decision."
+                    },
+                    {
+                      "title": "for two main reasons",
+                      "explanation": "「出于两个主要原因」，预告结构，暗示接下来会分两点展开，逻辑性强。",
+                      "example": "She supports the proposal for two main reasons."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-s-l2-ex1",
+                      "question": "学生支持新政策，有两个理由，你怎么概括？",
+                      "reference_answer": "The student agrees with the new policy for two main reasons.",
+                      "key_points": ["agrees with", "for two main reasons"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "托福口语考官",
+                    "setting": "Task 3 准备 30 秒后开始作答。",
+                    "opening_line": "Please speak now. Summarize the student's opinion and explain their reasons.",
+                    "goal": "明确学生态度（支持/反对），并用 for two main reasons 预告结构",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "toefl-s-ch3",
+              "name": "第三章 · Task 4 学术讲座",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "toefl-s-l3",
+                  "name": "3-1 用教授的例子说明概念",
+                  "order": 1,
+                  "scene": "Task 4：教授讲了一个心理学概念，并举了一个例子，你需要把概念和例子联系起来。",
+                  "target_sentence": "The professor uses an example of children learning to share to illustrate this concept.",
+                  "knowledge_points": [
+                    {
+                      "title": "uses an example of",
+                      "explanation": "「用…的例子」，Task 4 把教授例子和概念连接的标准句型。",
+                      "example": "The professor uses an example of a startup company to explain the theory."
+                    },
+                    {
+                      "title": "to illustrate this concept",
+                      "explanation": "「来说明这个概念」，illustrate 比 explain 更学术，体现对讲座结构的理解。",
+                      "example": "She gives an example to illustrate this principle."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-s-l3-ex1",
+                      "question": "教授用蜜蜂采蜜的例子来说明这个概念，怎么说？",
+                      "reference_answer": "The professor uses an example of bees collecting honey to illustrate this concept.",
+                      "key_points": ["uses an example of", "illustrate this concept"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "托福口语考官",
+                    "setting": "Task 4 准备 30 秒后开始作答。",
+                    "opening_line": "Please speak now. Explain the concept and how the professor's example relates to it.",
+                    "goal": "用 uses an example of 连接教授的例子和概念",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "toefl-writing",
+          "name": "托福写作综合与独立",
+          "description": "覆盖托福写作综合任务（总结讲座反驳阅读）与独立写作开头，掌握 3 个高分句型。",
+          "cover_color": "orange",
+          "order": 3,
+          "chapters": [
+            {
+              "id": "toefl-w-ch1",
+              "name": "第一章 · 综合写作总结",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "toefl-w-l1",
+                  "name": "1-1 讲座反驳阅读观点",
+                  "order": 1,
+                  "scene": "综合写作：阅读说恐龙是冷血动物，讲座反驳说恐龙是温血动物，你需要总结这个反驳。",
+                  "target_sentence": "The lecture challenges the reading's claim by arguing that dinosaurs were actually warm-blooded.",
+                  "knowledge_points": [
+                    {
+                      "title": "challenges the reading's claim",
+                      "explanation": "「质疑阅读的观点」，综合写作总结讲座与阅读矛盾的标准表达，比 disagrees 更有力。",
+                      "example": "The lecture challenges the reading's claim about the origin of the painting."
+                    },
+                    {
+                      "title": "by arguing that",
+                      "explanation": "「通过论证…」，引出讲座的具体论据，体现因果逻辑。",
+                      "example": "The professor refutes the idea by arguing that the data is unreliable."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-w-l1-ex1",
+                      "question": "讲座通过论证数据有误来质疑阅读的观点，怎么写？",
+                      "reference_answer": "The lecture challenges the reading's claim by arguing that the data is inaccurate.",
+                      "key_points": ["challenges", "by arguing that"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师让你用一句话总结讲座和阅读的关系。",
+                    "opening_line": "In one sentence, how does the lecture relate to the reading passage?",
+                    "goal": "用 challenges 表达讲座反驳阅读，并通过 by arguing that 给出论据方向",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "toefl-w-ch2",
+              "name": "第二章 · 综合写作分点",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "toefl-w-l2",
+                  "name": "2-1 第一点反驳",
+                  "order": 1,
+                  "scene": "综合写作主体第一段，你需要展开讲座反驳阅读的第一个论点。",
+                  "target_sentence": "First, the professor points out that the evidence cited in the reading is outdated.",
+                  "knowledge_points": [
+                    {
+                      "title": "points out that",
+                      "explanation": "「指出…」，引出讲座具体论点的常用动词，比 says 更正式。",
+                      "example": "The professor points out that the study has methodological flaws."
+                    },
+                    {
+                      "title": "the evidence cited in the reading",
+                      "explanation": "「阅读中引用的证据」，cited 表示「引用的」，精准定位阅读材料的内容。",
+                      "example": "The data cited in the reading was collected decades ago."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-w-l2-ex1",
+                      "question": "教授指出阅读中引用的数据不可靠，怎么写？",
+                      "reference_answer": "First, the professor points out that the data cited in the reading is unreliable.",
+                      "key_points": ["points out", "cited in the reading"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师让你写综合写作的第一个反驳点。",
+                    "opening_line": "Now write the first body paragraph. How does the lecture challenge the first point?",
+                    "goal": "用 First 开头，用 points out 引出教授对阅读第一点的反驳",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "toefl-w-ch3",
+              "name": "第三章 · 独立写作开头",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "toefl-w-l3",
+                  "name": "3-1 引出话题并表态",
+                  "order": 1,
+                  "scene": "独立写作题目：「科技是否让人们更依赖他人？」你需要写一个开头段引出话题并表态。",
+                  "target_sentence": "In today's increasingly connected world, the question of whether technology makes people more dependent is widely debated.",
+                  "knowledge_points": [
+                    {
+                      "title": "In today's increasingly ... world",
+                      "explanation": "「在当今日益…的世界」，独立写作引出话题的万能背景句，比 Nowadays 更有层次感。",
+                      "example": "In today's fast-paced world, time management is more important than ever."
+                    },
+                    {
+                      "title": "is widely debated",
+                      "explanation": "「被广泛讨论」，被动语态引出争议话题，体现客观性。",
+                      "example": "The issue of climate change is widely debated among scientists."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "toefl-w-l3-ex1",
+                      "question": "你想写「在当今竞争激烈的世界，教育是否公平被广泛讨论」，怎么写？",
+                      "reference_answer": "In today's increasingly competitive world, the question of whether education is fair is widely debated.",
+                      "key_points": ["in today's", "widely debated"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师让你写独立写作的开头背景句。",
+                    "opening_line": "Start your essay with a background sentence that frames the topic.",
+                    "goal": "用 In today's ... world 引出话题背景，并用 is widely debated 点出争议",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "business",
+      "name": "商务英语",
+      "order": 4,
+      "courses": [
+        {
+          "id": "business-meeting",
+          "name": "商务会议实用英语",
+          "description": "覆盖会议开场、表达观点、总结决策三大环节，掌握 3 个职场高频句型。",
+          "cover_color": "purple",
+          "order": 1,
+          "chapters": [
+            {
+              "id": "biz-m-ch1",
+              "name": "第一章 · 会议开场",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "biz-m-l1",
+                  "name": "1-1 宣布会议开始",
+                  "order": 1,
+                  "scene": "你主持周一团队例会，需要宣布会议开始并说明议程。",
+                  "target_sentence": "Let's get started. First on the agenda is the Q3 sales report.",
+                  "knowledge_points": [
+                    {
+                      "title": "Let's get started",
+                      "explanation": "「我们开始吧」，会议开场最自然的表达，比 Let's begin 更口语化。",
+                      "example": "Let's get started since everyone is here."
+                    },
+                    {
+                      "title": "on the agenda",
+                      "explanation": "「在议程上」，agenda 是会议议程，on the agenda 表示待讨论的事项。",
+                      "example": "The budget review is next on the agenda."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "biz-m-l1-ex1",
+                      "question": "你想宣布开始，并说第一项议程是项目进度更新，怎么说？",
+                      "reference_answer": "Let's get started. First on the agenda is the project update.",
+                      "key_points": ["get started", "on the agenda"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "会议主持人",
+                    "setting": "会议室里同事们陆续到齐，你准备开始会议。",
+                    "opening_line": "Good morning, everyone. Thanks for joining today's meeting.",
+                    "goal": "宣布会议开始，并说明第一项议程",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "biz-m-ch2",
+              "name": "第二章 · 表达观点",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "biz-m-l2",
+                  "name": "2-1 提出建议",
+                  "order": 1,
+                  "scene": "会议上讨论市场推广方案，你想提出一个不同的建议。",
+                  "target_sentence": "From my perspective, we should focus more on social media marketing.",
+                  "knowledge_points": [
+                    {
+                      "title": "From my perspective",
+                      "explanation": "「在我看来」，比 I think 更正式、更客观，商务会议表达观点的首选。",
+                      "example": "From my perspective, this investment is too risky."
+                    },
+                    {
+                      "title": "we should focus more on",
+                      "explanation": "「我们应该更专注于…」，提出方向建议的标准句型。",
+                      "example": "We should focus more on customer retention."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "biz-m-l2-ex1",
+                      "question": "你觉得团队应该更注重产品质量，怎么用商务方式表达？",
+                      "reference_answer": "From my perspective, we should focus more on product quality.",
+                      "key_points": ["from my perspective", "focus more on"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "同事",
+                    "setting": "讨论中有人提出了方案 A，你想补充建议。",
+                    "opening_line": "So that's my idea. Does anyone else have thoughts on this?",
+                    "goal": "用 From my perspective 开头，提出一个明确的建议方向",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "biz-m-ch3",
+              "name": "第三章 · 总结决策",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "biz-m-l3",
+                  "name": "3-1 确认行动项",
+                  "order": 1,
+                  "scene": "会议接近尾声，你需要总结讨论结果并分配下一步任务。",
+                  "target_sentence": "To sum up, we've agreed to launch the pilot next month. John, could you handle the logistics?",
+                  "knowledge_points": [
+                    {
+                      "title": "To sum up",
+                      "explanation": "「总而言之」，会议结尾总结决策的标准短语，也可用 In summary。",
+                      "example": "To sum up, we need to cut costs by 10% this quarter."
+                    },
+                    {
+                      "title": "we've agreed to",
+                      "explanation": "「我们已同意…」，现在完成时表示已达成共识，明确会议成果。",
+                      "example": "We've agreed to extend the deadline by two weeks."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "biz-m-l3-ex1",
+                      "question": "你想总结「我们已同意下季度增加预算」，怎么说？",
+                      "reference_answer": "To sum up, we've agreed to increase the budget next quarter.",
+                      "key_points": ["to sum up", "we've agreed to"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "会议主持人",
+                    "setting": "讨论结束，你需要收尾并明确下一步。",
+                    "opening_line": "I think we've covered everything. Let's wrap up.",
+                    "goal": "用 To sum up 总结决策，并指定一项行动项的负责人",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "business-email",
+          "name": "商务邮件写作",
+          "description": "覆盖邮件开场、提出请求、礼貌收尾三大要素，掌握 3 个地道商务邮件句型。",
+          "cover_color": "purple",
+          "order": 2,
+          "chapters": [
+            {
+              "id": "biz-e-ch1",
+              "name": "第一章 · 邮件开场",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "biz-e-l1",
+                  "name": "1-1 说明邮件目的",
+                  "order": 1,
+                  "scene": "你给客户写邮件，需要在开头说明这封邮件的目的。",
+                  "target_sentence": "I'm writing to follow up on our meeting last Tuesday regarding the contract.",
+                  "knowledge_points": [
+                    {
+                      "title": "I'm writing to",
+                      "explanation": "「我写信是为了…」，商务邮件开头第一句的标准句型，开门见山。",
+                      "example": "I'm writing to request a quotation for the new project."
+                    },
+                    {
+                      "title": "follow up on",
+                      "explanation": "「跟进…」，表示对之前讨论的事进行后续沟通，商务高频短语。",
+                      "example": "I'd like to follow up on the proposal I sent last week."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "biz-e-l1-ex1",
+                      "question": "你想写邮件跟进上周的报价单，开头怎么写？",
+                      "reference_answer": "I'm writing to follow up on the quotation I sent last week.",
+                      "key_points": ["I'm writing to", "follow up on"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "客户",
+                    "setting": "你给客户写跟进邮件，模拟客户回复的对话。",
+                    "opening_line": "Hi there, thanks for reaching out. What can I do for you?",
+                    "goal": "用 I'm writing to 说明邮件目的，并提及之前的沟通",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "biz-e-ch2",
+              "name": "第二章 · 提出请求",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "biz-e-l2",
+                  "name": "2-1 请求对方提供信息",
+                  "order": 1,
+                  "scene": "你需要请对方提供一些文件，在邮件中礼貌地提出请求。",
+                  "target_sentence": "Could you please send me the updated report at your earliest convenience?",
+                  "knowledge_points": [
+                    {
+                      "title": "Could you please",
+                      "explanation": "「能否请你…」，比 Can you 更礼貌，商务邮件请求的标准开头。",
+                      "example": "Could you please review the attached document?"
+                    },
+                    {
+                      "title": "at your earliest convenience",
+                      "explanation": "「在你方便时尽快」，委婉表达「尽快」，比 ASAP 更礼貌得体。",
+                      "example": "Please reply at your earliest convenience."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "biz-e-l2-ex1",
+                      "question": "你想请对方尽快提供合同草稿，怎么礼貌地写？",
+                      "reference_answer": "Could you please send me the draft contract at your earliest convenience?",
+                      "key_points": ["could you please", "at your earliest convenience"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "同事",
+                    "setting": "你在邮件中向同事请求一份资料，对方回复确认。",
+                    "opening_line": "Sure, I can help with that. What exactly do you need?",
+                    "goal": "用 Could you please 提出请求，并礼貌地说明时限",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "biz-e-ch3",
+              "name": "第三章 · 邮件收尾",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "biz-e-l3",
+                  "name": "3-1 期待对方回复",
+                  "order": 1,
+                  "scene": "邮件正文写完，你需要礼貌收尾并期待对方回复。",
+                  "target_sentence": "I look forward to hearing from you soon. Best regards, Li Ming.",
+                  "knowledge_points": [
+                    {
+                      "title": "I look forward to hearing from you",
+                      "explanation": "「期待你的回复」，商务邮件最经典的收尾句，to 后接动名词。",
+                      "example": "I look forward to your response at your earliest convenience."
+                    },
+                    {
+                      "title": "Best regards",
+                      "explanation": "「祝好」，商务邮件最通用的结尾敬语，正式但不生硬。",
+                      "example": "Best regards, [Your Name]"
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "biz-e-l3-ex1",
+                      "question": "邮件结尾你想表达「期待尽快收到你的回复」，怎么写？",
+                      "reference_answer": "I look forward to hearing from you soon. Best regards, Li Ming.",
+                      "key_points": ["look forward to", "best regards"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "客户",
+                    "setting": "你写完邮件收尾，模拟客户确认收到。",
+                    "opening_line": "Thanks for the update. I'll get back to you shortly.",
+                    "goal": "用 I look forward to 收尾，并使用 Best regards 敬语",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "writing",
+      "name": "英语写作",
+      "order": 5,
+      "courses": [
+        {
+          "id": "essay-writing",
+          "name": "议论文核心结构",
+          "description": "掌握议论文开头引入、主体论证、结尾总结三大结构，写出逻辑清晰的英文短文。",
+          "cover_color": "pink",
+          "order": 1,
+          "chapters": [
+            {
+              "id": "essay-ch1",
+              "name": "第一章 · 开头引入",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "essay-l1",
+                  "name": "1-1 引出话题背景",
+                  "order": 1,
+                  "scene": "写一篇关于「在线学习是否优于课堂学习」的议论文，你需要用一个背景句开头。",
+                  "target_sentence": "With the rapid development of technology, online learning has become increasingly popular in recent years.",
+                  "knowledge_points": [
+                    {
+                      "title": "With the rapid development of",
+                      "explanation": "「随着…的快速发展」，议论文引出时代背景的万能开头，让文章有大格局。",
+                      "example": "With the rapid development of artificial intelligence, many jobs are changing."
+                    },
+                    {
+                      "title": "has become increasingly popular",
+                      "explanation": "「变得越来越流行」，现在完成时 + increasingly 描述趋势，比 more and more 更正式。",
+                      "example": "Remote work has become increasingly common since the pandemic."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "essay-l1-ex1",
+                      "question": "你想写「随着社交媒体的发展，短视频越来越流行」，怎么写开头？",
+                      "reference_answer": "With the rapid development of social media, short videos have become increasingly popular.",
+                      "key_points": ["with the rapid development of", "increasingly popular"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师让你写议论文开头的背景句。",
+                    "opening_line": "Give me a strong opening sentence that sets the context for this essay.",
+                    "goal": "用 With the development of 引出背景，并用 increasingly 描述趋势",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "essay-ch2",
+              "name": "第二章 · 主体论证",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "essay-l2",
+                  "name": "2-1 给出论据支撑",
+                  "order": 1,
+                  "scene": "议论文主体段，你需要提出一个论点并用理由或例子来支撑。",
+                  "target_sentence": "One key advantage is that online learning allows students to study at their own pace.",
+                  "knowledge_points": [
+                    {
+                      "title": "One key advantage is that",
+                      "explanation": "「一个关键优势是…」，主体段提出论点的标准句型，结构清晰。",
+                      "example": "One key advantage is that renewable energy reduces pollution."
+                    },
+                    {
+                      "title": "at one's own pace",
+                      "explanation": "「按自己的节奏」，地道短语，描述个性化学习的优势。",
+                      "example": "Self-paced courses let you learn at your own pace."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "essay-l2-ex1",
+                      "question": "你想说「在线学习的一个优势是可以随时随地学习」，怎么写？",
+                      "reference_answer": "One key advantage is that online learning allows students to study anytime and anywhere.",
+                      "key_points": ["one key advantage is that", "allows"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师让你写议论文的一个主体段论点。",
+                    "opening_line": "Now state your first argument clearly with a supporting reason.",
+                    "goal": "用 One key advantage is that 提出论点，并补充一个具体支撑",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "essay-ch3",
+              "name": "第三章 · 结尾总结",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "essay-l3",
+                  "name": "3-1 重申观点并升华",
+                  "order": 1,
+                  "scene": "议论文结尾，你需要重申立场并给出展望或建议。",
+                  "target_sentence": "In conclusion, while online learning offers great flexibility, traditional classrooms remain irreplaceable.",
+                  "knowledge_points": [
+                    {
+                      "title": "In conclusion",
+                      "explanation": "「总之」，议论文结尾最标准的标志词，比 To sum up 更书面。",
+                      "example": "In conclusion, both methods have their merits."
+                    },
+                    {
+                      "title": "while A ..., B ...",
+                      "explanation": "「虽然 A…，但 B…」，结尾段平衡表达观点的经典让步结构，体现思辨能力。",
+                      "example": "While technology brings convenience, it also raises privacy concerns."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "essay-l3-ex1",
+                      "question": "你想结尾「总之，虽然城市化带来便利，但也带来环境问题」，怎么写？",
+                      "reference_answer": "In conclusion, while urbanization brings convenience, it also causes environmental problems.",
+                      "key_points": ["in conclusion", "while"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "写作老师",
+                    "setting": "老师让你写议论文的结尾段。",
+                    "opening_line": "Wrap up your essay with a balanced conclusion.",
+                    "goal": "用 In conclusion 开头，用 while 让步结构平衡地重申观点",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cet",
+      "name": "四六级英语",
+      "order": 6,
+      "courses": [
+        {
+          "id": "cet-listening",
+          "name": "四级听力短对话",
+          "description": "覆盖四级听力短对话高频场景：选课、借书、约会，掌握 3 个听懂言外之意的关键句型。",
+          "cover_color": "teal",
+          "order": 1,
+          "chapters": [
+            {
+              "id": "cet-lis-ch1",
+              "name": "第一章 · 选课场景",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "cet-lis-l1",
+                  "name": "1-1 课程太满了",
+                  "order": 1,
+                  "scene": "四级听力短对话：两个学生讨论选课，女生说她这学期课太多了。",
+                  "target_sentence": "I'm taking five courses this semester, and I'm already feeling overwhelmed.",
+                  "knowledge_points": [
+                    {
+                      "title": "I'm taking + 课程",
+                      "explanation": "「我选了…课」，take a course 表示选课，四级听力高频表达。",
+                      "example": "I'm taking an advanced English course this semester."
+                    },
+                    {
+                      "title": "feeling overwhelmed",
+                      "explanation": "「感到不堪重负」，暗示课太多忙不过来，态度题常考的隐含信息。",
+                      "example": "With all these deadlines, I'm feeling overwhelmed."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "cet-lis-l1-ex1",
+                      "question": "你想说「我这学期选了四门课，已经感觉忙不过来」，怎么说？",
+                      "reference_answer": "I'm taking four courses this semester, and I'm already feeling overwhelmed.",
+                      "key_points": ["taking", "overwhelmed"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "同学",
+                    "setting": "走廊里遇到同学，聊起这学期的选课。",
+                    "opening_line": "Hey, how's your semester going so far?",
+                    "goal": "说明你选了几门课，并表达是否感到压力",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "cet-lis-ch2",
+              "name": "第二章 · 借书场景",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "cet-lis-l2",
+                  "name": "2-1 书被借走了",
+                  "order": 1,
+                  "scene": "四级听力短对话：学生去图书馆借书，被告知书已被借走。",
+                  "target_sentence": "I'm sorry, but that book has been checked out. It's due back next Friday.",
+                  "knowledge_points": [
+                    {
+                      "title": "has been checked out",
+                      "explanation": "「已被借出」，被动语态，图书馆表示书不在馆内的标准说法。",
+                      "example": "The novel you want has been checked out."
+                    },
+                    {
+                      "title": "due back",
+                      "explanation": "「到期归还」，due 表示「到期的」，图书馆说明归还日期的常用词。",
+                      "example": "The book is due back on the 15th."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "cet-lis-l2-ex1",
+                      "question": "你想说「那本书已经被借走了，下周三到期归还」，怎么说？",
+                      "reference_answer": "That book has been checked out. It's due back next Wednesday.",
+                      "key_points": ["checked out", "due back"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "图书管理员",
+                    "setting": "你在图书馆前台查一本书，管理员查询后告知结果。",
+                    "opening_line": "Let me check the system for you. What's the title?",
+                    "goal": "听懂书已借出，并询问归还日期",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "cet-lis-ch3",
+              "name": "第三章 · 约会场景",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "cet-lis-l3",
+                  "name": "3-1 改期见面",
+                  "order": 1,
+                  "scene": "四级听力短对话：男生约女生周末看电影，女生说有事想改时间。",
+                  "target_sentence": "I'm afraid I can't make it this Saturday. Could we reschedule for next week?",
+                  "knowledge_points": [
+                    {
+                      "title": "I can't make it",
+                      "explanation": "「我来不了」，委婉拒绝邀约的地道表达，比 I can't come 更自然。",
+                      "example": "I can't make it to the party tonight."
+                    },
+                    {
+                      "title": "reschedule",
+                      "explanation": "「重新安排」，改时间的正式说法，日常和商务都通用。",
+                      "example": "Let's reschedule the meeting to Thursday."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "cet-lis-l3-ex1",
+                      "question": "你想说「这周我来不了，能改到下周吗」，怎么说？",
+                      "reference_answer": "I'm afraid I can't make it this week. Could we reschedule for next week?",
+                      "key_points": ["can't make it", "reschedule"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "朋友",
+                    "setting": "朋友约你周末一起出去，你有事想改时间。",
+                    "opening_line": "Hey, are you free this Saturday? I was thinking we could catch a movie.",
+                    "goal": "委婉表示无法赴约，并提出改期建议",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cet-translation",
+          "name": "六级翻译核心技巧",
+          "description": "覆盖六级翻译三大难点：无主句处理、长句拆分、文化词汇转换，掌握 3 个实用翻译句型。",
+          "cover_color": "teal",
+          "order": 2,
+          "chapters": [
+            {
+              "id": "cet-t-ch1",
+              "name": "第一章 · 无主句处理",
+              "order": 1,
+              "lessons": [
+                {
+                  "id": "cet-t-l1",
+                  "name": "1-1 增补主语",
+                  "order": 1,
+                  "scene": "六级翻译真题：「要控制空气污染，需要政府和个人共同努力。」中文无主句，翻译时需补主语。",
+                  "target_sentence": "To control air pollution, we need the joint efforts of the government and individuals.",
+                  "knowledge_points": [
+                    {
+                      "title": "To + 动词原形 表目的",
+                      "explanation": "「为了…」，把中文目的状语前置，用 To do 开头，六级翻译常用手段。",
+                      "example": "To improve efficiency, we adopted new technology."
+                    },
+                    {
+                      "title": "we need + 名词",
+                      "explanation": "「我们需要…」，为无主句增补主语 we，让英语句子结构完整。",
+                      "example": "To solve this problem, we need a comprehensive approach."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "cet-t-l1-ex1",
+                      "question": "翻译「要解决这个问题，我们需要采取有效措施」，怎么译？",
+                      "reference_answer": "To solve this problem, we need to take effective measures.",
+                      "key_points": ["to", "we need"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "翻译老师",
+                    "setting": "老师让你翻译一句中文无主句。",
+                    "opening_line": "Translate this sentence: 要提高英语水平，需要每天坚持练习。",
+                    "goal": "用 To do 开头表目的，并用 we need 增补主语",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "cet-t-ch2",
+              "name": "第二章 · 长句拆分",
+              "order": 2,
+              "lessons": [
+                {
+                  "id": "cet-t-l2",
+                  "name": "2-1 用分词短语拆分",
+                  "order": 1,
+                  "scene": "六级翻译：「中国是世界上人口最多的国家，拥有五千年的灿烂文明。」一句话含两层信息，需拆分。",
+                  "target_sentence": "China, the most populous country in the world, boasts a splendid civilization of 5,000 years.",
+                  "knowledge_points": [
+                    {
+                      "title": "同位语插入",
+                      "explanation": "用同位语（the most populous country）补充说明主语，把中文的并列结构变成英语的主从结构。",
+                      "example": "Beijing, the capital of China, is a historic city."
+                    },
+                    {
+                      "title": "boasts",
+                      "explanation": "「拥有（引以为豪的事物）」，比 has 更生动，翻译「拥有」时的加分动词。",
+                      "example": "The city boasts a long history of over 2,000 years."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "cet-t-l2-ex1",
+                      "question": "翻译「长城是中国的象征，拥有两千多年的历史」，怎么译？",
+                      "reference_answer": "The Great Wall, a symbol of China, boasts a history of over 2,000 years.",
+                      "key_points": ["appositive", "boasts"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "翻译老师",
+                    "setting": "老师让你把一个长中文句翻译成流畅的英文。",
+                    "opening_line": "Translate: 故宫是明清两代的皇宫，位于北京中心。",
+                    "goal": "用同位语结构整合两层信息，并用 boasts 替代 has",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            },
+            {
+              "id": "cet-t-ch3",
+              "name": "第三章 · 文化词汇转换",
+              "order": 3,
+              "lessons": [
+                {
+                  "id": "cet-t-l3",
+                  "name": "3-1 翻译文化专有名词",
+                  "order": 1,
+                  "scene": "六级翻译：「春节是中国最重要的传统节日，家人团聚吃年夜饭。」涉及文化词汇。",
+                  "target_sentence": "The Spring Festival is the most important traditional holiday in China, when families gather for a reunion dinner.",
+                  "knowledge_points": [
+                    {
+                      "title": "The Spring Festival",
+                      "explanation": "「春节」的标准译法，比 Chinese New Year 更正式，六级翻译文化词首选。",
+                      "example": "The Spring Festival falls on the first day of the lunar calendar."
+                    },
+                    {
+                      "title": "when 引导定语从句",
+                      "explanation": "「在那时…」，把中文「家人团聚」处理为修饰节日的定语从句，避免流水句。",
+                      "example": "Mid-Autumn Festival is a time when families admire the full moon together."
+                    }
+                  ],
+                  "exercises": [
+                    {
+                      "id": "cet-t-l3-ex1",
+                      "question": "翻译「中秋节是中国传统节日，家人团聚赏月」，怎么译？",
+                      "reference_answer": "The Mid-Autumn Festival is a traditional Chinese holiday when families gather to admire the moon.",
+                      "key_points": ["traditional holiday", "when"]
+                    }
+                  ],
+                  "roleplay": {
+                    "role": "翻译老师",
+                    "setting": "老师让你翻译一句含中国文化词汇的中文。",
+                    "opening_line": "Translate: 端午节是为了纪念诗人屈原，人们吃粽子赛龙舟。",
+                    "goal": "准确翻译文化专有名词，并用 when 从句整合团聚场景",
+                    "max_rounds": 3
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

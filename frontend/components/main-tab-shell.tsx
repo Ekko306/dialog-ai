@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CoursePage } from "@/components/course/course-page";
 import { EmptyTab } from "@/components/empty-tab";
 import { MainChatPage } from "@/components/main-chat-page";
 import { MyProfilePage } from "@/components/my-profile/my-profile-page";
@@ -19,6 +20,8 @@ export function MainTabShell() {
       <div className="min-h-0 flex-1">
         {activeTab === "chat" ? (
           <MainChatPage />
+        ) : activeTab === "tab2" ? (
+          <CoursePage />
         ) : activeTab === "tab3" ? (
           <MyProfilePage />
         ) : (
